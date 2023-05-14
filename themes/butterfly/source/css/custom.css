@@ -1,0 +1,15 @@
+@font-face{
+    font-family:'Candyhome' ;  /* 字体名自定义即可 */
+    /* src:url('D:/my_blog/myblog/themes/butterfly/source/fonts/Candy.ttf'); 字体文件路径 */
+    src: url('D:/my_blog/myblog/themes/butterfly/source/fonts/Candy.ttf') format("truetype");
+    font-display : swap;
+  }
+  
+  body {
+    font-family: 'Candyhome', sans-serif;
+  }
+
+
+
+
+
