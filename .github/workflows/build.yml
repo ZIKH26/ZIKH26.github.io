@@ -33,7 +33,7 @@ jobs:
           version: 8.3.1
           run_install: true
       - run: pnpm run build
-      - run: echo 'zikh26.github.io' > dist/CNAME
+      - run: echo 'zikh26.github.io' > public/CNAME
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
