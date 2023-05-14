@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>tools-函数库 | ZIKH26's Blog</title><meta name="keywords" content="python,编程,小工具"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="我和我的同学 trunk 写了一些方便解PWN题的鸡肋函数封装到了这个库里，第一是平常用起来方便顺手，第二顺便练习下编程能力，第三如果以后有可能的话，希望逐渐做成像 roderick 师傅的pwncli那样。 源代码 一条命令下载 tools 函数库 wget https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;ZIKH26&#x2F;tools&#x2F;master&#x2F;tools.py tools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tools-函数库">
+<meta property="og:url" content="https://zikh26.github.io/posts/ad411136.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="我和我的同学 trunk 写了一些方便解PWN题的鸡肋函数封装到了这个库里，第一是平常用起来方便顺手，第二顺便练习下编程能力，第三如果以后有可能的话，希望逐渐做成像 roderick 师傅的pwncli那样。 源代码 一条命令下载 tools 函数库 wget https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;ZIKH26&#x2F;tools&#x2F;master&#x2F;tools.py tools">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/9.jpg">
+<meta property="article:published_time" content="2023-05-14T15:14:50.164Z">
+<meta property="article:modified_time" content="2023-05-14T15:14:50.164Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="小工具">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/9.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/ad411136"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'tools-函数库',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-05-14 23:14:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/9.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">tools-函数库</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.164Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.164Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%B0%9D%E8%AF%95%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7/">尝试开发小工具</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/ad411136.html" data-flag-title="tools-函数库"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>我和我的同学 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/trunk/">trunk</a> 写了一些方便解PWN题的<s>鸡肋</s>函数封装到了这个库里，第一是平常用起来方便顺手，第二顺便练习下编程能力，第三如果以后有可能的话，希望逐渐做成像 <strong>roderick</strong> 师傅的<a target="_blank" rel="noopener" href="https://github.com/RoderickChan/pwncli">pwncli</a>那样。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/ZIKH26/tools/blob/master/tools.py">源代码</a></p>
+<p>一条命令下载 <code>tools</code> 函数库</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/ZIKH26/tools/master/tools.py</span><br></pre></td></tr></table></figure>
+<p><strong><code>tools</code> 库只支持python3</strong></p>
+<h2 id="命令行参数：">命令行参数：</h2>
+<p>为了不在打远程和本地，以及打本地时是否开启调试选择中来不断的更改脚本，因此我设置了命令行参数来直接做切换。</p>
+<p>1 去打远程且不开启脚本中的调试</p>
+<p>2 打本地且不开启脚本中的调试</p>
+<p>如果不加命令行参数，则默认打本地，若有debug函数则自动开启调试。</p>
+<p>假设你现在想打远程</p>
+<p>那么你需要在脚本里写<code>p,e,libc=load(&quot;heap&quot;,&quot;node4.buuoj.cn:27339&quot;)</code> (程序名和ip&amp;port请自行更改，这里只是举例说明)</p>
+<p>然后运行脚本时使用命令 如下(即使脚本中有debug函数也不影响打远程)</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">python3 exp.py 1</span><br></pre></td></tr></table></figure>
+<p>如果打本地时，不想去让脚本执行debug函数，那么命令可以如下(这样的好处是即使脚本中存在debug函数，但不想在本次执行脚本时debug也不需要来回去脚本里注释了)</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python3 exp.py 2</span><br></pre></td></tr></table></figure>
+<p><strong>如果直接运行exp.py的话，即使脚本里存在ip和port也不会去打远程</strong></p>
+<p>此外，假设你打本地所依赖的libc是2.23-0ubuntu11.3版本 而远程服务器程序所依赖的libc是2.23-0ubuntu11版本。二者仅仅是小版本有细微的不同，可能one_gadget和一些libc里函数的偏移有点不同，如果来回去修改的话，有点麻烦，因此在load函数的第三个参数可以设置远程依赖的libc，这样用后面search_og函数或者libc.symbols找的函数地址都会自动切换到远程所依赖的libc。</p>
+<p>示例如下:</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:29026&quot;</span>,<span class="string">&quot;libc-2.23.so&quot;</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="各个函数的使用说明">各个函数的使用说明</h2>
+<h3 id="long-search-local-search">long_search&amp;local_search</h3>
+<p>作用：这两个函数就是去libc中寻找system函数和/bin/sh的地址（分别用于本地和远程）<br>
+优点：将用LibcSearcher搜索并装载的重复的代码都放到了函数内部，现在一行就可以获取system和/bin/sh地址，因此您的脚本看起来更为简洁。</p>
+<p>使用范例</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">sys_addr,bin_sh_addr=long_search(<span class="string">&#x27;puts&#x27;</span>,puts_addr)</span><br><span class="line"></span><br><span class="line">sys_addr,bin_sh_addr=local_search(<span class="string">&#x27;puts&#x27;</span>,puts_addr,libc)</span><br><span class="line"><span class="string">&quot;&quot;&quot;libc指的是装载本地的libc,例如在脚本开始声明&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;libc=ELF(&#x27;/lib/i386-linux-gnu/libc.so.6&#x27;)&quot;&quot;&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="log">log</h3>
+<p>作用：这个函数就是单纯的打印一下某些变量的信息，类似于日志（但我更建议去使用下面的log_addr函数）<br>
+优点：加了箭头和字体颜色效果，可以更清楚的打印所需要的信息</p>
+<p>使用范例</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">puts=<span class="number">123456</span></span><br><span class="line">log(<span class="string">&#x27;puts_addr&#x27;</span>,puts_addr)</span><br></pre></td></tr></table></figure>
+<h3 id="log-addr">log_addr</h3>
+<p>如果你仅仅是想看一下变量对应的值是否是你需要的那个地址，同时感觉上面这个log函数太麻烦还需要两个参数，那么你不妨试试log_addr函数。</p>
+<p>作用:log_addr是专门为展示地址设计的（因为它会自动将变量以16进制的形式打印)</p>
+<p>优点：<strong>只传一个变量名字即可同时返回的是以十六进制表示的变量</strong>，但是没有log函数灵活。</p>
+<p>使用前提：你要确保变量是int类型的，那么你仅仅传入<strong>字符型的<u>变量名字</u></strong>（不是变量）</p>
+<p>使用范例</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">puts_addr=123456</span><br><span class="line">log_addr(&#x27;puts_addr&#x27;)</span><br></pre></td></tr></table></figure>
+<p>使用效果：<br>
+<img src="../img/MRYBXkvlcL5Kj6t.png" alt=""></p>
+<h3 id="log-info">log_info</h3>
+<p>如果仅仅是打印一个参数的话，可以使用log_info函数。</p>
+<p>作用：打印调试信息</p>
+<p>优点：前面加了[*]，使调试信息更加明显，让你更快的找到你想看见的信息。</p>
+<p>适用情况：比如你发现u32(p.recv(4))得到的地址不对，你想要看看p.recv()到底接收了什么，那么你就可以这么写log_info(p.recv())。</p>
+<p>使用范例</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">log_info(p.recv())</span><br></pre></td></tr></table></figure>
+<p>使用效果：</p>
+<p><img src="../img/jP81hQByfWJlrTH.png" alt="image-20220729201555971"></p>
+<h3 id="debug">debug</h3>
+<p>作用：在脚本中下断点进行调试<br>
+优点：1、如果使用tmux，可以直接分三屏，效果如下图。您仅仅只需要在脚本中加入这个函数，运行脚本的时候就可以自动分出三块屏幕(调试具体信息占屏幕的右侧，左上是脚本的debug执行信息，左下则可以继续使用)，左下角的区域完全可以去对着脚本进行调试。<br>
+<img src="../img/7cIP89qwUyT2umG.png" alt=""></p>
+<p>2、可以很简洁的输入地址，即可完成下断点的工作，同时开了pie保护的话，也可以正常去下断点</p>
+<p>使用说明：<br>
+这个函数还是比较常用的，适用于tmux的终端，只需要在最开始传递一下process函数返回的对象，接着就可以直接下断点了（默认使用tmux），如果开启了PIE保护的话，需要声明一下pie（也就是加一个参数’pie’）即可继续下断点。<br>
+如果不使用tmux也没问题，可以加入参数no-tmux就可以正常使用这个函数（<strong>如果使用no-tmux，则这个参数必须是放在第二个参数的位置</strong>（第一个参数始终是process的返回值）</p>
+<p>如果直接使用debug()函数，参数只有process函数返回的对象的话，则默认使用tmux终端，执行分三屏命令，最后执行gdb.attach§<br>
+PS：这个函数可以放到脚本的任何位置（必须要保证当前位置的下面还有一行不会触发报错的代码），这样可以从脚本当前的位置去开始调试，同时配合下的断点可以使调试更高效。<br>
+使用范例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">debug(p,<span class="number">0x400ECD</span>,<span class="number">0x400F54</span>)</span><br><span class="line"><span class="string">&quot;&quot;&quot;使用tmux，下两个断点&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">debug(p,<span class="string">&#x27;no-tmux&#x27;</span>,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x248</span>)</span><br><span class="line"><span class="string">&quot;&quot;&quot;不使用tmux，程序开了pie，用偏移来下断点&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">debug(p)</span><br><span class="line"><span class="string">&quot;&quot;&quot;使用tmux，执行gdb.attach(p)&quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="load">load</h3>
+<p>作用:写入目标程序的名字，将返回p(process的返回值),e(当前ELF文件的信息),libc(ELF文件所依赖的libc文件的信息)。ps：如果是静态链接的程序，那么只会执行p=process或者p=remote然后直接返回p。</p>
+<p>也就是相当于执行了原来的p=process(‘xxx’) e=ELF(‘xxx’) libc=ELF(‘xxx’)。如果传入了ip和port的话，则会执行remote(ip,port)代替原本的process。这样就可以直接打远程了</p>
+<p>优点:将原本重复的代码写在了函数内部，现在只要调用load函数，传入函数名即。同时该函数也获取了libc的信息将其存为了全局变量，为了之后获取one_gadget的函数直接使用。</p>
+<p>使用范例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">p,e,libc=load(<span class="string">&#x27;program&#x27;</span>)<span class="comment">#这是打本地，动态链接的程序</span></span><br><span class="line">p=load(<span class="string">&#x27;program&#x27;</span>)<span class="comment">#这是打本地，静态链接的程序</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;program&quot;</span>,<span class="string">&quot;node4.buuoj.cn:28822&quot;</span>)<span class="comment">#这是打远程的情况，ip和port只需要用:分隔开即可。</span></span><br></pre></td></tr></table></figure>
+<h3 id="shellcode-store">shellcode_store</h3>
+<p>我封装了一些shellcode放到了tools里面，可以使用shellcode_store函数来进行使用。</p>
+<p>作用：参数设置为需要的shellcode类型，返回对应的shellcode</p>
+<p>使用范例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">shellcode=shellcode_store(<span class="string">&#x27;shell_64&#x27;</span>)<span class="comment">#返回64位获取shell的shellcode</span></span><br><span class="line">shellcode=shellcode_store(<span class="string">&#x27;orw_32&#x27;</span>)<span class="comment">#返回32位执行open,read,write读出flag的shellcode</span></span><br><span class="line">shellcode=shellcode_store(<span class="string">&#x27;str_rax&#x27;</span>)<span class="comment">#返回起始的跳转寄存器为rax的字符型shellcode</span></span><br></pre></td></tr></table></figure>
+<p>PS：获取shell和orw的我都写了64位和32位的shellcode（应该是最短字节的了），纯字符的shellcode我几乎只生成了针对于x64的各个寄存器，其他没有生成那么多（因为感觉平常很少用到），等以后用到没有生成过的再记录上来吧。</p>
+<h3 id="search-og">search_og</h3>
+<p>作用：不需要手动将one_gadget工具获取的one_gadget再复制粘贴到脚本中了，可以直接通过这个函数来获取one_gadget,参数为想获取对应的one_gadget在列表中的索引。</p>
+<p>注意:这个函数依赖了one_gadget这个工具以及load函数，因此必须要保证当前拥有one_gadget工具并且脚本中使用了load函数才行。</p>
+<p>使用范例:</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">one_gadget=search_og(<span class="number">1</span>)</span><br><span class="line">p.sendline(p64(one_gadget+libc_base))</span><br></pre></td></tr></table></figure>
+<p>使用效果：<br>
+<img src="../img/2706180-20220821171240306-943254837.png" alt=""></p>
+<h3 id="攻击模板">攻击模板</h3>
+<h4 id="obstack-attack">obstack_attack</h4>
+<p>作用: 这个函数是提前布局好的一个 <code>IO_FILE</code> 模板（打的 <code>IO</code> 链是 <code>IO_obstack_jumps</code> 中 <code>_IO_obstack_xsputn</code> 函数），攻击效果可以任意地址执行并且可以控制第一个参数,这个函数的最终效果是执行 <code>system(&quot;/bin/sh&quot;)</code></p>
+<p>适用版本: <code>glibc 2.36</code>及以下</p>
+<p>利用条件:使用前提是泄露 <code>libc</code> 地址和堆地址 并且能任意地址写一个堆地址(最好是往 <code>IO_list_all</code> 里写一个堆地址) 且能从 <code>main</code> 函数正常返回或者触发 <code>exit</code> 函数</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">dirc=&#123; <span class="string">&#x27;system&#x27;</span>:libc_base+<span class="number">0x50d60</span> ,<span class="string">&#x27;io_obstack_jumps&#x27;</span>:libc_base+xxx&#125;</span><br><span class="line">libc_symbols=create_dict(dirc)</span><br><span class="line"></span><br><span class="line">payload=obstack_attack(heap_addr,libc_symbols)</span><br></pre></td></tr></table></figure>
+<p>使用方法: <code>heap_addr</code> 是写入 <code>IO_list_all</code> 中的堆地址( <code>chunk</code> 头地址)<br>
+<code>libc_symbols</code> :是 <code>create_dict(dict)</code> 传入进来返回值（ <code>dirc</code> 是所需的参数字典）</p>
+<p>返回值是构造好的 <code>payload</code></p>
+<h4 id="obstack-orw1-attack">obstack_orw1_attack</h4>
+<p>作用：这个函数就是在禁用了 <code>execve</code> 或者栈没对齐时使用的,攻击效果就是执行常规的 <code>orw</code>,和<code>obstack_attack</code> 不同的就是字典中多了几个成员</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">dirc=&#123;<span class="string">&#x27;io_obstack_jumps&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;open&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;read&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;write&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;svcudp_reply&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;add_rsp&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;leave_ret&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rdi&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rsi&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rdx_xxx&#x27;</span>:libc_base+xxx &#125;</span><br><span class="line"></span><br><span class="line">libc_symbols=create_dict(dirc) </span><br><span class="line">payload=obstack_attack(heap_addr,libc_symbols)</span><br></pre></td></tr></table></figure>
+<p>使用方法: <code>heap_addr</code> 是写入 <code>IO_list_all</code> 中的堆地址( <code>chunk</code> 头地址)<br>
+<code>libc_symbols</code> :是 <code>create_dict(dict)</code> 传入进来返回值（ <code>dirc</code> 是所需的参数字典）</p>
+<p>返回值是构造好的 <code>payload</code></p>
+<h4 id="obstack-orw2-attack">obstack_orw2_attack</h4>
+<p>这个是上一个的升级版,区别就是将 <code>open</code> 换成了 <code>openat</code> （有时候可能沙箱会禁用掉 <code>open</code>）,并且关闭标准输入流，将文件描述符 <code>0</code>  作为 <code>flag</code> 文件的文描述符,避免本地通了，远程打不通</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">dirc=&#123;<span class="string">&#x27;io_obstack_jumps&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;openat&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;close&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;read&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;write&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;svcudp_reply&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;add_rsp&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;leave_ret&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rdi&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rsi&#x27;</span>:libc_base+xxx ,<span class="string">&#x27;pop_rdx_xxx&#x27;</span>:libc_base+xxx &#125;</span><br><span class="line">libc_symbols=create_dict(dirc)</span><br><span class="line">payload=obstack_attack(heap_addr,libc_symbols)</span><br></pre></td></tr></table></figure>
+<p>使用方法: <code>heap_addr</code> 是写入 <code>IO_list_all</code> 中的堆地址( <code>chunk</code> 头地址)<br>
+<code>libc_symbols</code> :是 <code>create_dict(dict)</code> 传入进来返回值（ <code>dirc</code> 是所需的参数字典）</p>
+<p>返回值是构造好的 <code>payload</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/ad411136.html">https://zikh26.github.io/posts/ad411136.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/python/">python</a><a class="post-meta__tags" href="/tags/%E7%BC%96%E7%A8%8B/">编程</a><a class="post-meta__tags" href="/tags/%E5%B0%8F%E5%B7%A5%E5%85%B7/">小工具</a></div><div class="post_share"><div class="social-share" data-image="/img/9.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/b7f5642c.html"><img class="prev-cover" src="/img/huoche.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">vheap--pwnhub五月公开赛</div></div></a></div><div class="next-post pull-right"><a href="/posts/6967ee12.html"><img class="next-cover" src="/img/26.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">starctf2018_babystack</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/bd34f701.html" title="check_gadget--检测one_gadget能否使用的gdb命令"><img class="cover" src="/img/chengbao.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">check_gadget--检测one_gadget能否使用的gdb命令</div></div></a></div><div><a href="/posts/853f1673.html" title="patchup--命令行小工具"><img class="cover" src="/img/9.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">patchup--命令行小工具</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%8F%82%E6%95%B0%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">命令行参数：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%84%E4%B8%AA%E5%87%BD%E6%95%B0%E7%9A%84%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="toc-number">2.</span> <span class="toc-text">各个函数的使用说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#long-search-local-search"><span class="toc-number">2.1.</span> <span class="toc-text">long_search&amp;local_search</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log"><span class="toc-number">2.2.</span> <span class="toc-text">log</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-addr"><span class="toc-number">2.3.</span> <span class="toc-text">log_addr</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#log-info"><span class="toc-number">2.4.</span> <span class="toc-text">log_info</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#debug"><span class="toc-number">2.5.</span> <span class="toc-text">debug</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#load"><span class="toc-number">2.6.</span> <span class="toc-text">load</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shellcode-store"><span class="toc-number">2.7.</span> <span class="toc-text">shellcode_store</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#search-og"><span class="toc-number">2.8.</span> <span class="toc-text">search_og</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E6%A8%A1%E6%9D%BF"><span class="toc-number">2.9.</span> <span class="toc-text">攻击模板</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#obstack-attack"><span class="toc-number">2.9.1.</span> <span class="toc-text">obstack_attack</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#obstack-orw1-attack"><span class="toc-number">2.9.2.</span> <span class="toc-text">obstack_orw1_attack</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#obstack-orw2-attack"><span class="toc-number">2.9.3.</span> <span class="toc-text">obstack_orw2_attack</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结"><img src="/img/23.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于qemu逃逸的学习总结"/></a><div class="content"><a class="title" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结">关于qemu逃逸的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结"><img src="/img/10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于tcache stashing unlink attack的学习总结"/></a><div class="content"><a class="title" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结">关于tcache stashing unlink attack的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"><img src="/img/20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"/></a><div class="content"><a class="title" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题">关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/afa5cfa3.html" title="关于unlink的学习总结"><img src="/img/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于unlink的学习总结"/></a><div class="content"><a class="title" href="/posts/afa5cfa3.html" title="关于unlink的学习总结">关于unlink的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ccd7886.html" title="关于vm pwn的学习总结"><img src="/img/25.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于vm pwn的学习总结"/></a><div class="content"><a class="title" href="/posts/ccd7886.html" title="关于vm pwn的学习总结">关于vm pwn的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/9.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

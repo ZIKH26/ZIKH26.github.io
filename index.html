@@ -1,0 +1,236 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ZIKH26's Blog</title><meta name="keywords" content="CTF PWN IT"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ZIKH26&#39;s Blog">
+<meta property="og:url" content="https://zikh26.github.io/index.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/me.jpg">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="CTF PWN IT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/me.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ZIKH26\'s Blog',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2023-05-14 23:15:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/shuai.jpeg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">ZIKH26's Blog</h1><div id="site_social_icons"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="post_cover left"><a href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结"><img class="post_bg" src="/img/23.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于qemu逃逸的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结">关于qemu逃逸的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a><i class="fas fa-angle-right article-meta-link"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E8%B5%9B%E9%A2%98WP/">赛题WP</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/qemu%E9%80%83%E9%80%B8/">qemu逃逸</a></span></div><div class="content">前一段 VNCTF 2023 正好有一道非常入门 qemu 逃逸的题目，正好以此为契机进行 qemu 逃逸的入门学习，在这部分的学习中，要感谢 winmt 和 roderick 师傅解答我的一些困惑。
+前置知识
+QEMU与逃逸
+QEMU 是纯软件实现的虚拟化模拟器，可以模拟多种不同的计算机系统和硬件设备。虽然 QEMU 可以模拟出硬件或虚拟环境，但它本质上只是一个程序，所谓 qemu 逃逸是指攻击者利用 QEMU 实现的有漏洞的 PCI 设备来获取主机的权限。从虚拟机中 “逃出来”，其利用方式和平常用户程序执行 system 函数是一样的，只不过平常 PWN 题的触发方式是通过用户的输入进行触发，而 QEMU 虚拟机的设备漏洞通过运行在虚拟机上的用户程序对设备的 IO 交互来间接触发。
+PCI设备
+PCI 设备是符合 PCI 总线标准的设备，设备可以申请两类地址空间，分别是 memory space 和 I/O space ，CPU 通过 memory space 访问设备 I/O 的方式称为 memory mapped I/O，也就是 MMIO。通过 I/O space 访问设备 I ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结"><img class="post_bg" src="/img/10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于tcache stashing unlink attack的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结">关于tcache stashing unlink attack的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/tcache-stashing-unlink-attack/">tcache stashing unlink attack</a></span></div><div class="content">tcache stashing unlink attack
+
+介绍：在2.29的libc版本中，进行了unsorted bin的双向链表完整性检查。因此unsorted bin attack也就失效了，不过在libc2.29的版本中tcache stashing unlink attack却可以达到类似的效果(在一个任意地址写入一个libc地址)。
+原理：在2.29的libc中，如果我们需要的chunk位于了small bin里面，当我们将chunk从small bin拿出来的时候，还会去检查当前small bin链上是否还有剩余堆块，如果有的话并且tcache bin的链上还有空余位置(tcache bin不能为空)，就会将剩余的那个堆块给链入到tcache bin中。而将small bin中的堆块链入到tcache bin中的时候没有进行双向链表完整性的检查，此时攻击那个即将链入tcache bin的堆块的bk指针，即可向任意地址写入一个libc地址。
+注意：上述有一个看似矛盾的地方，如果tcache bin不为空并且没有满，才会将small bin里的堆块给链进来，但是tcach ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"><img class="post_bg" src="/img/20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题">关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E6%8E%A2%E7%A9%B6/">探究</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E6%A0%88%E5%AF%B9%E9%BD%90/">栈对齐</a></span></div><div class="content">有时候在做64位题目的时候会exp完全没问题，但就是获取不了shell。然后通过gdb调试发现是在最后的system函数执行的时候卡住了，然后就满脸疑惑，这也能卡？？？
+为什么执行system函数要栈对齐
+其实啊，64位ubuntu18以上系统调用system函数时是需要栈对齐的。再具体一点就是64位下system函数有个movaps指令，这个指令要求内存地址必须16字节对齐，如果你到system函数执行的时候，si单步进去就会发现，如果没对齐的话，最后就会卡在这里（如下图）。
+
+对齐？怎么才算对齐？
+因为64位程序的地址是8字节的，而十六进制又是满16就会进位，因此我们看到的栈地址末尾要么是0要么是8。如下图
+
+只有当地址的末尾是0的时候，才算是与16字节对齐了，如果末尾是8的话，那就是没有对齐。而我们想要在ubuntu18以上的64位程序中执行system函数，必须要在执行system地址末尾是0。
+下面两个图，分别是没对齐和对齐的情况。
+
+
+如果执行system的时候没有对齐怎么办？
+如果执行了一个对栈地址的操作指令（比如pop,ret,push等等，但如果是mov这样的则不算对 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/afa5cfa3.html" title="关于unlink的学习总结"><img class="post_bg" src="/img/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于unlink的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/afa5cfa3.html" title="关于unlink的学习总结">关于unlink的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E7%AF%A1%E6%94%B9got%E8%A1%A8/">篡改got表</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E5%A0%86%E6%BA%A2%E5%87%BA/">堆溢出</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/unlink/">unlink</a></span></div><div class="content">关于unlink的学习总结，我打算分成4个部分来说明，分别是unlink的利用整体思路、如何伪造fake_chunk、探究下unlink漏洞是如何实现的、相关题目的WP。我这篇博客并没有画图片来说明unlink的操作，我认为不是特别适合完全不懂unlink的师傅来参考学习，建议去看一些其他师傅一些画图说明unlink的博客，对unlink有个模糊的认识后，再看这篇文章应该效果最好
+对unlink的总结：
+1、unlink的整体利用思路为
+①、利用溢出伪造fake_chunk
+②、free掉引线堆块（也就是被溢出修改prev_size和size的chunk），从而触发unlink（注意chunk别跟top chunk合并了），同时引线堆块的大小一定要大于等于0x80，避免被free掉给放进了fastbin中。
+③、最后效果为fake_chunk的地址改为&amp;P-0x18
+④、通过edit功能修改bss段存放的chunk信息，进行泄露函数真实地址以及篡改函数的got表，从而获取shell。
+2、fake_chunk未必非要和引线堆块相邻，只要让引线堆块的地址减去自身的prev_siz ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/ccd7886.html" title="关于vm pwn的学习总结"><img class="post_bg" src="/img/25.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于vm pwn的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/ccd7886.html" title="关于vm pwn的学习总结">关于vm pwn的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/vm-pwn/">vm pwn</a></span></div><div class="content">总结：
+目前就做了两道vm pwn的题目先简单总结一下，这类题目逆向量较大，如果有分析不懂的函数或者某段指令可以尝试配合gdb动态调试观察某些寄存器或内存值的变化来猜测其功能。漏洞点大多为数组越界可以写或者任意读来劫持hook或者got表等等。不一定每个指令都要具体分析明白，个人认为去关注漏洞指令，其他指令用到哪个去简单分析哪个
+[OGeek2019 Final]OVM
+保护策略
+
+程序逻辑
+
+首先程序申请了一块堆空间，程序结束的时候可以往里面输入东西，然后将其释放掉。随后询问了PC和SP寄存器的值(所谓的寄存器就是在bss段上开辟的一片数组)，而pc和sp在这道题里没有任何用，接着要我们要输入指令的个数。
+
+上面代码的注释写的很清楚了，下面的代码在while循环里的部分是处理指令的部分，而最后read函数去往堆块里输入数据，再将这个堆块free掉
+
+在execute函数里将我们输入的每个指令都进行了分析，大概就是用c语言来实现了汇编的指令，首先每个指令都是四字节，最高字节是一个操作码(这个操作码用if来判断，这个指令是干啥的)，然后另外三个字节是操作数，以add指令为例，首先用HIB ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/82a683c0.html" title="关于侧信道爆破的学习总结"><img class="post_bg" src="/img/10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于侧信道爆破的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/82a683c0.html" title="关于侧信道爆破的学习总结">关于侧信道爆破的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E4%BE%A7%E4%BF%A1%E9%81%93%E7%88%86%E7%A0%B4/">侧信道爆破</a></span></div><div class="content">什么是侧信道爆破？
+侧信道攻击是一种非常有趣的攻击手法，在pwn中通常为侧信道爆破。我的理解是侧信道爆破是指在程序没有正常回显的情况下通过执行精心构造后的数据，获取一些程序的现象或反馈来确定最终正确的flag，这种反馈比如有程序回显的错误，或者死循环等等。
+
+使用前提：
+1、侧信道爆破需要执行我们编写的shellcode(因为程序中必然无法找到全部对应的gadget)，因此能够写入和执行一定字节的shellcode是必要的
+2、程序在禁用了execve系统调用后，同时关闭了标准输出流后，才有必要使用侧信道爆破。
+3、同时标准错误不能被关闭(因为我们需要它来反馈信息)，还必须要保证read可以从指定文件中读取flag，open或者openat系统调用要保证至少有一个可用。
+攻击效果：在程序禁用了部分系统调用并且关闭了正常回显后，通过程序反馈的信息对进行flag逐位爆破。
+
+侧信道爆破的整体思路:
+首先需要想办法在程序中写入一段shellcode并且能将其执行。然后我们先执行open系统调用(如果open被禁用的话可以使用openat系统调用)，将flag文件打开返回一个文件描述符，然后用 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/e734c492.html" title="关于SROP的学习总结"><img class="post_bg" src="/img/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于SROP的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/e734c492.html" title="关于SROP的学习总结">关于SROP的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/SROP/">SROP</a></span></div><div class="content">这个SROP是一种极其有趣的攻击方式，它是利用程序从内核层面切换到用户层面恢复上下文时的一个漏洞，该漏洞可以让我们自己自行设置所有寄存器里的值。
+在这之前我们要先去了解一下系统调用，因为这个漏洞就是在用户态和内核态切换发生的，提到系统调用，这里还要简单介绍一下用户态和内核态的相关知识。
+什么是用户态和内核态？
+用户态：
+CPU只能访问受限制的内存，并且不允许访问外围设备（就是不允许直接跟硬件产生关系）。此时的CPU不允许被独占，这就意味着此时的CPU可以被别的进程抢占。
+内核态：
+此时的CPU可以访问任何数据，包括外围设备，比如网卡，硬盘等等。并且此时的CPU可以从一个程序切换到另外一个程序，并且没有进程能够抢占CPU，因为此时内核态的特权级为0.
+为什么要区分用户态和内核态？
+用户态和内核态说到底就是CPU所执行的指令权限不同而划分的，而这样做的目的就是为了保护系统，在CPU的所有指令中，有一些指令是非常危险的，如果错用，将导致整个系统崩溃。比如：清内存、设置时钟等。
+怎么从用户态切换到内核态？
+用户态切换到内核态的3种方式：
+a. 系统调用（也是我们接下来要提到的重点）
+这是用户态 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/536aee5b.html" title="关于学习arm架构下的pwn的总结"><img class="post_bg" src="/img/34.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于学习arm架构下的pwn的总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/536aee5b.html" title="关于学习arm架构下的pwn的总结">关于学习arm架构下的pwn的总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/ARM%E6%9E%B6%E6%9E%84/">ARM架构</a></span></div><div class="content">通过这段时间对于arm架构的题目学习，自认为收获还是不少的。下面是对于这段时间关于arm架构的pwn题学习所进行的总结。（我其实还想再多做几道arm架构的栈题的，可是网上所找到的实在不多，等再遇到新的arm架构题目，我再添到这篇文章上吧）
+运行程序&amp;&amp;启动调试
+咋装的环境已经忘记了…（装完环境过了一段时间才开始arm架构的学习）装配环境的话，上网搜一下文章也不少。可以参考这篇文章  (26条消息) CTF pwn – ARM架构的pwn题详解___lifanxin的博客-CSDN博客
+记录一下怎么启动以及调试arm架构的程序。
+先checksec一下（或者用file命令也行），看看是什么架构的。
+
+
+file命令可以查看程序是动态链接还是静态链接。
+运行程序
+如果程序是静态链接并且是32位 arm架构的话，输入qemu-arm ./程序名
+如果程序是静态链接并且是aarch64架构的话，输入qemu-aarch ./程序名
+如果程序是动态链接且是32位 arm架构的话，输入qemu-arm -L  /usr/arm-linux-gnueabihf ./程序名
+如果程序是 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/ba418f23.html" title="关于ret2_dl_runtime_resolve的学习总结"><img class="post_bg" src="/img/20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ret2_dl_runtime_resolve的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/ba418f23.html" title="关于ret2_dl_runtime_resolve的学习总结">关于ret2_dl_runtime_resolve的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/ret2dl/">ret2dl</a></span></div><div class="content">这篇文章也算是集百家之长了，因为在学习ret2dlresolve这个高级rop的时候，师傅们可能都是因为实力比较强，因而在一些细节的地方没有解释为什么，如此在学习的时候，还是稍微有点吃力的，学习了很多位师傅的博客之后加上自己的一些思考才写出了这篇博客（我认为写的比较好的博客链接都放到文章最后了，我有的小细节可能忘记提到了，可以去这些师傅的博客上面看一下），也算是站在巨人的肩膀上学习了。
+在学习ret2dlresolve的时候，我建议先把_dl_runtime_resolve函数的运作流程搞透彻了再去做题，效果会好很多，不然直接上题的话，根本就不懂原理是怎么搞的。
+需要的前置知识：1、对延迟绑定机制的整体流程较为熟悉  2、对栈迁移的知识要比较熟悉  3、做题的时候，可能会遇见很多小细节问题，因此要具备gdb调试能力  4、如果可以的话，最好参考着glibc源码一起学习这部分内容（就是遇见不会的问题，可以从源码上下手试试），尽管我已经出示了用到的结构的源码，但我建议最好你的手里也有一份glibc源码  5、由于刚开始理解会异常的费劲，可能会需要几天才能理解透彻，所以学习这部分的内容还需要 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/4202235.html" title="关于ret2csu的学习总结"><img class="post_bg" src="/img/33.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ret2csu的学习总结"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/4202235.html" title="关于ret2csu的学习总结">关于ret2csu的学习总结</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-14T15:14:50.168Z" title="更新于 2023-05-14 23:14:50">2023-05-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/re2csu/">re2csu</a></span></div><div class="content">
+关于这个ret2csu，与其说它是一种题型，倒不如说这是一种方法（用于控制寄存器）
+
+什么是ret2csu？
+这个其实就是在程序中一般都会有一段万能的控制参数的gadgets，里面可以控制rbx,rbp,r12,r13,r14,r15以及rdx,rsi,edi的值，并且还可以call我们指定的地址。然后劫持程序执行流的时候，劫持到这个__libc_csu_init函数去执行（这个函数是用来初始化libc的，因此只要是动态链接的程序就都会有这个函数（至少我还没有遇见过特殊情况）），从而达到控制参数的目的。
+下面是__libc_csu_init的汇编代码。
+text:0000000000400540                 public __libc_csu_init.text:0000000000400540 __libc_csu_init proc near               ; DATA XREF: _start+16↑o.text:0000000000400540 ; __unwind &#123;.text:0000000000400540           ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span><a class="page-number" href="/page/2/#content-inner">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/#content-inner">10</a><a class="extend next" rel="next" href="/page/2/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结"><img src="/img/23.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于qemu逃逸的学习总结"/></a><div class="content"><a class="title" href="/posts/fabe43ff.html" title="关于qemu逃逸的学习总结">关于qemu逃逸的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结"><img src="/img/10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于tcache stashing unlink attack的学习总结"/></a><div class="content"><a class="title" href="/posts/12414989.html" title="关于tcache stashing unlink attack的学习总结">关于tcache stashing unlink attack的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"><img src="/img/20.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题"/></a><div class="content"><a class="title" href="/posts/75ba47d9.html" title="关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题">关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/afa5cfa3.html" title="关于unlink的学习总结"><img src="/img/8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于unlink的学习总结"/></a><div class="content"><a class="title" href="/posts/afa5cfa3.html" title="关于unlink的学习总结">关于unlink的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ccd7886.html" title="关于vm pwn的学习总结"><img src="/img/25.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于vm pwn的学习总结"/></a><div class="content"><a class="title" href="/posts/ccd7886.html" title="关于vm pwn的学习总结">关于vm pwn的学习总结</a><time datetime="2023-05-14T15:14:50.168Z" title="发表于 2023-05-14 23:14:50">2023-05-14</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/buu%E5%88%B7%E9%A2%98/"><span class="card-category-list-name">buu刷题</span><span class="card-category-list-count">23</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/"><span class="card-category-list-name">学习总结</span><span class="card-category-list-count">27</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E8%B5%9B%E9%A2%98WP/"><span class="card-category-list-name">赛题WP</span><span class="card-category-list-count">2</span></a></li></ul></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%B0%9D%E8%AF%95%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7/"><span class="card-category-list-name">尝试开发小工具</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8E%A2%E7%A9%B6/"><span class="card-category-list-name">探究</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95-%E5%88%86%E6%9E%90/"><span class="card-category-list-name">源码调试&&分析</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"><span class="card-category-list-name">环境搭建</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%A7%81%E6%88%BF%E8%8F%9C/"><span class="card-category-list-name">私房菜</span><span class="card-category-list-count">8</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/ARM%E6%9E%B6%E6%9E%84/" style="font-size: 1.17em; color: #999c9f">ARM架构</a> <a href="/tags/C/" style="font-size: 1.17em; color: #999c9f">C++</a> <a href="/tags/CSAPP/" style="font-size: 1.1em; color: #999">CSAPP</a> <a href="/tags/FSOP/" style="font-size: 1.23em; color: #999ea6">FSOP</a> <a href="/tags/IO-attack/" style="font-size: 1.1em; color: #999">IO attack</a> <a href="/tags/IO-FILE-attack/" style="font-size: 1.1em; color: #999">IO_FILE attack</a> <a href="/tags/MD5%E5%8A%A0%E5%AF%86/" style="font-size: 1.1em; color: #999">MD5加密</a> <a href="/tags/ROP/" style="font-size: 1.1em; color: #999">ROP</a> <a href="/tags/SROP/" style="font-size: 1.1em; color: #999">SROP</a> <a href="/tags/Safe-Linking/" style="font-size: 1.1em; color: #999">Safe-Linking</a> <a href="/tags/UAF/" style="font-size: 1.23em; color: #999ea6">UAF</a> <a href="/tags/close%E5%85%B3%E9%97%AD%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/" style="font-size: 1.1em; color: #999">close关闭文件描述符</a> <a href="/tags/docker/" style="font-size: 1.1em; color: #999">docker</a> <a href="/tags/double-free/" style="font-size: 1.17em; color: #999c9f">double free</a> <a href="/tags/global-max-fast/" style="font-size: 1.1em; color: #999">global_max_fast</a> <a href="/tags/house-of-apple/" style="font-size: 1.1em; color: #999">house of apple</a> <a href="/tags/house-of-banana/" style="font-size: 1.1em; color: #999">house of banana</a> <a href="/tags/house-of-botcake/" style="font-size: 1.1em; color: #999">house of botcake</a> <a href="/tags/house-of-cat/" style="font-size: 1.1em; color: #999">house of cat</a> <a href="/tags/house-of-force/" style="font-size: 1.1em; color: #999">house of force</a> <a href="/tags/house-of-husk/" style="font-size: 1.1em; color: #999">house of husk</a> <a href="/tags/house-of-orange/" style="font-size: 1.1em; color: #999">house of orange</a> <a href="/tags/ida%E6%96%B0%E5%BB%BA%E7%BB%93%E6%9E%84%E4%BD%93/" style="font-size: 1.1em; color: #999">ida新建结构体</a> <a href="/tags/io-leak/" style="font-size: 1.1em; color: #999">io leak</a> <a href="/tags/kernel/" style="font-size: 1.23em; color: #999ea6">kernel</a> <a href="/tags/kernel-Double-Fetch/" style="font-size: 1.1em; color: #999">kernel-Double Fetch</a> <a href="/tags/kernel-ROP/" style="font-size: 1.1em; color: #999">kernel-ROP</a> <a href="/tags/kernel-RW-Any-Memory/" style="font-size: 1.1em; color: #999">kernel-RW Any Memory</a> <a href="/tags/kernel-UAF/" style="font-size: 1.1em; color: #999">kernel-UAF</a> <a href="/tags/lab/" style="font-size: 1.43em; color: #99a6b9">lab</a> <a href="/tags/large-bin-attack/" style="font-size: 1.23em; color: #999ea6">large bin attack</a> <a href="/tags/magic-gadget/" style="font-size: 1.1em; color: #999">magic gadget</a> <a href="/tags/magic-gadget/" style="font-size: 1.37em; color: #99a4b2">magic_gadget</a> <a href="/tags/malloc-assert/" style="font-size: 1.1em; color: #999">malloc_assert</a> <a href="/tags/malloc-consolidate/" style="font-size: 1.1em; color: #999">malloc_consolidate</a> <a href="/tags/off-by-null/" style="font-size: 1.1em; color: #999">off by null</a> <a href="/tags/off-by-null/" style="font-size: 1.3em; color: #99a1ac">off_by_null</a> <a href="/tags/one-gadget/" style="font-size: 1.43em; color: #99a6b9">one_gadget</a> <a href="/tags/orw/" style="font-size: 1.5em; color: #99a9bf">orw</a> <a href="/tags/popal%E6%8C%87%E4%BB%A4/" style="font-size: 1.1em; color: #999">popal指令</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/05/"><span class="card-archive-list-date">五月 2023</span><span class="card-archive-list-count">93</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2022/10/"><span class="card-archive-list-date">十月 2022</span><span class="card-archive-list-count">1</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">94</div></div><div class="webinfo-item"><div class="item-name">已运行时间 :</div><div class="item-count" id="runtimeshow" data-publishDate="2022-10-06T00:00:00.000Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2023-05-14T15:15:10.479Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/shuai.jpeg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
