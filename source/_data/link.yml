@@ -1,0 +1,64 @@
+- class_name: 师傅们
+  link_list:
+    - name: h1J4cker
+      link: https://survive2.github.io/
+      avatar: https://pic3.zhimg.com/80/v2-5d62662e41cd0f9268ab8cc6f469efd6_720w.jpg
+      descr: 打堆贼拉猛的pwn师傅
+
+    - name: roderick
+      link: https://roderickchan.github.io/
+      avatar: https://roderickchan.github.io/img/avatar.png
+      descr: 无所不能的pwn师傅,也是pwncli的作者
+
+    - name: w4rd3n
+      link: https://hitworld.github.io/
+      avatar: https://hitworld.github.io/images/favicon.ico
+      descr: 很强很强的PWN师傅
+
+    - name: winmt
+      link: https://bbs.pediy.com/user-949925-1.htm
+      avatar: https://passport.kanxue.com/upload/avatar/925/949925.png?1648533946
+      descr: 实力恐怖如斯的pwn师傅
+
+    - name: BOY
+      link: http://boycc1.top/
+      avatar: /img/boy_ava.png
+      descr: 做内核的pwn师傅
+    
+    - name: 秋秋晚
+      link: https://lhxhl.github.io/
+      avatar: https://tva1.sinaimg.cn/large/e6c9d24egy1h23g1fyyodj20jg0jgwfd.jpg
+      descr: Web&&渗透测试&&Red Team学习ing
+
+    - name: 书鱼
+      link: https://bkfish.github.io/
+      avatar: https://bkfish.github.io/images/logo.png
+      descr: 传说中的书鱼giegie
+
+    - name: joker
+      link: https://clown-q.github.io/
+      avatar: https://s2.loli.net/2022/10/06/MpUwB2XViYQGP3L.jpg
+      descr: 妄想全栈的web狗
+
+    - name: 末心
+      link: https://blog.easyctf.cn/
+      avatar: http://q1.qlogo.cn/g?b=qq&nk=1044631097&s=100
+      descr: 这个师傅怎么什么都会
+
+    - name: Timochan
+      link: https://www.timochan.cn
+      avatar: https://api.timochan.cn/apc/objects/icon/svhozp8tzm9vv9tu1v.png
+      descr: Let's start learning
+
+
+    - name: GTL-JU
+      link: https://gtl-ju.github.io/
+      avatar: https://gtl-ju.github.io/images/logo.png
+      descr: WEB👶
+
+    - name: AVA
+      link: https://e1ectr0nlc.github.io/
+      avatar: https://jublog.oss-cn-beijing.aliyuncs.com/image/a.jpg
+      descr: Csgo高玩
+
+
