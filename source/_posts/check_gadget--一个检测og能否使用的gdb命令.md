@@ -1,5 +1,6 @@
 ---
 title: check_gadget--检测one_gadget能否使用的gdb命令
+top: 36
 tags:
   - python
   - 编程

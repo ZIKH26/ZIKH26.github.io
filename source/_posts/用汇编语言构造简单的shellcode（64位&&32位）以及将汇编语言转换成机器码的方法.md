@@ -1,5 +1,6 @@
 ---
 title: 用汇编语言构造简单的shellcode（64位&&32位）以及将汇编语言转换成机器码的方法
+top: 2
 tags: shellcode编写
 categories: 学习总结
 abbrlink: 5062ac9d

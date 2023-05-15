@@ -1,5 +1,6 @@
 ---
 title: 未初始化漏洞--strcat函数溢出
+top: 28
 tags:
   - 未初始化漏洞
   - lab

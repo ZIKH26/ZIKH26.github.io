@@ -1,5 +1,6 @@
 ---
 title: CSAPP-第一章 计算机系统漫游（笔记）
+top: 5
 tags: CSAPP
 categories: 读书笔记
 abbrlink: 6329566d

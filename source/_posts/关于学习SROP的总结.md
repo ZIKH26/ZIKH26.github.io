@@ -1,5 +1,6 @@
 ---
 title: 关于SROP的学习总结
+top: 7
 tags: SROP
 categories: 学习总结
 abbrlink: e734c492

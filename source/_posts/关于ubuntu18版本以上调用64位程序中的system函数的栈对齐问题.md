@@ -1,5 +1,6 @@
 ---
 title: 关于ubuntu18版本以上调用64位程序中的system函数的栈对齐问题
+top: 10
 tags: 栈对齐
 categories: 探究
 abbrlink: 75ba47d9

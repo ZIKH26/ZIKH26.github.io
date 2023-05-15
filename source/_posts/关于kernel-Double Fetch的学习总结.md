@@ -1,5 +1,6 @@
 ---
 title: 关于 kernel-Double Fetch 的学习总结
+top: 44
 tags:
   - kernel-Double Fetch
   - kernel

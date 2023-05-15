@@ -1,5 +1,6 @@
 ---
 title: 关于ret2csu的学习总结
+top: 6
 tags: re2csu
 categories: 学习总结
 abbrlink: '4202235'

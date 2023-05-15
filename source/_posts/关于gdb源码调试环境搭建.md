@@ -1,5 +1,6 @@
 ---
 title: 关于gdb源码调试环境搭建
+top: 12
 categories: 环境搭建
 abbrlink: c5c57579
 tags:

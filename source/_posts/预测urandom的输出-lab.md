@@ -1,5 +1,6 @@
 ---
 title: 预测urandom的输出
+top: 29
 tags:
   - urandom
   - lab

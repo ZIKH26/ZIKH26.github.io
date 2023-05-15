@@ -1,5 +1,6 @@
 ---
 title: 关于ret2_dl_runtime_resolve的学习总结
+top: 8
 tags: ret2dl
 categories: 学习总结
 abbrlink: ba418f23

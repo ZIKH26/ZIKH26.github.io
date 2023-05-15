@@ -1,5 +1,6 @@
 ---
 title: 探究pwntools中sendline的回车所造成的影响（什么时候用sendline，什么时候用send）
+top: 4
 tags: 探究
 categories: 探究
 abbrlink: 9fda4edb
