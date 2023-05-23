@@ -1,0 +1,244 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>使用realloc函数来调整栈帧让one_gadget生效 | ZIKH26's Blog</title><meta name="keywords" content="realloc调整栈帧"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="使用one_gadget的时候，必须要满足一定条件，如果所有one_gadget都没有满足条件，那么我们可以使用realloc函数来调整栈帧打one_gadget。本文以2.23的libc版本中的realloc函数举例说明使用realloc函数是如何调整栈帧打one_gadget的，但是在不同的libc版本中，realloc函数的具体汇编代码也不同，就导致了从在不同libc版本中的realloc函">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用realloc函数来调整栈帧让one_gadget生效">
+<meta property="og:url" content="https://zikh26.github.io/posts/f7fd9662.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="使用one_gadget的时候，必须要满足一定条件，如果所有one_gadget都没有满足条件，那么我们可以使用realloc函数来调整栈帧打one_gadget。本文以2.23的libc版本中的realloc函数举例说明使用realloc函数是如何调整栈帧打one_gadget的，但是在不同的libc版本中，realloc函数的具体汇编代码也不同，就导致了从在不同libc版本中的realloc函">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/15.jpg">
+<meta property="article:published_time" content="2023-05-14T23:36:47.465Z">
+<meta property="article:modified_time" content="2022-10-08T02:24:48.373Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="realloc调整栈帧">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/15.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/f7fd9662"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '使用realloc函数来调整栈帧让one_gadget生效',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-10-08 10:24:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/15.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">使用realloc函数来调整栈帧让one_gadget生效</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.465Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.373Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E6%8E%A2%E7%A9%B6/">探究</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/f7fd9662.html" data-flag-title="使用realloc函数来调整栈帧让one_gadget生效"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>使用one_gadget的时候，必须要满足一定条件，如果所有one_gadget都没有满足条件，那么我们可以使用realloc函数来调整栈帧打one_gadget。<strong>本文以2.23的libc版本中的realloc函数举例说明使用realloc函数是如何调整栈帧打one_gadget的，但是在不同的libc版本中，realloc函数的具体汇编代码也不同，就导致了从在不同libc版本中的realloc函数的相同偏移处开始执行，最终调整的栈帧也是不同的，因此在实际的做题中，去一个一个尝试偏移会比计算出能使one_gadget生效的realloc函数偏移更快。</strong></p>
+<h2 id="怎么看one-gadget是否满足条件？"><a href="#怎么看one-gadget是否满足条件？" class="headerlink" title="怎么看one_gadget是否满足条件？"></a>怎么看one_gadget是否满足条件？</h2><p>下图是one_gadget的使用条件</p>
+<p><img src="/../img/2706180-20220628225909669-1798755531.png"></p>
+<p>然后下图此时的__malloc_hook已经被修改为one_gadget了，并且此时准备执行calloc函数（这里先理解成malloc就行，利用手法是一样的），然后si单步进去（如下图）</p>
+<p><img src="/../img/2706180-20220628225923066-1597735649.png"></p>
+<p>然后单步到这里（如下图），此时就执行了__malloc_hook中的内容，也就是将要执行我们的one_gadget</p>
+<p><img src="/../img/2706180-20220628225939650-1778459149.png"></p>
+<p>然后我们再si进去（如下图）</p>
+<p><img src="/../img/2706180-20220628225951021-1292507958.png"></p>
+<p>然后我们看此时的是否满足one_gadget的执行条件</p>
+<p><img src="/../img/2706180-20220628230006304-1061222448.png"></p>
+<p>先看rax寄存器的值（如下图），发现不为0（NULL)，因此第一个one_gadget不能用</p>
+<p><img src="/../img/2706180-20220628230018106-1085476136.png"></p>
+<p>然后看[rsp+0x30]的值(如下图)，发现也不为0(NULL)，因此第二个也不能用</p>
+<p><img src="/../img/2706180-20220628230035203-2099513409.png"></p>
+<p>然后依次类推，发现[rsp+0x50]和[rsp+0x70]的地方也都不为0（如下图）</p>
+<p><img src="/../img/2706180-20220628230048946-428826209.png"></p>
+<p>至此，四个one_gadget全部失效。因此我们要用realloc函数来调整栈帧，从而使one_gadget能够使用。</p>
+<h2 id="为什么我们用realloc函数调整栈帧？"><a href="#为什么我们用realloc函数调整栈帧？" class="headerlink" title="为什么我们用realloc函数调整栈帧？"></a>为什么我们用realloc函数调整栈帧？</h2><p>我认为原因有两个<strong>（根本原因是第一个）</strong>：</p>
+<blockquote>
+<p> 第一、realloc函数存在一个__realloc_hook（执行realloc的时候会判断__realloc_hook是否为空，如果不为空，则执行__realloc_hook指向的内容），同时__realloc_hook和__malloc_hook的地址是挨着的（如下图），这就意味着我们覆写__malloc_hook的时候可以顺便控制__realloc_hook。<strong>因此我们把__malloc_hook改成__realloc_hook然后__realloc_hook写入one_gaget，最后依然可以执行one_gadget</strong></p>
+</blockquote>
+<p><img src="/../img/2706180-20220628230103153-137562286.png"></p>
+<blockquote>
+<p>第二、realloc函数中有大量的push指令（如下图）（在执行__realloc_hook之前），因此我们将realloc函数的地址加上一定的偏移，就可以选择去执行一定量的push指令，从而抬高栈帧（我指的抬高栈帧是栈帧又向着低地址增长了）。这样rsp增加了之后，我们就可以控制例如rsp+0x30，让其内存值正好落在0处。</p>
+</blockquote>
+<p><img src="/../img/2706180-20220628230122415-749325713.png"></p>
+<h2 id="具体怎么用realloc函数调整栈帧"><a href="#具体怎么用realloc函数调整栈帧" class="headerlink" title="具体怎么用realloc函数调整栈帧"></a>具体怎么用realloc函数调整栈帧</h2><p>首先看一下上面的图片，其中有6个push指令和一个sub rsp,0x38指令。<strong>这些指令都是把栈帧抬高（我说的抬高是指栈向低地址增长），然后抬高栈帧之后去执行one_gadget。(以[rsp+0x30]这个条件为例)这就意味着我们必须去[rsp+0x30]的上面(也就是低地址处)寻找0</strong> (这句话您细品)</p>
+<p>然后将realloc函数地址加上不同的偏移，就可以执行一定数量的push和sub rsp,0x38指令(因为可以跳过一定个数的指令)。先考虑一下直接从0x846c0这个地址（先忽略PIE造成的影响）开始执行。这样到执行one_gadget之前有6个push和一个sub rsp,0x38指令，这将栈帧抬高了0x68(0x8<em>6+0x38),但是别忘了由于多call了一次(call了realloc函数，然后又去call one_gadget，但是原本只有一次call one_gadget)，*<em>因此多执行了一次压栈指令，所以最终直接执行realloc函数，栈帧抬高了0x70字节（就是将原本的rsp变成了rsp-0x70）</em></em></p>
+<p>如果执行realloc函数栈帧最少抬高多少呢？</p>
+<blockquote>
+<p>最少肯定是只抬高八字节(也就是仅仅多了一次call时执行的压栈指令)，<strong>这里我们先不考虑这种情况，假设必须要执行一次对栈操作指令，那么执行一次realloc函数最少应该抬高0x40个字节（sub rsp,0x38让rsp-0x38再加上call时的压栈指令）</strong></p>
+</blockquote>
+<h2 id="结论："><a href="#结论：" class="headerlink" title="结论："></a>结论：</h2><blockquote>
+<p><strong>当使用realloc函数调整栈帧时，我们可以将rsp增加（这个增加指的是栈向低地址增长）的范围控制在 0x40与0x70之间</strong>(如果不考虑最低0x8字节的话)，<strong>为了满足one_gadget的条件，只要rsp-0x40与rsp-0x70之间存在一个为0的内存单元，那么我们就可以控制realloc函数中push的数量来满足条件（控制的方法就是将realloc函数的地址加上偏移来跳过一定量的push指令）。</strong></p>
+<p>以[rsp+0x30]&#x3D;NULl这个条件为例，加上rsp-0x40与rsp-0x70这个范围。也就是说最后要在rsp-0x10与rsp-0x40找一块值为0成内存单元。</p>
+</blockquote>
+<h2 id="举例演示："><a href="#举例演示：" class="headerlink" title="举例演示："></a>举例演示：</h2><p>现在我已经发现四个one_gadget全部失效，然后我想看看其中一个one_gadget [rsp+0x30]经过调整栈帧后能否使用，先去看rsp-0x10与rsp-0x40 这个范围是否存在值为0的内存。</p>
+<p><img src="/../img/2706180-20220628230144252-305430597.png"></p>
+<p>这个0的地址是0x7ffc5f3b9ca0，如果将realloc函数对栈操作指令全部执行完的话，那么rsp-0x30的位置就是0x7ffc5f3b9c98，我们少执行一个push的话，那么rsp-0x30就会变成0x7ffc5f3b9ca0。因此判断出来我们写入realloc地址+2(push指令长度为2字节)就可以让one_gadget生效（因为跳过了一次push指令）</p>
+<p>下图为realloc调整栈帧处的exp。</p>
+<p><img src="/../img/2706180-20220628230300587-674729075.png"></p>
+<p>可以看见下图已经说明这个one_gadget已经生效，我们获取了shell</p>
+<p><img src="/../img/2706180-20220628230324633-1114978079.png"></p>
+<h2 id="one-gadget的条件是获取shell的充分条件"><a href="#one-gadget的条件是获取shell的充分条件" class="headerlink" title="one_gadget的条件是获取shell的充分条件"></a>one_gadget的条件是获取shell的充分条件</h2><p>如果这道题你已经掌握了上面介绍realloc调整栈帧的话，其实就已经是结束了。不过在最后我又学了一个更重要的细节。<strong>还是上面的脚本最后如果实际调一下的话，发现__malloc_hook里写realloc+1或者realloc+3或者直接写realloc地址都可以获取shell。</strong>（如下图）</p>
+<p><img src="/../img/2706180-20220628230336256-1198676526.png"></p>
+<p>这是为什么？这是否意味着上面我们的结论有误？</p>
+<p>探究一下便知。首先调试一下__malloc_hook里写入realloc函数的地址 这个情况。</p>
+<p><img src="/../img/2706180-20220628230347653-575952863.png"></p>
+<p>发现[rsp+0x30]处居然不为0，但是却能成功获取shell（如下）</p>
+<p><img src="/../img/2706180-20220628230402532-554880588.png"></p>
+<p>想解释这个原因，还要从execve函数下手。</p>
+<p>通常我们认为获取shell就要写执行execve(“&#x2F;bin&#x2F;sh”,0,0)才可以，但是后两个参数真的一定要为0么？</p>
+<p><img src="/../img/2706180-20220628230420596-268174659.png"></p>
+<p>它这段第一句的意思就是说argv是个传递新程序的字符串数组，说实话这句我理解也不是太深，但是能获取到两个信息。<strong>首先这个argv数组里面装的是指针（因为实际上是指针指向了字符数组(字符串使用字符串数组进行存储)的地址），其次这个数组要以NULL结尾，envp参数也是一样。</strong></p>
+<p><strong>也就是说只要argv这个地方里面放了个指针并且是NULL结尾，至于指针指向的是不是字符串已经无所谓了，而此时的情况就是argv里面放了个指针，并且是NULL结尾(如下图)</strong></p>
+<p><img src="/../img/2706180-20220628230432185-381323556.png"></p>
+<p>虽然这个指针指向的是数字1，不过依然最终也可以获取shell。</p>
+<p>同时也可以做一个小测试,就是将argv里面放个Int类型的指针，指向整数，看看execve函数还能否获取shell。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> arg, <span class="type">char</span> **args)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> *p;</span><br><span class="line">    <span class="type">int</span> a=<span class="number">1</span>;</span><br><span class="line">    p=&amp;a;</span><br><span class="line">    <span class="type">char</span> *argv[]=&#123;p,<span class="literal">NULL</span>&#125;;</span><br><span class="line">    <span class="type">char</span> *envp[]=&#123;<span class="number">0</span>,<span class="literal">NULL</span>&#125;;</span><br><span class="line"></span><br><span class="line">    execve(<span class="string">&quot;/bin/sh&quot;</span>,argv,envp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/../img/2706180-20220628230451741-973872450.png"></p>
+<p>发现是成功的又开启了一个shell。</p>
+<blockquote>
+<p>因此得出结论，one_gadget的生效条件是获取shell的充分条件，也就是说获取shell不一定要满足one_gadget的条件。</p>
+</blockquote>
+<p>为什么realloc+1和realloc+3也能获取shell呢？</p>
+<p>通过调试发现realloc+1和realloc+3开始执行的话，执行的并不是正确的机器码<strong>，而是机器码进行了错位。不过正好错位之后，依然是个push指令，导致了realloc+1其实和realloc的栈中情况是一样的，而realloc+3和realloc+2的栈中情况是一样的</strong>。（如下图）</p>
+<p><img src="/../img/2706180-20220628230506076-1711403249.png"></p>
+<p>由此可见，即使机器码错位，但push指令依然没变，仅仅变的是push后面的寄存器。所以并不改变栈帧</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/f7fd9662.html">https://zikh26.github.io/posts/f7fd9662.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/realloc%E8%B0%83%E6%95%B4%E6%A0%88%E5%B8%A7/">realloc调整栈帧</a></div><div class="post_share"><div class="social-share" data-image="/img/15.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/992e244b.html"><img class="prev-cover" src="/img/lunchuan.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">BUUCTF_jarvisoj_guess</div></div></a></div><div class="next-post pull-right"><a href="/posts/7bda138.html"><img class="next-cover" src="/img/lunchuan.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">BUUCTF_鹏城杯_2018_treasure</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E7%9C%8Bone-gadget%E6%98%AF%E5%90%A6%E6%BB%A1%E8%B6%B3%E6%9D%A1%E4%BB%B6%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">怎么看one_gadget是否满足条件？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E4%BB%AC%E7%94%A8realloc%E5%87%BD%E6%95%B0%E8%B0%83%E6%95%B4%E6%A0%88%E5%B8%A7%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">为什么我们用realloc函数调整栈帧？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E6%80%8E%E4%B9%88%E7%94%A8realloc%E5%87%BD%E6%95%B0%E8%B0%83%E6%95%B4%E6%A0%88%E5%B8%A7"><span class="toc-number">3.</span> <span class="toc-text">具体怎么用realloc函数调整栈帧</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA%EF%BC%9A"><span class="toc-number">4.</span> <span class="toc-text">结论：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BE%E4%BE%8B%E6%BC%94%E7%A4%BA%EF%BC%9A"><span class="toc-number">5.</span> <span class="toc-text">举例演示：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget%E7%9A%84%E6%9D%A1%E4%BB%B6%E6%98%AF%E8%8E%B7%E5%8F%96shell%E7%9A%84%E5%85%85%E5%88%86%E6%9D%A1%E4%BB%B6"><span class="toc-number">6.</span> <span class="toc-text">one_gadget的条件是获取shell的充分条件</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="D-Link DIR-815路由器溢出漏洞分析"/></a><div class="content"><a class="title" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析">D-Link DIR-815路由器溢出漏洞分析</a><time datetime="2023-05-23T05:07:26.119Z" title="发表于 2023-05-23 13:07:26">2023-05-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础"><img src="/img/24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="IOT安全入门学习--MIPS汇编基础"/></a><div class="content"><a class="title" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础">IOT安全入门学习--MIPS汇编基础</a><time datetime="2023-05-15T07:51:54.338Z" title="发表于 2023-05-15 15:51:54">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T23:36:47.683Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/29.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T23:36:47.680Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="虎符CTF2022 babygame"/></a><div class="content"><a class="title" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame">虎符CTF2022 babygame</a><time datetime="2023-05-14T23:36:47.677Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/15.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

