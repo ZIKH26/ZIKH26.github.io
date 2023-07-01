@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="前一段 VNCTF 2023 正好有一道非常入门 qemu 逃逸的题目，正好以此为契机进行 qemu 逃逸的入门学习，在这部分的学习中，要感谢 winmt 和 roderick 师傅解答我的一些困惑。 前置知识QEMU与逃逸QEMU 是纯软件实现的虚拟化模拟器，可以模拟多种不同的计算机系统和硬件设备。虽然 QEMU 可以模拟出硬件或虚拟环境，但它本质上只是一个程序，所谓 qemu 逃逸是指攻击者利">
 <meta property="og:type" content="article">
@@ -81,7 +81,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202303161822783.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202303161822719.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.621Z">
-<meta property="article:modified_time" content="2023-05-15T00:58:52.545Z">
+<meta property="article:modified_time" content="2023-07-01T08:50:01.884Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="qemu逃逸">
 <meta name="twitter:card" content="summary">
@@ -118,6 +118,9 @@
       <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
@@ -138,6 +141,10 @@
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
 
 
 
@@ -166,6 +173,8 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
   <p class="site-author-name" itemprop="name">ZIKH26</p>
   <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
 </div>
@@ -214,7 +223,7 @@
     <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/fabe43ff.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
       <meta itemprop="name" content="ZIKH26">
     </span>
 
@@ -239,9 +248,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:58:52" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 16:50:01" itemprop="dateModified" datetime="2023-07-01T16:50:01+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -268,6 +283,10 @@
     
     <div class="post-body" itemprop="articleBody"><p>前一段 <code>VNCTF 2023</code> 正好有一道非常入门 <code>qemu</code> 逃逸的题目，正好以此为契机进行 <code>qemu</code> 逃逸的入门学习，在这部分的学习中，要感谢 <strong>winmt</strong> 和 <strong>roderick</strong> 师傅解答我的一些困惑。</p>
 <h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><h3 id="QEMU与逃逸"><a href="#QEMU与逃逸" class="headerlink" title="QEMU与逃逸"></a>QEMU与逃逸</h3><p><code>QEMU</code> 是纯软件实现的虚拟化<strong>模拟器</strong>，可以模拟多种不同的计算机系统和硬件设备。虽然 <code>QEMU</code> 可以模拟出硬件或虚拟环境，但它本质上只是一个程序，所谓 <code>qemu</code> 逃逸是指攻击者利用 <code>QEMU</code> 实现的有漏洞的 <code>PCI</code> 设备来获取主机的权限。从虚拟机中 “逃出来”，其利用方式和平常用户程序执行 <code>system</code> 函数是一样的，只不过平常 <code>PWN</code> 题的触发方式是通过用户的输入进行触发，而 <code>QEMU</code> 虚拟机的设备漏洞通过运行在虚拟机上的用户程序对设备的 <code>IO</code> 交互来间接触发。</p>
+<span id="more"></span>
+
+
+
 <h3 id="PCI设备"><a href="#PCI设备" class="headerlink" title="PCI设备"></a>PCI设备</h3><p><code>PCI</code> 设备是符合 <code>PCI</code> 总线标准的设备，设备可以申请两类地址空间，分别是 <code>memory space</code> 和 <code>I/O space</code> ，<code>CPU</code> 通过 <code>memory space</code> 访问设备 <code>I/O</code> 的方式称为 <code>memory mapped I/O</code>，也就是 <code>MMIO</code>。通过 <code>I/O space</code> 访问设备 <code>I/O</code> 的方式称为 <code>port mapped I/O</code>，即 <code>PMIO</code>。</p>
 <h3 id="MMIO"><a href="#MMIO" class="headerlink" title="MMIO"></a>MMIO</h3><p><code>MMIO</code> 是指将 <code>I/O</code> 设备的寄存器映射到系统内存地址空间中的一种机制 ，它使用相同的地址总线来处理内存和 <code>I/O</code> 设备，<code>I/O</code> 设备的内存和寄存器被映射到与之相关联的地址。当 <code>CPU</code> 访问某个内存地址时，它可能是物理内存，也可以是某个 <code>I/O</code> 设备的内存，用于访问内存的  <code>CPU</code> 指令也可来访问 <code>I/O</code> 设备。每个 <code>I/O</code> 设备监视 <code>CPU</code> 的地址总线，一旦 <code>CPU</code> 访问分配给它的地址，它就做出响应，将数据总线连接到需要访问的设备硬件寄存器。为了容纳<code> I/O</code>设备，<code>CPU</code> 必须预留给<code>I/O</code> 一个地址区域，该地址区域不能给物理内存使用。</p>
 <p>如果能理解上面所说的 <code>MMIO</code> ，那么就不得不提 <code>xxx_mmio_read</code> 和 <code>xxx_mmio_write</code> 这两个函数了（ <code>xxx</code> 是设备名），<code>xxx_mmio_read</code> 函数用于从虚拟设备的 <code>MMIO</code> 地址空间中读取数据，而 <code>xxx_mmio_write</code> 函数则是向指定的 <code>MMIO</code> 地址空间中写入数据。<code>qemu</code> 会监听读写操作，当监听到读写后，就会调用这两个函数。</p>
@@ -656,19 +675,13 @@
     </span>
     <span class="author" itemprop="copyrightHolder">ZIKH26</span>
   </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
   </footer>
 
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
   <div class="back-to-top" role="button" aria-label="返回顶部">
     <i class="fa fa-arrow-up fa-lg"></i>
     <span>0%</span>
@@ -681,7 +694,7 @@
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
   
 

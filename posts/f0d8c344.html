@@ -17,14 +17,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="写在前面：通过学习house of orange，又对unsorted bin attack以及FSOP有了一些新的理解。说到底house of orange本身的效果很小，但加上两个组合拳(unsorted bin attack和FSOP)则威力就会变的很大。这篇文章我将对这三种手法都详细记录一下原理和利用方式，最后放上例题。 总结：在此，先对house of orange以及后续整体的流程简单">
+    <meta name="description" content="写在前面：通过学习house of orange，又对unsorted bin attack以及FSOP有了一些新的理解。说到底house of orange本身的效果很小，但加上两个组合拳(unsorted bin attack和FSOP)则威力就会变的很大。这篇文章我将对这三种手法都详细记录一下原理和利用方式，最后放上例题。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="关于house of orange(unsorted bin attack &amp;&amp;FSOP)的学习总结">
 <meta property="og:url" content="https://zikh26.github.io/posts/f0d8c344.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="写在前面：通过学习house of orange，又对unsorted bin attack以及FSOP有了一些新的理解。说到底house of orange本身的效果很小，但加上两个组合拳(unsorted bin attack和FSOP)则威力就会变的很大。这篇文章我将对这三种手法都详细记录一下原理和利用方式，最后放上例题。 总结：在此，先对house of orange以及后续整体的流程简单">
+<meta property="og:description" content="写在前面：通过学习house of orange，又对unsorted bin attack以及FSOP有了一些新的理解。说到底house of orange本身的效果很小，但加上两个组合拳(unsorted bin attack和FSOP)则威力就会变的很大。这篇文章我将对这三种手法都详细记录一下原理和利用方式，最后放上例题。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220920201613897-1312734603.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220920201634834-439114022.png">
@@ -48,7 +48,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221019205404478.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007234548743.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.602Z">
-<meta property="article:modified_time" content="2023-05-15T00:52:08.012Z">
+<meta property="article:modified_time" content="2023-07-01T09:03:41.751Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="FSOP">
 <meta property="article:tag" content="house of orange">
@@ -87,6 +87,9 @@
       <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
@@ -107,6 +110,10 @@
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
 
 
 
@@ -135,6 +142,8 @@
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
   <p class="site-author-name" itemprop="name">ZIKH26</p>
   <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
 </div>
@@ -183,7 +192,7 @@
     <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/f0d8c344.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
       <meta itemprop="name" content="ZIKH26">
     </span>
 
@@ -208,9 +217,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:52:08" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 17:03:41" itemprop="dateModified" datetime="2023-07-01T17:03:41+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -232,6 +247,8 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="写在前面："><a href="#写在前面：" class="headerlink" title="写在前面："></a>写在前面：</h2><p>通过学习house of orange，又对unsorted bin attack以及FSOP有了一些新的理解。说到底house of orange本身的效果很小，但加上两个组合拳(unsorted bin attack和FSOP)则威力就会变的很大。这篇文章我将对这三种手法都详细记录一下原理和利用方式，最后放上例题。</p>
+<span id="more"></span>
+
 <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>在此，先对house of orange以及后续整体的流程简单总结一下：</p>
 <blockquote>
 <p> 最开始我们先用house of orange将原本的top chunk放入unsorted bin中。然后利用溢出篡改unsorted bin里的chunk的size为0x60，同时还篡改了该chunk的bk指针。最后我们申请一个任意大小的chunk，开始触发攻击链，首先ptmalloc会先遍历unsorted bin(此时前面已经遍历了fast bin和small bin)，ptmalloc的策略是一边遍历unsorted bin尝试寻找和自己需要的size完全相同的chunk，一边给不符合条件的chunk分下类(也就是放到small bin或者large bin)。在分类的时候就会将在unsorted bin上的chunk给脱链，然后触发unsorted bin attack，此时的IO_list_all被写入main_arena+88的地址，然后发现chunk的size为0x60，于是给划分到了small bin里。而_IO_2_1_stderr的_chain字段正好落在了small bin[0x60]上，于是乎我们就控制了_IO_2_1_stdout里的内容。然后为了接下来的FSOP攻击做好布局(控制stdout结构体其实就是堆溢出来编辑最开始进入的那个unsorted bin里的堆块内容)。然后ptmalloc还会继续去遍历unsorted bin(因为unsorted bin被unsorted bin attack攻击破坏的原因，让ptmalloc以为unsorted bin还有chunk)，但是此时的victim(也就是当前unsorted bin准备链出的chunk)已经是最开始覆盖unsorted bin bk的值了(也就是IO_list_all-0x10)。然此时的victim-&gt;size为0，没有通过检查，于是就触发了malloc_printerr，调用了abort，最终刷新所有文件流的时候，到stdout结构体时触发了FSOP，成功获取shell。</p>
@@ -430,19 +447,13 @@
     </span>
     <span class="author" itemprop="copyrightHolder">ZIKH26</span>
   </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
   </footer>
 
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
   <div class="back-to-top" role="button" aria-label="返回顶部">
     <i class="fa fa-arrow-up fa-lg"></i>
     <span>0%</span>
@@ -455,7 +466,7 @@
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
   
 

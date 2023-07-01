@@ -17,14 +17,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="前言作为一个 pwner ，对 one_gadget 肯定不会陌生，如果在能劫持执行流的前提下， one_gadget 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 shell 的操作，因为执行 system(&quot;&#x2F;bin&#x2F;sh\x00&quot;) 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 one_gadget 可以说是方便又迅">
+    <meta name="description" content="作为一个 pwner ，对 one_gadget 肯定不会陌生，如果在能劫持执行流的前提下， one_gadget 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 shell 的操作，因为执行 system(&quot;&#x2F;bin&#x2F;sh\x00&quot;) 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 one_gadget 可以说是方便又迅速。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="check_gadget--检测one_gadget能否使用的gdb命令">
 <meta property="og:url" content="https://zikh26.github.io/posts/bd34f701.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="前言作为一个 pwner ，对 one_gadget 肯定不会陌生，如果在能劫持执行流的前提下， one_gadget 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 shell 的操作，因为执行 system(&quot;&#x2F;bin&#x2F;sh\x00&quot;) 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 one_gadget 可以说是方便又迅">
+<meta property="og:description" content="作为一个 pwner ，对 one_gadget 肯定不会陌生，如果在能劫持执行流的前提下， one_gadget 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 shell 的操作，因为执行 system(&quot;&#x2F;bin&#x2F;sh\x00&quot;) 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 one_gadget 可以说是方便又迅速。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302081628082.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302081627797.png">
@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302081611903.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302081641185.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.478Z">
-<meta property="article:modified_time" content="2023-05-15T00:56:19.164Z">
+<meta property="article:modified_time" content="2023-07-01T08:57:51.255Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="python">
 <meta property="article:tag" content="编程">
@@ -72,6 +72,9 @@
       <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
     </div>
   </div>
 
@@ -92,6 +95,10 @@
 
 
 
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
 
 
 
@@ -114,12 +121,14 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%95%88%E6%9E%9C"><span class="nav-number">2.</span> <span class="nav-text">使用效果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">4.</span> <span class="nav-text">设计思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">如何使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="nav-number">6.</span> <span class="nav-text">源代码</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%95%88%E6%9E%9C"><span class="nav-number">1.</span> <span class="nav-text">使用效果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">设计思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">如何使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">源代码</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
   <p class="site-author-name" itemprop="name">ZIKH26</p>
   <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
 </div>
@@ -168,7 +177,7 @@
     <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/bd34f701.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
       <meta itemprop="name" content="ZIKH26">
     </span>
 
@@ -193,9 +202,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:56:19" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 16:57:51" itemprop="dateModified" datetime="2023-07-01T16:57:51+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -216,8 +231,10 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>作为一个 <code>pwner</code> ，对 <code>one_gadget</code> 肯定不会陌生，如果在能劫持执行流的前提下， <code>one_gadget</code> 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 <code>shell</code> 的操作，因为执行 <code>system(&quot;/bin/sh\x00&quot;)</code> 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 <code>one_gadget</code> 可以说是方便又迅速。</p>
+    <div class="post-body" itemprop="articleBody"><p>作为一个 <code>pwner</code> ，对 <code>one_gadget</code> 肯定不会陌生，如果在能劫持执行流的前提下， <code>one_gadget</code> 在劫持执行流的位置也恰巧能用，那就可以在一定程度上简化获取 <code>shell</code> 的操作，因为执行 <code>system(&quot;/bin/sh\x00&quot;)</code> 是需要控制参数的，有些情况下劫持执行流容易但可能控制参数还得再废些力气，此时成功打一发 <code>one_gadget</code> 可以说是方便又迅速。</p>
 <p>但因为 <code>one_gadget</code> 条件的限制， <code>one_gadget</code> 成功的概率并不高，通常是一个一个试，或者调试到劫持执行流的位置观察一下寄存器和内存的情况进行判断。很早之前我就有这样一个想法，如果能用 <code>gdb</code> 调试到劫持的地址处，输入一个命令直接判断所有的 <code>one_gadget</code> 能否生效该有多方便。终于在几天前进行了动手实践，并将其写出来。</p>
+<span id="more"></span>
+
 <p><code>check_gadget</code> 是一个 <code>gdb</code> 命令，该命令我是用 <code>python</code> 进行编写的 这篇 <a href="https://zikh26.github.io/posts/26ba4673.html">文章</a> 记录了如何用 <code>python</code> 来自定义命令。</p>
 <h2 id="使用效果"><a href="#使用效果" class="headerlink" title="使用效果"></a>使用效果</h2><p>此处控制了 <code>__free_hook</code> </p>
 <img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302081628082.png" alt="image-20230208162838925" style="zoom:50%;" />
@@ -305,19 +322,13 @@
     </span>
     <span class="author" itemprop="copyrightHolder">ZIKH26</span>
   </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
     </div>
   </footer>
 
   
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
   <div class="back-to-top" role="button" aria-label="返回顶部">
     <i class="fa fa-arrow-up fa-lg"></i>
     <span>0%</span>
@@ -330,7 +341,7 @@
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
 
   
 
