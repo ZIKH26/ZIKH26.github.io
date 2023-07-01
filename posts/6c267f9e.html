@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="这篇文章是我对off by null的一个学习总结，我这里就不再单独对off by one进行总结了，因为利用的思想是一样的。我对off by null的总结分为了两部分，第一部分是对利用的思路进行了总结，第二部分是对off by null做过的题目进行了总结。这篇文章不是特别适合对off by null完全不懂的师傅学习，我写的主要是总结，最后是对off by null已经有了一定理解再来看，应">
+    <meta name="description" content="off by null的利用思路：off by null漏洞，顾名思义就是溢出了一个空字节，核心是让其堆块的prev inuse位溢出为0，从而认为它的低地址堆块处于了free状态，然后加以利用。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="关于off by null的学习总结">
 <meta property="og:url" content="https://zikh26.github.io/posts/6c267f9e.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="这篇文章是我对off by null的一个学习总结，我这里就不再单独对off by one进行总结了，因为利用的思想是一样的。我对off by null的总结分为了两部分，第一部分是对利用的思路进行了总结，第二部分是对off by null做过的题目进行了总结。这篇文章不是特别适合对off by null完全不懂的师傅学习，我写的主要是总结，最后是对off by null已经有了一定理解再来看，应">
+<meta property="og:description" content="off by null的利用思路：off by null漏洞，顾名思义就是溢出了一个空字节，核心是让其堆块的prev inuse位溢出为0，从而认为它的低地址堆块处于了free状态，然后加以利用。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007204338075.png">
 <meta property="og:image" content="https://zikh26.github.io/img/yMsXAuZb7VFi9Rx-1665146431266-38.png">
@@ -64,7 +64,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007205244060.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007205307506.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.618Z">
-<meta property="article:modified_time" content="2023-05-15T00:48:50.503Z">
+<meta property="article:modified_time" content="2023-07-01T10:15:29.680Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="off_by_null">
 <meta name="twitter:card" content="summary">
@@ -165,7 +165,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -176,7 +176,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -231,9 +231,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:48:50" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:15:29" itemprop="dateModified" datetime="2023-07-01T18:15:29+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -254,8 +260,9 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>这篇文章是我对off by null的一个学习总结，我这里就不再单独对off by one进行总结了，因为利用的思想是一样的。我对off by null的总结分为了两部分，第一部分是对利用的思路进行了总结，第二部分是对off by null做过的题目进行了总结。这篇文章不是特别适合对off by null完全不懂的师傅学习，我写的主要是总结，最后是对off by null已经有了一定理解再来看，应该会效果更好吧。</p>
-<h1 id="off-by-null的利用思路："><a href="#off-by-null的利用思路：" class="headerlink" title="off by null的利用思路："></a>off by null的利用思路：</h1><p>off by null漏洞，顾名思义就是溢出了一个空字节，核心是让其堆块的prev inuse位溢出为0，从而认为它的低地址堆块处于了free状态，然后加以利用。</p>
+    <div class="post-body" itemprop="articleBody"><h1 id="off-by-null的利用思路："><a href="#off-by-null的利用思路：" class="headerlink" title="off by null的利用思路："></a>off by null的利用思路：</h1><p>off by null漏洞，顾名思义就是溢出了一个空字节，核心是让其堆块的prev inuse位溢出为0，从而认为它的低地址堆块处于了free状态，然后加以利用。</p>
+<span id="more"></span>
+
 <p>首先我们要用到四个chunk（我们只利用三个chunk，高地址的那个chunk是防止和top chunk合并的）</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">chunk <span class="number">0</span><span class="comment">#merged chunk     （不能让这个堆块在fastbin或是tcachebin中）</span></span><br><span class="line">chunk <span class="number">1</span><span class="comment">#overflow chunk&amp;&amp;spy chunk</span></span><br><span class="line">chunk <span class="number">2</span><span class="comment">#merge chunk      （不能让这个堆块在fastbin或是tcachebin中）</span></span><br><span class="line">chunk <span class="number">3</span><span class="comment">#prevent merge chunk</span></span><br></pre></td></tr></table></figure>
 

@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="疑惑从第一次接触pwn的到现在将近四个月了，每次做出来pwn题之后，把写好的脚本打到服务器上，就可以在服务器那边开启一个shell，然后用cat就可以读出我们需要的flag了。可是事实上我们真的可以用pwn的解题手法去进行一次攻击么？我们最后在对方主机去执行system(‘&#x2F;bin&#x2F;sh’)真的可以拿到shell么？ 实验环境接下来的实验环境： 攻击者的机器是Ubuntu">
+    <meta name="description" content="疑惑从第一次接触pwn的到现在将近四个月了，每次做出来pwn题之后，把写好的脚本打到服务器上，就可以在服务器那边开启一个shell，然后用cat就可以读出我们需要的flag了。可是事实上我们真的可以用pwn的解题手法去进行一次攻击么？我们最后在对方主机去执行system(‘&#x2F;bin&#x2F;sh’)真的可以拿到shell么？">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一次简单的远程Getshell（在目标机上开启一个shell）">
 <meta property="og:url" content="https://zikh26.github.io/posts/729cf436.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="疑惑从第一次接触pwn的到现在将近四个月了，每次做出来pwn题之后，把写好的脚本打到服务器上，就可以在服务器那边开启一个shell，然后用cat就可以读出我们需要的flag了。可是事实上我们真的可以用pwn的解题手法去进行一次攻击么？我们最后在对方主机去执行system(‘&#x2F;bin&#x2F;sh’)真的可以拿到shell么？ 实验环境接下来的实验环境： 攻击者的机器是Ubuntu">
+<meta property="og:description" content="疑惑从第一次接触pwn的到现在将近四个月了，每次做出来pwn题之后，把写好的脚本打到服务器上，就可以在服务器那边开启一个shell，然后用cat就可以读出我们需要的flag了。可是事实上我们真的可以用pwn的解题手法去进行一次攻击么？我们最后在对方主机去执行system(‘&#x2F;bin&#x2F;sh’)真的可以拿到shell么？">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220311170438374-343305220.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220311170452032-529076340.png">
@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220311170644194-2024796383.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220311170650236-893387920.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.576Z">
-<meta property="article:modified_time" content="2023-05-15T00:45:21.038Z">
+<meta property="article:modified_time" content="2023-07-01T10:21:31.578Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="实验">
 <meta name="twitter:card" content="summary">
@@ -143,7 +143,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -154,7 +154,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -209,9 +209,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:45:21" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:21:31" itemprop="dateModified" datetime="2023-07-01T18:21:31+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -233,6 +239,8 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="疑惑"><a href="#疑惑" class="headerlink" title="疑惑"></a>疑惑</h2><p>从第一次接触pwn的到现在将近四个月了，每次做出来pwn题之后，把写好的脚本打到服务器上，就可以在服务器那边开启一个shell，然后用cat就可以读出我们需要的flag了。可是事实上我们真的可以用pwn的解题手法去进行一次攻击么？我们最后在对方主机去执行system(‘&#x2F;bin&#x2F;sh’)真的可以拿到shell么？</p>
+<span id="more"></span>
+
 <h2 id="实验环境"><a href="#实验环境" class="headerlink" title="实验环境"></a>实验环境</h2><p>接下来的实验环境：</p>
 <p>攻击者的机器是Ubuntu   ip:192.168.43.150</p>
 <p>目标机是kali     	 ip:192.168.43.71</p>

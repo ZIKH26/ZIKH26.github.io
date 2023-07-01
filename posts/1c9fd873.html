@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="一共五个 PWN ，有两个零解，还有一个很少解的题目，本人菜鸡选手做不出来，估计后面复现也够呛，就记录一下比赛做出来的两个常规 PWN。 babycalc保护策略 漏洞所在 溢出了 rbp 末字节为 \x00 ，并且往 buf 里输入数据的时候可以控制如下所有变量   结合这一行代码 *(&amp;v3 + i) &#x3D; v0; ，因为 i 是可以控制的，所以此处有一次的任意栈地址单字节写入的机会，通">
+    <meta name="description" content="一共五个 PWN ，有两个零解，还有一个很少解的题目，本人菜鸡选手做不出来，估计后面复现也够呛，就记录一下比赛做出来的两个常规 PWN。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="2023西湖论剑 PWN 部分WP">
 <meta property="og:url" content="https://zikh26.github.io/posts/1c9fd873.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="一共五个 PWN ，有两个零解，还有一个很少解的题目，本人菜鸡选手做不出来，估计后面复现也够呛，就记录一下比赛做出来的两个常规 PWN。 babycalc保护策略 漏洞所在 溢出了 rbp 末字节为 \x00 ，并且往 buf 里输入数据的时候可以控制如下所有变量   结合这一行代码 *(&amp;v3 + i) &#x3D; v0; ，因为 i 是可以控制的，所以此处有一次的任意栈地址单字节写入的机会，通">
+<meta property="og:description" content="一共五个 PWN ，有两个零解，还有一个很少解的题目，本人菜鸡选手做不出来，估计后面复现也够呛，就记录一下比赛做出来的两个常规 PWN。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021853480.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021855407.png">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021943035.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021952429.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.444Z">
-<meta property="article:modified_time" content="2023-02-04T05:59:43.993Z">
+<meta property="article:modified_time" content="2023-07-01T12:32:15.971Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="orw">
 <meta property="article:tag" content="栈迁移">
@@ -144,7 +144,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -155,7 +155,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -218,7 +218,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-02-04 13:59:43" itemprop="dateModified" datetime="2023-02-04T13:59:43+08:00">2023-02-04</time>
+      <time title="修改时间：2023-07-01 20:32:15" itemprop="dateModified" datetime="2023-07-01T20:32:15+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -240,6 +240,10 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>一共五个 <code>PWN</code> ，有两个零解，还有一个很少解的题目，本人菜鸡选手做不出来，估计后面复现也够呛，就记录一下比赛做出来的两个常规 <code>PWN</code>。</p>
+<span id="more"></span>
+
+
+
 <h2 id="babycalc"><a href="#babycalc" class="headerlink" title="babycalc"></a>babycalc</h2><h3 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021853480.png" alt="image-20230202185343223"></p>
 <h3 id="漏洞所在"><a href="#漏洞所在" class="headerlink" title="漏洞所在"></a>漏洞所在</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302021855407.png" alt="image-20230202185510362"></p>
 <p>溢出了 <code>rbp</code> 末字节为 <code>\x00</code> ，并且往 <code>buf</code> 里输入数据的时候可以控制如下所有变量</p>

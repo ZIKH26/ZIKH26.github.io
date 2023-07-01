@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。在32位程序中，我们要系统调用，那就需要把系统调用号传入eax寄存器，然后需要把ecx和edx的寄存器给清空。最后就是需要去把参数&#x2F;bin&#x2F;sh的地址存入ebx寄存器。而我感觉ret2sysc">
+    <meta name="description" content="​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ret2syscall的做题思路">
 <meta property="og:url" content="https://zikh26.github.io/posts/10ff9a38.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。在32位程序中，我们要系统调用，那就需要把系统调用号传入eax寄存器，然后需要把ecx和edx的寄存器给清空。最后就是需要去把参数&#x2F;bin&#x2F;sh的地址存入ebx寄存器。而我感觉ret2sysc">
+<meta property="og:description" content="​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220127203642840-2033345372.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220127203659117-356770839.png">
@@ -47,7 +47,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220303194955331-2123755447.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220303194941901-2106523077.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.538Z">
-<meta property="article:modified_time" content="2023-05-15T00:41:57.366Z">
+<meta property="article:modified_time" content="2023-07-01T10:26:21.020Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="ret2syscall">
 <meta name="twitter:card" content="summary">
@@ -148,7 +148,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +159,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -214,9 +214,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:41:57" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:26:21" itemprop="dateModified" datetime="2023-07-01T18:26:21+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -237,7 +243,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。在32位程序中，我们要系统调用，那就需要把系统调用号传入eax寄存器，然后需要把ecx和edx的寄存器给清空。最后就是需要去把参数&#x2F;bin&#x2F;sh的地址存入ebx寄存器。而我感觉ret2syscall的难点也就是在最后这个把参数地址存入ebx寄存器这里了。</p>
+    <div class="post-body" itemprop="articleBody"><p>​	ret2syscall需要寻找的指令的思路和构造shellcode的思路是一样的，只不过ret2syscall获取的指令算是就地取材，而ret2shellcode创造指令算是无中生有。<span id="more"></span>在32位程序中，我们要系统调用，那就需要把系统调用号传入eax寄存器，然后需要把ecx和edx的寄存器给清空。最后就是需要去把参数&#x2F;bin&#x2F;sh的地址存入ebx寄存器。而我感觉ret2syscall的难点也就是在最后这个把参数地址存入ebx寄存器这里了。</p>
 <h1 id="怎么把参数-x2F-bin-x2F-sh写入程序中？写到哪？"><a href="#怎么把参数-x2F-bin-x2F-sh写入程序中？写到哪？" class="headerlink" title="怎么把参数&#x2F;bin&#x2F;sh写入程序中？写到哪？"></a>怎么把参数&#x2F;bin&#x2F;sh写入程序中？写到哪？</h1><h2 id="①写到哪"><a href="#①写到哪" class="headerlink" title="①写到哪"></a>①写到哪</h2><p>首先回答写到哪，<strong>我们要尽可能写到bss段</strong>，因为在不开pie的情况下，<strong>bss段的地址是不会变的</strong>，这意味着，我们可以用IDA看一下bss段的地址然后选定一个我们写入参数的地址，然后我们exp就可以直接写上这个地址了。但是如果我们想写到栈里面，确实用gdb也可以看到写在了哪个内存单元里面，但是这个地址是会变的，把exp上写入我们刚才用gdb看到的地址。解决办法也有，那就是需要泄露程序的一个内存单元地址，然后利用偏移，来计算出我们存放&#x2F;bin&#x2F;sh参数的地址。但是这样多少有点麻烦，并且很多时候，我们是无法泄露程序中的地址的，因此我们选择写到bss段。</p>
 <h2 id="②怎么写"><a href="#②怎么写" class="headerlink" title="②怎么写"></a>②怎么写</h2><p>再回答第一个问题，怎么写入程序中?目前我遇见了两种题型，分别对应的两种方法。</p>
 <h3 id="怎么写——第一种方法"><a href="#怎么写——第一种方法" class="headerlink" title="怎么写——第一种方法"></a>怎么写——第一种方法</h3><p><strong>第一种方法是去搜索gadget，寻找pop [ecx]这类对地址内容操作的指令</strong>。然后我们利用如下payload可以达到将参数&#x2F;bin&#x2F;sh写入bss段。（<em>并且这部分的payload需要放到返回地址处使用</em>）</p>

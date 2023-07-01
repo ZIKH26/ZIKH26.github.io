@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="上一篇分析的是fopen函数，这次来分析下fread函数。IO学习–源码调试fopen函数 前置知识：在分析fread函数时，应该先明确一下输入缓冲区是怎么来的。 首先fread函数会先将数据读到输入缓冲区中，然后从输入缓冲区中执行memcpy函数，拷贝一定字节的数据到我们指定的内存地址上。而这个输入缓冲区是从哪到哪呢？由两个指针分别声明了这片区域的开始和结束，他们分别叫做_IO_read_bas">
+    <meta name="description" content="上一篇分析的是fopen函数，这次来分析下fread函数。IO学习–源码分析fread函数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IO学习--源码分析fread函数">
 <meta property="og:url" content="https://zikh26.github.io/posts/323816c7.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="上一篇分析的是fopen函数，这次来分析下fread函数。IO学习–源码调试fopen函数 前置知识：在分析fread函数时，应该先明确一下输入缓冲区是怎么来的。 首先fread函数会先将数据读到输入缓冲区中，然后从输入缓冲区中执行memcpy函数，拷贝一定字节的数据到我们指定的内存地址上。而这个输入缓冲区是从哪到哪呢？由两个指针分别声明了这片区域的开始和结束，他们分别叫做_IO_read_bas">
+<meta property="og:description" content="上一篇分析的是fopen函数，这次来分析下fread函数。IO学习–源码分析fread函数">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007220413772.png">
 <meta property="og:image" content="https://s2.loli.net/2022/08/11/U2BbDW57QiMHZGz.png">
@@ -51,7 +51,7 @@
 <meta property="og:image" content="https://s2.loli.net/2022/08/11/wFEjuN5IMZfL3ns.png">
 <meta property="og:image" content="https://s2.loli.net/2022/08/11/6PqiupBO3AMNLf4.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.522Z">
-<meta property="article:modified_time" content="2023-05-15T00:50:00.846Z">
+<meta property="article:modified_time" content="2023-07-01T10:12:02.609Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="源码调试&amp;&amp;分析">
 <meta name="twitter:card" content="summary">
@@ -152,7 +152,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -163,7 +163,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -218,9 +218,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:50:00" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:12:02" itemprop="dateModified" datetime="2023-07-01T18:12:02+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -241,7 +247,9 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>上一篇分析的是fopen函数，这次来分析下fread函数。<br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16567446.html">IO学习–源码调试fopen函数</a></p>
+    <div class="post-body" itemprop="articleBody"><p>上一篇分析的是fopen函数，这次来分析下fread函数。<br><a href="https://zikh26.github.io/posts/323816c7.html">IO学习–源码分析fread函数</a></p>
+<span id="more"></span>
+
 <h2 id="前置知识："><a href="#前置知识：" class="headerlink" title="前置知识："></a>前置知识：</h2><p>在分析fread函数时，应该先明确一下输入缓冲区是怎么来的。</p>
 <p>首先<strong>fread函数会先将数据读到输入缓冲区中，然后从输入缓冲区中执行memcpy函数，拷贝一定字节的数据到我们指定的内存地址上</strong>。而这个输入缓冲区是从哪到哪呢？由两个指针分别声明了这片区域的开始和结束，他们分别叫做<strong>_IO_read_base和_IO_read_end，他们之间的区域就是输入缓冲区</strong>。这样看起来似乎还需要一个输出缓冲区，难道需要malloc申请两个堆块来分别表示输入缓冲区和输出缓冲区么？非也，其实<strong>malloc函数自始至终只申请了一个堆块</strong>，<strong>这个堆块的区域也叫做reserve area</strong>，而_IO_buf_base和_IO_buf_end两个指针则分别声明了这个reserve area的始末。然后将 _IO_read_ptr; _IO_read_end; _IO_read_base;	_IO_write_base;	_IO_write_ptr; _IO_write_end;这六个指针全部初始化为了_IO_buf_base的值，现在的输入缓冲区和输出缓冲区还不存在(因为现在 _IO_read_end和 _IO_read_base的值相同)，以输入缓冲区为例，<strong>读入数据时是执行了系统调用read，而此时的数据是在reserve area中，紧接着 _IO_read_end就会加上刚刚读入的数据的个数，那么此时 _IO_read_end和 _IO_read_base的值变的不同了。而现在这二者之间的区域就成为输入缓冲区</strong>。</p>
 <p>再提一下_IO_FILE结构体中的一些指针(如下)</p>

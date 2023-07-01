@@ -27,32 +27,32 @@
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
 <meta property="og:description" content="使用one_gadget的时候，必须要满足一定条件，如果所有one_gadget都没有满足条件，那么我们可以使用realloc函数来调整栈帧打one_gadget。本文以2.23的libc版本中的realloc函数举例说明使用realloc函数是如何调整栈帧打one_gadget的，但是在不同的libc版本中，realloc函数的具体汇编代码也不同，就导致了从在不同libc版本中的realloc函">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628225909669-1798755531.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628225923066-1597735649.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628225939650-1778459149.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628225951021-1292507958.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230006304-1061222448.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230018106-1085476136.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230035203-2099513409.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230048946-428826209.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230103153-137562286.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230122415-749325713.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230144252-305430597.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230300587-674729075.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230324633-1114978079.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230336256-1198676526.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230347653-575952863.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230402532-554880588.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230420596-268174659.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230432185-381323556.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230451741-973872450.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220628230506076-1711403249.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012828.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012829.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012830.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012831.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012832.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012833.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012834.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012835.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012836.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012837.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012838.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012839.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012840.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012841.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012842.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012843.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012844.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012845.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012846.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012847.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.465Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.373Z">
+<meta property="article:modified_time" content="2023-07-01T12:12:53.081Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="realloc调整栈帧">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/2706180-20220628225909669-1798755531.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012828.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/f7fd9662.html">
@@ -149,7 +149,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -160,7 +160,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -223,7 +223,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 20:12:53" itemprop="dateModified" datetime="2023-07-01T20:12:53+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -245,32 +245,34 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>使用one_gadget的时候，必须要满足一定条件，如果所有one_gadget都没有满足条件，那么我们可以使用realloc函数来调整栈帧打one_gadget。<strong>本文以2.23的libc版本中的realloc函数举例说明使用realloc函数是如何调整栈帧打one_gadget的，但是在不同的libc版本中，realloc函数的具体汇编代码也不同，就导致了从在不同libc版本中的realloc函数的相同偏移处开始执行，最终调整的栈帧也是不同的，因此在实际的做题中，去一个一个尝试偏移会比计算出能使one_gadget生效的realloc函数偏移更快。</strong></p>
+<span id="more"></span>
+
 <h2 id="怎么看one-gadget是否满足条件？"><a href="#怎么看one-gadget是否满足条件？" class="headerlink" title="怎么看one_gadget是否满足条件？"></a>怎么看one_gadget是否满足条件？</h2><p>下图是one_gadget的使用条件</p>
-<p><img src="/../img/2706180-20220628225909669-1798755531.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012828.png"></p>
 <p>然后下图此时的__malloc_hook已经被修改为one_gadget了，并且此时准备执行calloc函数（这里先理解成malloc就行，利用手法是一样的），然后si单步进去（如下图）</p>
-<p><img src="/../img/2706180-20220628225923066-1597735649.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012829.png"></p>
 <p>然后单步到这里（如下图），此时就执行了__malloc_hook中的内容，也就是将要执行我们的one_gadget</p>
-<p><img src="/../img/2706180-20220628225939650-1778459149.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012830.png"></p>
 <p>然后我们再si进去（如下图）</p>
-<p><img src="/../img/2706180-20220628225951021-1292507958.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012831.png"></p>
 <p>然后我们看此时的是否满足one_gadget的执行条件</p>
-<p><img src="/../img/2706180-20220628230006304-1061222448.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012832.png"></p>
 <p>先看rax寄存器的值（如下图），发现不为0（NULL)，因此第一个one_gadget不能用</p>
-<p><img src="/../img/2706180-20220628230018106-1085476136.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012833.png"></p>
 <p>然后看[rsp+0x30]的值(如下图)，发现也不为0(NULL)，因此第二个也不能用</p>
-<p><img src="/../img/2706180-20220628230035203-2099513409.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012834.png"></p>
 <p>然后依次类推，发现[rsp+0x50]和[rsp+0x70]的地方也都不为0（如下图）</p>
-<p><img src="/../img/2706180-20220628230048946-428826209.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012835.png"></p>
 <p>至此，四个one_gadget全部失效。因此我们要用realloc函数来调整栈帧，从而使one_gadget能够使用。</p>
 <h2 id="为什么我们用realloc函数调整栈帧？"><a href="#为什么我们用realloc函数调整栈帧？" class="headerlink" title="为什么我们用realloc函数调整栈帧？"></a>为什么我们用realloc函数调整栈帧？</h2><p>我认为原因有两个<strong>（根本原因是第一个）</strong>：</p>
 <blockquote>
 <p> 第一、realloc函数存在一个__realloc_hook（执行realloc的时候会判断__realloc_hook是否为空，如果不为空，则执行__realloc_hook指向的内容），同时__realloc_hook和__malloc_hook的地址是挨着的（如下图），这就意味着我们覆写__malloc_hook的时候可以顺便控制__realloc_hook。<strong>因此我们把__malloc_hook改成__realloc_hook然后__realloc_hook写入one_gaget，最后依然可以执行one_gadget</strong></p>
 </blockquote>
-<p><img src="/../img/2706180-20220628230103153-137562286.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012836.png"></p>
 <blockquote>
 <p>第二、realloc函数中有大量的push指令（如下图）（在执行__realloc_hook之前），因此我们将realloc函数的地址加上一定的偏移，就可以选择去执行一定量的push指令，从而抬高栈帧（我指的抬高栈帧是栈帧又向着低地址增长了）。这样rsp增加了之后，我们就可以控制例如rsp+0x30，让其内存值正好落在0处。</p>
 </blockquote>
-<p><img src="/../img/2706180-20220628230122415-749325713.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012837.png"></p>
 <h2 id="具体怎么用realloc函数调整栈帧"><a href="#具体怎么用realloc函数调整栈帧" class="headerlink" title="具体怎么用realloc函数调整栈帧"></a>具体怎么用realloc函数调整栈帧</h2><p>首先看一下上面的图片，其中有6个push指令和一个sub rsp,0x38指令。<strong>这些指令都是把栈帧抬高（我说的抬高是指栈向低地址增长），然后抬高栈帧之后去执行one_gadget。(以[rsp+0x30]这个条件为例)这就意味着我们必须去[rsp+0x30]的上面(也就是低地址处)寻找0</strong> (这句话您细品)</p>
 <p>然后将realloc函数地址加上不同的偏移，就可以执行一定数量的push和sub rsp,0x38指令(因为可以跳过一定个数的指令)。先考虑一下直接从0x846c0这个地址（先忽略PIE造成的影响）开始执行。这样到执行one_gadget之前有6个push和一个sub rsp,0x38指令，这将栈帧抬高了0x68(0x8<em>6+0x38),但是别忘了由于多call了一次(call了realloc函数，然后又去call one_gadget，但是原本只有一次call one_gadget)，*<em>因此多执行了一次压栈指令，所以最终直接执行realloc函数，栈帧抬高了0x70字节（就是将原本的rsp变成了rsp-0x70）</em></em></p>
 <p>如果执行realloc函数栈帧最少抬高多少呢？</p>
@@ -282,37 +284,37 @@
 <p>以[rsp+0x30]&#x3D;NULl这个条件为例，加上rsp-0x40与rsp-0x70这个范围。也就是说最后要在rsp-0x10与rsp-0x40找一块值为0成内存单元。</p>
 </blockquote>
 <h2 id="举例演示："><a href="#举例演示：" class="headerlink" title="举例演示："></a>举例演示：</h2><p>现在我已经发现四个one_gadget全部失效，然后我想看看其中一个one_gadget [rsp+0x30]经过调整栈帧后能否使用，先去看rsp-0x10与rsp-0x40 这个范围是否存在值为0的内存。</p>
-<p><img src="/../img/2706180-20220628230144252-305430597.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012838.png"></p>
 <p>这个0的地址是0x7ffc5f3b9ca0，如果将realloc函数对栈操作指令全部执行完的话，那么rsp-0x30的位置就是0x7ffc5f3b9c98，我们少执行一个push的话，那么rsp-0x30就会变成0x7ffc5f3b9ca0。因此判断出来我们写入realloc地址+2(push指令长度为2字节)就可以让one_gadget生效（因为跳过了一次push指令）</p>
 <p>下图为realloc调整栈帧处的exp。</p>
-<p><img src="/../img/2706180-20220628230300587-674729075.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012839.png"></p>
 <p>可以看见下图已经说明这个one_gadget已经生效，我们获取了shell</p>
-<p><img src="/../img/2706180-20220628230324633-1114978079.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012840.png"></p>
 <h2 id="one-gadget的条件是获取shell的充分条件"><a href="#one-gadget的条件是获取shell的充分条件" class="headerlink" title="one_gadget的条件是获取shell的充分条件"></a>one_gadget的条件是获取shell的充分条件</h2><p>如果这道题你已经掌握了上面介绍realloc调整栈帧的话，其实就已经是结束了。不过在最后我又学了一个更重要的细节。<strong>还是上面的脚本最后如果实际调一下的话，发现__malloc_hook里写realloc+1或者realloc+3或者直接写realloc地址都可以获取shell。</strong>（如下图）</p>
-<p><img src="/../img/2706180-20220628230336256-1198676526.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012841.png"></p>
 <p>这是为什么？这是否意味着上面我们的结论有误？</p>
 <p>探究一下便知。首先调试一下__malloc_hook里写入realloc函数的地址 这个情况。</p>
-<p><img src="/../img/2706180-20220628230347653-575952863.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012842.png"></p>
 <p>发现[rsp+0x30]处居然不为0，但是却能成功获取shell（如下）</p>
-<p><img src="/../img/2706180-20220628230402532-554880588.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012843.png"></p>
 <p>想解释这个原因，还要从execve函数下手。</p>
 <p>通常我们认为获取shell就要写执行execve(“&#x2F;bin&#x2F;sh”,0,0)才可以，但是后两个参数真的一定要为0么？</p>
-<p><img src="/../img/2706180-20220628230420596-268174659.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012844.png"></p>
 <p>它这段第一句的意思就是说argv是个传递新程序的字符串数组，说实话这句我理解也不是太深，但是能获取到两个信息。<strong>首先这个argv数组里面装的是指针（因为实际上是指针指向了字符数组(字符串使用字符串数组进行存储)的地址），其次这个数组要以NULL结尾，envp参数也是一样。</strong></p>
 <p><strong>也就是说只要argv这个地方里面放了个指针并且是NULL结尾，至于指针指向的是不是字符串已经无所谓了，而此时的情况就是argv里面放了个指针，并且是NULL结尾(如下图)</strong></p>
-<p><img src="/../img/2706180-20220628230432185-381323556.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012845.png"></p>
 <p>虽然这个指针指向的是数字1，不过依然最终也可以获取shell。</p>
 <p>同时也可以做一个小测试,就是将argv里面放个Int类型的指针，指向整数，看看execve函数还能否获取shell。</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> arg, <span class="type">char</span> **args)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> *p;</span><br><span class="line">    <span class="type">int</span> a=<span class="number">1</span>;</span><br><span class="line">    p=&amp;a;</span><br><span class="line">    <span class="type">char</span> *argv[]=&#123;p,<span class="literal">NULL</span>&#125;;</span><br><span class="line">    <span class="type">char</span> *envp[]=&#123;<span class="number">0</span>,<span class="literal">NULL</span>&#125;;</span><br><span class="line"></span><br><span class="line">    execve(<span class="string">&quot;/bin/sh&quot;</span>,argv,envp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/2706180-20220628230451741-973872450.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012846.png"></p>
 <p>发现是成功的又开启了一个shell。</p>
 <blockquote>
 <p>因此得出结论，one_gadget的生效条件是获取shell的充分条件，也就是说获取shell不一定要满足one_gadget的条件。</p>
 </blockquote>
 <p>为什么realloc+1和realloc+3也能获取shell呢？</p>
 <p>通过调试发现realloc+1和realloc+3开始执行的话，执行的并不是正确的机器码<strong>，而是机器码进行了错位。不过正好错位之后，依然是个push指令，导致了realloc+1其实和realloc的栈中情况是一样的，而realloc+3和realloc+2的栈中情况是一样的</strong>。（如下图）</p>
-<p><img src="/../img/2706180-20220628230506076-1711403249.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012012847.png"></p>
 <p>由此可见，即使机器码错位，但push指令依然没变，仅仅变的是push后面的寄存器。所以并不改变栈帧</p>
 
     </div>

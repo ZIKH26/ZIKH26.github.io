@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="写在前面：这篇文章是学习IO，进行源码分析四部曲中的第一篇，本篇主要就是源码调试fopen函数，并没有单独对fopen函数的源码专门阅读分析(之后的三篇基本上是源码分析)。如果要看fopen函数源码分析的话可以去看下文末的参考文章(师傅们写的都非常好诶) 这里我写了一篇关于初学者应该如何去读glibc源码的文章(希望可以帮助到刚刚入门的师傅们) here 前置知识_IO_FILE_plus结构体s">
+    <meta name="description" content="写在前面：这篇文章是学习IO，进行源码分析四部曲中的第一篇，本篇主要就是源码调试fopen函数，并没有单独对fopen函数的源码专门阅读分析(之后的三篇基本上是源码分析)。如果要看fopen函数源码分析的话可以去看下文末的参考文章(师傅们写的都非常好诶) 这里我写了一篇关于初学者应该如何去读glibc源码的文章(希望可以帮助到刚刚入门的师傅们) here">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IO学习--源码调试fopen函数">
 <meta property="og:url" content="https://zikh26.github.io/posts/ce09b1a.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="写在前面：这篇文章是学习IO，进行源码分析四部曲中的第一篇，本篇主要就是源码调试fopen函数，并没有单独对fopen函数的源码专门阅读分析(之后的三篇基本上是源码分析)。如果要看fopen函数源码分析的话可以去看下文末的参考文章(师傅们写的都非常好诶) 这里我写了一篇关于初学者应该如何去读glibc源码的文章(希望可以帮助到刚刚入门的师傅们) here 前置知识_IO_FILE_plus结构体s">
+<meta property="og:description" content="写在前面：这篇文章是学习IO，进行源码分析四部曲中的第一篇，本篇主要就是源码调试fopen函数，并没有单独对fopen函数的源码专门阅读分析(之后的三篇基本上是源码分析)。如果要看fopen函数源码分析的话可以去看下文末的参考文章(师傅们写的都非常好诶) 这里我写了一篇关于初学者应该如何去读glibc源码的文章(希望可以帮助到刚刚入门的师傅们) here">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007215412769.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007220100510.png">
@@ -49,7 +49,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007215850109.png">
 <meta property="og:image" content="https://zikh26.github.io/img/image-20221007215905013.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.525Z">
-<meta property="article:modified_time" content="2023-05-15T00:49:50.903Z">
+<meta property="article:modified_time" content="2023-07-01T09:51:14.797Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="源码调试&amp;&amp;分析">
 <meta name="twitter:card" content="summary">
@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -161,7 +161,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -216,9 +216,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:49:50" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 17:51:14" itemprop="dateModified" datetime="2023-07-01T17:51:14+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -241,6 +247,8 @@
     
     <div class="post-body" itemprop="articleBody"><h2 id="写在前面："><a href="#写在前面：" class="headerlink" title="写在前面："></a>写在前面：</h2><p>这篇文章是学习IO，进行源码分析四部曲中的第一篇，本篇主要就是<strong>源码调试fopen函数</strong>，并<strong>没有单独对fopen函数的源码专门阅读分析</strong>(之后的三篇基本上是源码分析)。如果要看fopen函数源码分析的话可以去看下文末的参考文章(师傅们写的都非常好诶)</p>
 <p>这里我写了一篇关于初学者应该如何去读glibc源码的文章(希望可以帮助到刚刚入门的师傅们) <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16582817.html">here</a></p>
+<span id="more"></span>
+
 <h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><h3 id="IO-FILE-plus结构体"><a href="#IO-FILE-plus结构体" class="headerlink" title="_IO_FILE_plus结构体"></a>_IO_FILE_plus结构体</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  _IO_FILE file;</span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IO_jump_t</span> *<span class="title">vtable</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>_IO_FILE_plus结构包含了_IO_FILE结构体和 _IO_jump_t 结构体。</p>

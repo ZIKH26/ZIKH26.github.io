@@ -20,12 +20,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":"ture","version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建 glibc源码下载glibc源码可以在下面这个链接下载 https:&#x2F;&#x2F;launchpad.net&#x2F;ubuntu&#x2F;+source&#x2F;glibc&#x2F;  选择需要的glibc版本，我以2.27-3ubuntu 1.5为例  选择这个最大的文件，下载。 然后拖到ubuntu里面解压 tar">
+    <meta name="description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建">
 <meta property="og:type" content="article">
 <meta property="og:title" content="关于gdb源码调试环境搭建">
 <meta property="og:url" content="https://zikh26.github.io/posts/c5c57579.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建 glibc源码下载glibc源码可以在下面这个链接下载 https:&#x2F;&#x2F;launchpad.net&#x2F;ubuntu&#x2F;+source&#x2F;glibc&#x2F;  选择需要的glibc版本，我以2.27-3ubuntu 1.5为例  选择这个最大的文件，下载。 然后拖到ubuntu里面解压 tar">
+<meta property="og:description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172522191-1508848149.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172035738-582520439.png">
@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172033716-637621406.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172032901-1046593594.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.587Z">
-<meta property="article:modified_time" content="2023-05-15T00:46:39.261Z">
+<meta property="article:modified_time" content="2023-07-01T10:18:13.789Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="CTF PWN IT">
 <meta name="twitter:card" content="summary">
@@ -139,7 +139,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -150,7 +150,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -205,9 +205,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:46:39" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:18:13" itemprop="dateModified" datetime="2023-07-01T18:18:13+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -229,6 +235,8 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建</p>
+<span id="more"></span>
+
 <h2 id="glibc源码下载"><a href="#glibc源码下载" class="headerlink" title="glibc源码下载"></a>glibc源码下载</h2><p>glibc源码可以在下面这个链接下载</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://launchpad.net/ubuntu/+source/glibc/</span><br></pre></td></tr></table></figure>
 <p><img src="/../img/2706180-20220415172522191-1508848149.png"></p>

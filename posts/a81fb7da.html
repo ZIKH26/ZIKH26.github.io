@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220331215334034-1303724362.png">
 <meta property="og:image" content="https://zikh26.github.io/img/2706180-20220331215347474-154784131.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.574Z">
-<meta property="article:modified_time" content="2022-10-08T02:24:48.398Z">
+<meta property="article:modified_time" content="2023-07-01T10:31:05.090Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="one_gadget">
 <meta property="article:tag" content="MD5加密">
@@ -140,7 +140,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -151,7 +151,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -214,7 +214,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2022-10-08 10:24:48" itemprop="dateModified" datetime="2022-10-08T10:24:48+08:00">2022-10-08</time>
+      <time title="修改时间：2023-07-01 18:31:05" itemprop="dateModified" datetime="2023-07-01T18:31:05+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -238,6 +238,8 @@
     <div class="post-body" itemprop="articleBody"><h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>1、这道题md5加密这个点，其实蛮重要的，个人感觉想判断出来的话，只能是靠经验的积累。下回只要遇见了这种奇奇怪怪的函数，还给了类似于密文这种东西，就去考虑加密。</p>
 <p>2、能够输入的字节很少的时候，执行某个函数，可以尝试写call的这个地址，这样即可以执行函数，又可以控制执行流（只要我们可以把控好选取的call地址即可）</p>
 <p>3、后期调试的话，多按自己的思路思考（不要被网上其他师傅写的wp所局限了）。</p>
+<span id="more"></span>
+
 <h1 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h1><p><img src="/../img/2706180-20220331215203116-666268230.png"></p>
 <h1 id="程序分析："><a href="#程序分析：" class="headerlink" title="程序分析："></a>程序分析：</h1><p><img src="/../img/2706180-20220331215212743-248424037.png"></p>
 <p>输入点有两处，第一次输入是输入到bss段，第二次输入是给到buf,存在八字节的溢出。一看这种存在八字节的溢出基本就可以确定是栈迁移没跑了。</p>

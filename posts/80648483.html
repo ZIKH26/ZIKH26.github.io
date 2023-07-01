@@ -32,7 +32,7 @@
 <meta property="og:image" content="https://zikh26.github.io/img/OdYqF5tSKkEmwHM.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202301122106949.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.651Z">
-<meta property="article:modified_time" content="2023-05-15T00:47:42.267Z">
+<meta property="article:modified_time" content="2023-07-01T10:17:08.281Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="docker">
 <meta name="twitter:card" content="summary">
@@ -133,7 +133,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">98</span>
+          <span class="site-state-item-count">96</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -144,7 +144,7 @@
       </div>
       <div class="site-state-item site-state-tags">
           <a href="/tags/">
-        <span class="site-state-item-count">100</span>
+        <span class="site-state-item-count">99</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -199,9 +199,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2023-05-15 07:36:47 / 修改时间：08:47:42" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:17:08" itemprop="dateModified" datetime="2023-07-01T18:17:08+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -225,6 +231,8 @@
     <div class="post-body" itemprop="articleBody"><p>因为打CTF pwn题的时候，经常遇见本地程序的libc与远程服务器那边程序所依赖的libc不匹配的情况，尽管可以用patchelf和glibc-all-in-one来给程序patch一个libc。但是patchelf似乎有点小bug，为了防止比赛的时候在这个地方掉链子，因此可以采用在docker里跑不同版本的ubuntu。</p>
 <p>同时随着时间的推移，自己也从一个拉跨的做题人偶尔客串了一下拉跨的出题人，因此需要打包一个题目环境，还得学习一下docker的几个基本配置文件。</p>
 <p>本文是对我学习docker做了一个简单的小总结。</p>
+<span id="more"></span>
+
 <h3 id="docker-容器-镜像"><a href="#docker-容器-镜像" class="headerlink" title="docker 容器 镜像"></a>docker 容器 镜像</h3><p>Docker是一个开源的容器编排工具，它允许开发人员在自己的计算机上打包和运行应用程序。</p>
 <p>容器是一种轻量级的虚拟化技术，它允许在单个操作系统中运行多个隔离的应用程序。容器运行时会在镜像的基础上创建一个可写层，而镜像本身是只读的。</p>
 <p>镜像是容器运行时所需要的文件系统，它包含了容器运行时需要的所有软件，配置文件和环境变量等。镜像是静态的，不能运行命令，只能被用来创建容器。</p>
