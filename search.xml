@@ -2259,9 +2259,9 @@
             
             <tag> one_gadget </tag>
             
-            <tag> 格式化字符串漏洞 </tag>
-            
             <tag> magic_gadget </tag>
+            
+            <tag> 格式化字符串漏洞 </tag>
             
             <tag> 劫持exit_hook </tag>
             
@@ -2292,9 +2292,9 @@
             
             <tag> 爆破 </tag>
             
-            <tag> 格式化字符串漏洞 </tag>
-            
             <tag> magic_gadget </tag>
+            
+            <tag> 格式化字符串漏洞 </tag>
             
             <tag> 沙箱 </tag>
             
