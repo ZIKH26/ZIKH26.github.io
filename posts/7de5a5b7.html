@@ -16,8 +16,10 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="前几天进行了 house of apple 的学习，而 house of appl2 和 house of cat 利用的大致思想是一样的（都是通过 wide_data-&gt;wide_vtable 中的函数指针进行的跳转），因此来复现一下去年强网杯的这道 house of cat 本题我感觉也比较有代表性，因为在 house of apple 的那篇文章中的例题最后触发攻击是在 exit 函数">
 <meta property="og:type" content="article">
@@ -37,8 +39,8 @@
 <meta property="article:modified_time" content="2023-07-01T08:52:53.086Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="伪造IO_FILE">
-<meta property="article:tag" content="orw">
 <meta property="article:tag" content="house of cat">
+<meta property="article:tag" content="orw">
 <meta property="article:tag" content="large bin attack">
 <meta property="article:tag" content="malloc_assert">
 <meta name="twitter:card" content="summary">
@@ -185,6 +187,10 @@
 
         </div>
       </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
     </div>
 
     
@@ -335,8 +341,8 @@
     <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/%E4%BC%AA%E9%80%A0IO-FILE/" rel="tag"># 伪造IO_FILE</a>
-              <a href="/tags/orw/" rel="tag"># orw</a>
               <a href="/tags/house-of-cat/" rel="tag"># house of cat</a>
+              <a href="/tags/orw/" rel="tag"># orw</a>
               <a href="/tags/large-bin-attack/" rel="tag"># large bin attack</a>
               <a href="/tags/malloc-assert/" rel="tag"># malloc_assert</a>
           </div>
@@ -385,10 +391,6 @@
   </footer>
 
   
-  <div class="back-to-top" role="button" aria-label="返回顶部">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
 
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
@@ -406,6 +408,7 @@
 
 
 
+  <script src="/js/third-party/pace.js"></script>
 
 
   
