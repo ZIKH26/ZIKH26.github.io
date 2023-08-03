@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言这算第二次复现 IOT 漏洞，第一次是很老的 DIR-815 ，第二次直接复现的是 winmt 师傅今年挖到的一个思科漏洞 CVE-2023-20073 。年份上跨越不算小，就导致了复现过程中屡屡遇到问题而没什么解决的办法，而网上除了 winmt 师傅本人做了漏洞的分析之外，也没有找到其他资料。这里发自内心的感谢 winmt 师傅给予我提供的指导和帮助，否则可能要走更多的弯路甚至会对很多地方一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从零开始复现CVE-2023-20073">
+<meta property="og:url" content="https://zikh26.github.io/posts/848296ab.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言这算第二次复现 IOT 漏洞，第一次是很老的 DIR-815 ，第二次直接复现的是 winmt 师傅今年挖到的一个思科漏洞 CVE-2023-20073 。年份上跨越不算小，就导致了复现过程中屡屡遇到问题而没什么解决的办法，而网上除了 winmt 师傅本人做了漏洞的分析之外，也没有找到其他资料。这里发自内心的感谢 winmt 师傅给予我提供的指导和帮助，否则可能要走更多的弯路甚至会对很多地方一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012305968.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012054406.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311024632.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311030068.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311032135.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311048414.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311051853.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311111012.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311100921.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311105267.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311139846.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311117095.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311126613.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311140026.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311144359.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311154670.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311428856.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311452855.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311458802.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311636539.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311639899.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312004418.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011952910.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012022558.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012030831.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012240680.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312029702.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312039015.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312140872.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312144943.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312148386.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312152741.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308010933346.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308010956881.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011038849.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011047636.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012311784.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011335171.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011337661.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011348339.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011358878.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011359615.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011415992.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011417396.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011420304.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011421560.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011443511.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011446052.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011447139.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011459704.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011500528.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011519087.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011536829.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011549144.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011702409.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011058828.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011100923.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011102814.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011104021.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291336669.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291337395.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011240122.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011250655.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011315543.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291350803.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011254422.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011322496.png">
+<meta property="article:published_time" content="2023-08-03T02:22:28.969Z">
+<meta property="article:modified_time" content="2023-08-03T02:31:39.070Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="MIPS架构">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012305968.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/848296ab.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/848296ab.html","path":"posts/848296ab.html","title":"从零开始复现CVE-2023-20073"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>从零开始复现CVE-2023-20073 | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">漏洞介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BF%E7%9C%9F"><span class="nav-number">3.</span> <span class="nav-text">仿真</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%9B%BA%E4%BB%B6"><span class="nav-number">3.1.</span> <span class="nav-text">下载固件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BA%E4%BB%B6%E8%A7%A3%E5%8E%8B-%E6%8F%90%E5%8F%96%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.2.</span> <span class="nav-text">固件解压-提取文件系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E5%AE%BF%E4%B8%BB%E6%9C%BA%E4%B8%8E-qemu-%E7%9A%84%E9%80%9A%E4%BF%A1"><span class="nav-number">3.3.</span> <span class="nav-text">实现宿主机与 qemu 的通信</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8qemu%E6%A8%A1%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="nav-number">3.4.</span> <span class="nav-text">启动qemu模拟环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%9C%8D%E5%8A%A1-amp-amp-%E8%A7%A3%E5%86%B3%E6%8A%A5%E9%94%99"><span class="nav-number">3.5.</span> <span class="nav-text">启动服务&amp;&amp;解决报错</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E6%88%90%E5%9B%A0"><span class="nav-number">4.</span> <span class="nav-text">漏洞成因</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E6%8F%90%E6%9D%A1%E4%BB%B6"><span class="nav-number">4.1.</span> <span class="nav-text">前提条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B9%E6%9C%AC%E5%8E%9F%E5%9B%A0"><span class="nav-number">4.2.</span> <span class="nav-text">根本原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%B4%E9%97%A8%E4%B8%80%E8%84%9A"><span class="nav-number">4.3.</span> <span class="nav-text">临门一脚</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="nav-number">5.</span> <span class="nav-text">漏洞分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90"><span class="nav-number">5.1.</span> <span class="nav-text">配置文件分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8Fupload-cgi%E5%88%86%E6%9E%90"><span class="nav-number">5.2.</span> <span class="nav-text">二进制程序upload.cgi分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90"><span class="nav-number">5.2.1.</span> <span class="nav-text">静态分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E6%8E%A7%E5%88%B6"><span class="nav-number">5.2.2.</span> <span class="nav-text">参数控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95%E8%A7%A3%E6%9E%90%E6%8A%A5%E6%96%87%E5%AD%97%E6%AE%B5"><span class="nav-number">5.2.3.</span> <span class="nav-text">动态调试解析报文字段</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">漏洞利用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E8%B5%B0%E5%81%8F"><span class="nav-number">6.1.</span> <span class="nav-text">执行流走偏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6file-path%E5%AD%97%E6%AE%B5-%E6%96%B9%E6%B3%95%E4%B8%80"><span class="nav-number">6.2.</span> <span class="nav-text">控制file.path字段-方法一</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#POC"><span class="nav-number">6.2.1.</span> <span class="nav-text">POC</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A7%E5%88%B6file-path%E5%AD%97%E6%AE%B5-%E6%96%B9%E6%B3%95%E4%BA%8C"><span class="nav-number">6.3.</span> <span class="nav-text">控制file.path字段-方法二</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#POC-1"><span class="nav-number">6.3.1.</span> <span class="nav-text">POC</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95"><span class="nav-number">7.</span> <span class="nav-text">调试方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%951-%E7%88%86%E7%A0%B4"><span class="nav-number">7.0.1.</span> <span class="nav-text">方法1-爆破</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%952-%E6%AD%BB%E5%BE%AA%E7%8E%AF"><span class="nav-number">7.0.2.</span> <span class="nav-text">方法2-死循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%953-%E7%88%B6%E8%BF%9B%E7%A8%8B"><span class="nav-number">7.0.3.</span> <span class="nav-text">方法3-父进程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BE%E5%A3%B0"><span class="nav-number">8.</span> <span class="nav-text">尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">9.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">99</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">101</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/848296ab.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="从零开始复现CVE-2023-20073 | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从零开始复现CVE-2023-20073
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-08-03 10:22:28 / 修改时间：10:31:39" itemprop="dateCreated datePublished" datetime="2023-08-03T10:22:28+08:00">2023-08-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/%E5%A4%8D%E7%8E%B0CVE/" itemprop="url" rel="index"><span itemprop="name">复现CVE</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这算第二次复现 <code>IOT</code> 漏洞，第一次是很老的 <code>DIR-815</code> ，第二次直接复现的是 <strong>winmt</strong> 师傅今年挖到的一个思科漏洞 <strong>CVE-2023-20073</strong> 。年份上跨越不算小，就导致了复现过程中屡屡遇到问题而没什么解决的办法，而网上除了 <strong>winmt</strong> 师傅本人做了漏洞的分析之外，也没有找到其他资料。这里发自内心的感谢 <strong>winmt</strong> 师傅给予我提供的指导和帮助，否则可能要走更多的弯路甚至会对很多地方一知半解的就完成了所谓的 “复现” ，写这篇文章的一个重要目的就是想帮助之后复现这个漏洞的师傅提供一些参考，毕竟不是每个人都能遇见一个万能的 <strong>winmt</strong> QAQ。本文对于 <strong>CVE-2023-20073</strong> 复现过程做了详尽的记录，其中包括了遇见过的各种坑和解决问题的方法及思路。再次对 <strong>winmt</strong> 师傅表示感谢！</p>
+<h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><p><code>Cisco RV340</code>，<code>RV340W</code>，<code>RV345</code>和 <code>RV345P</code> 四款型号的路由器中最新固件均存在一个未授权任意文件上传漏洞 （且目前尚未修复），攻击者可以在未授权的情况下将文件上传到 <code>/tmp/upload</code> 目录中，然后利用 <code>upload.cgi</code> 程序中存在的漏洞，最终造成存储型 <code>XSS</code> 攻击。</p>
+<span id="more"></span>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012305968.png" alt="image-20230801230513816"></p>
+<p>近一年的 <code>IP </code>数量在 <code>2.8w</code> 左右</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012054406.png" alt="image-20230801205455264"></p>
+<h2 id="仿真"><a href="#仿真" class="headerlink" title="仿真"></a>仿真</h2><p>环境信息</p>
+<table>
+<thead>
+<tr>
+<th align="left">序号</th>
+<th align="left">类型</th>
+<th align="left">版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="left">操作系统</td>
+<td align="left">ubuntu18.04</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="left">QEMU</td>
+<td align="left">7.2.0</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">Binwalk</td>
+<td align="left">V2.3.3</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">gdb</td>
+<td align="left">8.1.1</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">gbserver</td>
+<td align="left">gdbserver-7.7.1-armhf-eabi5-v1-sysv</td>
+</tr>
+</tbody></table>
+<h3 id="下载固件"><a href="#下载固件" class="headerlink" title="下载固件"></a>下载固件</h3><p>首先在 <a target="_blank" rel="noopener" href="https://software.cisco.com/download/home/286287791/type/282465789/release/1.0.03.29">思科官网</a> 中下载最新的 <code>RV340</code> 固件</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311024632.png" alt="image-20230731102424490"></p>
+<h3 id="固件解压-提取文件系统"><a href="#固件解压-提取文件系统" class="headerlink" title="固件解压-提取文件系统"></a>固件解压-提取文件系统</h3><p>把固件拖到虚拟机里用 <code>binwalk解压</code> ，执行 <code>binwalk -Me RV34X-v1.0.03.29-2022-10-17-13-45-34-PM.img</code></p>
+<p>执行后发现没有找到解压出来的文件系统，然后看一下 <code>binwalk</code> 给的 <code>warning</code> （如下），说是执行失败 <code>ubireader_extract_files</code> 程序</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311030068.png" alt="image-20230731103026482"></p>
+<p>这是因为这里的文件系统是 <code>ubi</code> 格式的，我的 <code>binwalk</code> 当初是用 <code>apt install binwalk</code> 安装的，就导致少装一些东西（尽量通过源码安装 <code>binwalk</code> ），最终就没提取出来这个 <code>ubi</code> 格式的文件系统。可以看到下面这个路径的位置只有一个 <code>0.ubi</code> 的文件，确实是没提取出来文件系统的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311032135.png" alt="image-20230731103251993"></p>
+<p>解决方法：安装 <code>ubi_reader</code> （ <code>ubi_reader</code> 工具中就包含了上面缺少的 <code>ubireader_extract_files</code> 脚本 ） ，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install liblzo2-dev </span><br><span class="line">sudo pip3 install python-lzo</span><br><span class="line">sudo pip3 install ubi_reader</span><br></pre></td></tr></table></figure>
+
+
+
+<p>安装成功后，重新执行 <code>binwalk</code> 提取文件系统，可以看到这次就成功将文件系统提取出来了（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311048414.png" alt="image-20230731104809313"></p>
+<p>但是还没完，<code>binwalk</code> 还有 <code>warning</code> （如下图），说是原本文件中存在的软链接指向了提取目录之外，就比如当前的 <code>var</code> 目录，它指向的是我本机的 <code>/tmp</code> 目录，为了安全考虑 <code>binwalk</code> 将这种软链接都置成了 <code>/dev/null</code> 。这里放任不管的话，<strong>之后的仿真会失败，比如路由器的某个服务需要去访问 <code>var</code> 目录下的文件，但它如果是被置成 <code>/dev/null</code> 的话，目录自然是缺失的</strong>。其实这个 <code>var -&gt; /tmp</code> 的本意是指向提取出来文件系统的 <code>/tmp</code> ，并非是我本机的 <code>/tmp</code> ，因此只要我能<strong>保留这个软链接，到时候用 <code>chroot</code> 创建一个隔离的文件系统就一切正常了</strong></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311051853.png" alt="image-20230731105118287"></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311111012.png" alt="image-20230731111106744" style="zoom: 67%;" />
+
+<p>解决方法：通过上面报错的字符串找到是出现在 <code>binwalk/build/lib/binwalk/modules/extractor.py </code> 文件（如下图），将 <code>if not ...</code> 修改为 <code>if 0 and not ...</code> <img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311100921.png" alt="image-20230731110000305"></p>
+<p>然后回到 <code>binwalk</code> 主目录执行 <code>sudo python3 setup.py install</code> 重新安装一下，如此就不会再执行将软链接置成 <code>/dev/null</code> 的操作了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311105267.png" alt="image-20230731110544743"></p>
+<p>对于解压 <code>ubi</code> 格式的文件系统补充两个方法，因为我们只是要文件系统，所以 <code>binwalk</code> 解压出来 <code>0.ubi</code> 文件后（用其他解压软件也能解出来 <code>0.ubi</code>，比如 <code>7zip</code>），可以直接用 <code>ubireader_extract_files  0.ubi</code> 命令来解压 <code>0.ubi</code>，这样不会出现那个软链接的问题，但得安装 <code>ubi_reader</code>。还可以使用 <a target="_blank" rel="noopener" href="https://github.com/nlitsme/ubidump/blob/master/ubidump.py">ubidump </a> 对 <code>ubi</code> 文件系统进行提取，直接复制源码，然后执行 <code>python3 ubidump.py -s .  0.ubi</code> 进行提取，这两种方法都不会破坏其中的软链接。</p>
+<h3 id="实现宿主机与-qemu-的通信"><a href="#实现宿主机与-qemu-的通信" class="headerlink" title="实现宿主机与 qemu 的通信"></a>实现宿主机与 <code>qemu</code> 的通信</h3><p>因为之后需要用 <code>scp</code> 传文件以及启动服务等操作肯定是需要配置 <code>qemu</code> 模拟环境网络的，大概原理就是设置一个网桥，然后开一个接口，把这个接口给 <code>qemu</code> ，然后流量的发送都通过这个网桥，画成图的话就是下面这个样子</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311139846.png" alt="image-20230731113938764"></p>
+<p>具体方法：创建一个 <code>net.sh</code> 脚本，我这里的网卡是 <code>ens33</code> ，如果是 <code>eth0</code> 的话，就把出现的 <code>ens33</code> 换成 <code>eth0</code> 即可，<code>chmod +x net.sh</code> 给文件可执行权限，然后 <code>./net.sh</code> 运行</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">#sudo ifconfig eth0 down                 # 首先关闭宿主机网卡接口</span><br><span class="line">sudo brctl addbr br0                     # 添加一座名为 br0 的网桥</span><br><span class="line">sudo brctl addif br0 ens33                # 在 br0 中添加一个接口</span><br><span class="line">sudo brctl stp br0 off                   # 如果只有一个网桥，则关闭生成树协议</span><br><span class="line">sudo brctl setfd br0 1                   # 设置 br0 的转发延迟</span><br><span class="line">sudo brctl sethello br0 1                # 设置 br0 的 hello 时间</span><br><span class="line">sudo ifconfig br0 0.0.0.0 promisc up     # 启用 br0 接口</span><br><span class="line">sudo ifconfig ens33 0.0.0.0 promisc up    # 启用网卡接口</span><br><span class="line">sudo dhclient br0                        # 从 dhcp 服务器获得 br0 的 IP 地址</span><br><span class="line">sudo brctl show br0                      # 查看虚拟网桥列表</span><br><span class="line">sudo brctl showstp br0                   # 查看 br0 的各接口信息</span><br><span class="line">sudo tunctl -t tap0 -u root              # 创建一个 tap0 接口，只允许 root 用户访问</span><br><span class="line">sudo brctl addif br0 tap0                # 在虚拟网桥中增加一个 tap0 接口</span><br><span class="line">sudo ifconfig tap0 0.0.0.0 promisc up    # 启用 tap0 接口</span><br><span class="line">sudo brctl showstp br0</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="启动qemu模拟环境"><a href="#启动qemu模拟环境" class="headerlink" title="启动qemu模拟环境"></a>启动qemu模拟环境</h3><p>首先用 <code>file</code> 命令查看一下 <code>busybox</code> 的文件信息（如下），这里是 <code>ARM</code> 架构 小端序，因此我们要下载对应的内核映像还有磁盘映像等文件</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311117095.png" alt="image-20230731111736780"></p>
+<p>访问 <a target="_blank" rel="noopener" href="https://people.debian.org/~aurel32/qemu/armhf/">网站</a>     下载这三个文件</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311126613.png" alt="image-20230731112648456"></p>
+<p>使用 <code>wget</code> 来下载文件，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://people.debian.org/~aurel32/qemu/armhf/debian_wheezy_armhf_standard.qcow2</span><br><span class="line">wget https://people.debian.org/~aurel32/qemu/armhf/vmlinuz-3.2.0-4-vexpress</span><br><span class="line">wget https://people.debian.org/~aurel32/qemu/armhf/initrd.img-3.2.0-4-vexpress</span><br></pre></td></tr></table></figure>
+
+
+
+<p>启动脚本如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo qemu-system-arm -M vexpress-a9 -kernel vmlinuz-3.2.0-4-vexpress \</span><br><span class="line">  -initrd initrd.img-3.2.0-4-vexpress -drive if=sd,file=debian_wheezy_armhf_standard.qcow2 \</span><br><span class="line">  -append &quot;root=/dev/mmcblk0p2&quot; -net nic -net tap,ifname=tap0,script=no,downscript=no \</span><br><span class="line">  -nographic -smp 4</span><br></pre></td></tr></table></figure>
+
+<p>如果执行启动脚本的话，应该会报如下错误，这里说的是 <code>SD card size</code> 应该是 <code>2</code> 的幂，应该改成 <code>32GB</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311140026.png" alt="image-20230731114041915"></p>
+<p>解决方法是执行 <code>qemu-img resize debian_wheezy_armhf_standard.qcow2 32G</code></p>
+<p>再次执行启动脚本，大概要等待两分钟左右就会让输入账号和密码（如下），账号密码都是 <code>root</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311144359.png" alt="image-20230731114437217"></p>
+<p>进去后看到了 <code>IP</code> ，并且能正常与宿主机通信（如下图）就说明到这里都是操作正确的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311154670.png" alt="image-20230731115434275"></p>
+<h3 id="启动服务-amp-amp-解决报错"><a href="#启动服务-amp-amp-解决报错" class="headerlink" title="启动服务&amp;&amp;解决报错"></a>启动服务&amp;&amp;解决报错</h3><p>先把文件系统给压缩打包，然后用 <code>scp</code> 传到 <code>qemu</code> 中，再将文件系统解压（这里发送的时候要发压缩包，不然后续有可能会缺少文件，我最初因为传的是文件夹，导致出现了错误，就在这里浪费了很多时间）</p>
+<p>压缩命令 <code>tar -czvf rootfs.tar.gz rootfs</code></p>
+<p>传输文件命令 <code>sudo scp -r rootfs.tar.gz root@192.168.45.66:/root/rootfs.tar.gz</code> （<code>IP</code> 、用户名和路径都换成自己的）</p>
+<p>解压命令 <code>tar -xzvf rootfs.tar.gz</code></p>
+<p>接下来进行仿真时要先用 <code>chroot</code> 命令创建隔离的文件系统环境。但这会导致无法在隔离的文件系统中访问原本的 <code>/proc</code>和  <code>/dev</code> 目录，因为它们是特殊的虚拟文件夹（用于提供系统信息和设备的访问）为了让 <code>qemu </code> 环境正常运行，需将原本 <code>qemu</code> 的 <code>/proc</code> 和 <code>/dev</code> 目录挂载到新创建的隔离环境中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod -R 777 rootfs</span><br><span class="line">cd rootfs/</span><br><span class="line">mount --bind /proc proc</span><br><span class="line">mount --bind /dev dev</span><br><span class="line">chroot . /bin/sh</span><br></pre></td></tr></table></figure>
+
+
+
+<p>还记得上文提到的软链接的问题么，此时位于这个文件系统中，软链接就已经指向了正确的位置（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311428856.png" alt="image-20230731142803598"></p>
+<p>在 <code>/etc/init.d</code> 目录下存放了各种服务的启动和停止脚本，下面这里发现有 <code>nginx</code> 服务的脚本</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311452855.png" alt="image-20230731145225537" style="zoom:67%;" />
+
+
+
+<p>然后尝试开启 <code>nginx</code> 服务，执行命令 <code>/etc/init.d/nginx start</code> ，访问一下 <code>qemu</code> 环境的 <code>IP</code> ，看服务是否启动（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311458802.png" alt="image-20230731145834699"></p>
+<p>没跑起来，然后看一下报错信息（如下）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ # /etc/init.d/nginx start</span><br><span class="line">uci: Entry not found</span><br><span class="line">chown: /var/firmware: No such file or directory</span><br><span class="line">chown: /var/3g-4g-driver: No such file or directory</span><br><span class="line">chown: /var/in_certs: No such file or directory</span><br><span class="line">chown: /var/signature: No such file or directory</span><br><span class="line">chown: /var/language-pack: No such file or directory</span><br><span class="line">chown: /var/configuration: No such file or directory</span><br><span class="line">FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">Collected errors:</span><br><span class="line"> * opkg_conf_load: Could not create lock file /var/lock/opkg.lock: No such file or directory.</span><br><span class="line">nginx: [emerg] open() &quot;/var/lock/nginx.lock.accept&quot; failed (2: No such file or directory)</span><br><span class="line">uci: Entry not found</span><br><span class="line">/ # [uWSGI] getting INI configuration from /etc/uwsgi/blockpage.ini</span><br><span class="line">[uWSGI] getting INI configuration from /etc/uwsgi/jsonrpc.ini</span><br><span class="line">[uWSGI] getting INI configuration from /etc/uwsgi/upload.ini</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 06:57:28 2023] ***</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: debian-armhf</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 06:57:28 2023] ***</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: debian-armhf</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 06:57:28 2023] ***</span><br><span class="line">setgid() to 33</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: debian-armhf</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">setgid() to 33</span><br><span class="line">setgid() to 33</span><br><span class="line">setuid() to 33</span><br><span class="line">setuid() to 33</span><br><span class="line">setuid() to 33</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9001 fd 3</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9000 fd 3</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9003 fd 3</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">mapped 128512 bytes (125 KB) for 1 cores</span><br><span class="line">mapped 321280 bytes (313 KB) for 4 cores</span><br><span class="line">*** Operational MODE: preforking ***</span><br><span class="line">initialized CGI mountpoint: /jsonrpc = /www/cgi-bin/jsonrpc.cgi</span><br><span class="line">*** Operational MODE: single process ***</span><br><span class="line">initialized CGI mountpoint: /blocked.php = /www/cgi-bin/blockpage.cgi</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">mapped 128512 bytes (125 KB) for 1 cores</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI master process (pid: 2903)</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI worker 1 (pid: 2906, cores: 1)</span><br><span class="line">spawned uWSGI master process (pid: 2904)</span><br><span class="line">*** Operational MODE: single process ***</span><br><span class="line">initialized CGI path: /www/cgi-bin/upload.cgi</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI master process (pid: 2905)</span><br><span class="line">spawned uWSGI worker 1 (pid: 2909, cores: 1)</span><br><span class="line">spawned uWSGI worker 2 (pid: 2908, cores: 1)</span><br><span class="line">spawned uWSGI worker 1 (pid: 2907, cores: 1)</span><br><span class="line">spawned uWSGI worker 3 (pid: 2910, cores: 1)</span><br><span class="line">spawned uWSGI worker 4 (pid: 2911, cores: 1)</span><br></pre></td></tr></table></figure>
+
+<p>就这里有一个报错 <code>FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</code> 也不太清楚这是什么，但是这里有一个 <code>confd</code> ，而在 <code>/etc/init.d</code> 目录下，有一个 <code>confd</code> 服务（查了一下资料，说是轻量级的配置管理工具），那就给它启起来，执行 <code>/etc/init.d/confd start</code></p>
+<p>报错信息如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ # /etc/init.d/confd start</span><br><span class="line">uci: Entry not found</span><br><span class="line">cp: can&#x27;t stat &#x27;/etc/ssl/private/Default.pem&#x27;: No such file or directory</span><br><span class="line">Failed reading &#x27;/tmp/dropbear_host_key&#x27;</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /avc-meta-data --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /device-os-types --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /webfilter-meta-data --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">0</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">CDB boot error: Init transaction failed to validate: /confd_dyncfg:confdConfig: Need read access to one of the files ./ssh/ssh_host_dsa_key and ./ssh/ssh_host_rsa_key defined for /confdConfig/aaa/sshServerKeyDir</span><br><span class="line">0</span><br><span class="line">connection refused (start_phase2)</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</span><br><span class="line">FAILED: confd_load_schemas(addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2413</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">FAILED: maapi_connect(ms, addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2432</span><br><span class="line">FAILED: maapi_connect(ms, addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2432</span><br><span class="line">FAILED: maapi_connect(ms, addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2432</span><br><span class="line">FAILED: maapi_connect(ms, addr, addrlen), Error: system call failed (24): Connection refused, in function run, line 2432</span><br></pre></td></tr></table></figure>
+
+<p>然后这里出现的报错是 <code>cp: can&#39;t stat &#39;/etc/ssl/private/Default.pem&#39;: No such file or directory </code> 这意味着是缺少 <code>ssl</code> 证书，搜索一下字符串 <code>/etc/ssl/private</code> （我是放到 <code>vscode</code> 里搜的）发现大概有十几个文件吧，里面有一个文件叫做  <code>generate_default_cert</code>  ，这名字一听就很正经，叫做生成默认证书😄   </p>
+<p>因此执行 <code>generate_default_cert</code>，发现还有报错，信息如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ # generate_default_cert</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/etc/config/certificate&#x27;: No such file or directory</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">/usr/bin/certscript: line 1: can&#x27;t create /tmp/stats/certstats.tmp: nonexistent directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">Default</span><br></pre></td></tr></table></figure>
+
+<p>这里一直有一个错误是 <code>uci: Entry not found</code> ，百度一下，结果如下</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311636539.png" alt="image-20230731163628456" style="zoom:67%;" />
+
+<p>意思是 <code>uci</code> 读取的这个配置路径不存在（我是这里理解的），然后在 <code>/etc/init.d/boot</code> 文件中有两行代码，就是来创建的路径。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307311639899.png" alt="image-20230731163920404"></p>
+<p>所以这里再执行 <code>/etc/init.d/boot boot</code> ，此刻如果你开启 <code>nginx</code> 服务的话（端口如果被占用了，执行 <code>/etc/init.d/nginx restart</code> 进行重启）应该就发现访问到路由器的首页面了，如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312004418.png" alt="image-20230731200447091"></p>
+<p>因此最终启动服务的命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">/etc/init.d/boot boot</span><br><span class="line">generate_default_cert</span><br><span class="line">/etc/init.d/confd start</span><br><span class="line">/etc/init.d/nginx start</span><br></pre></td></tr></table></figure>
+
+<p>如果刚开始测试的时候把环境整的乱七八糟，发现上面启动了 <code>nginx</code> 服务，访问是失败的。不用慌，接下来先确保完成下面的四个操作</p>
+<ol>
+<li>关掉 <code>qemu</code> ，重新进入，依次执行上面的四个命令，并确保命令是执行成功了（因为是仿真，虽然还有很多报错，但只要能启动需要的服务就是好仿真）</li>
+<li>确保 <code>binwalk</code> 解压的文件系统完整，并且软链接还在（尽可能不要解固件的时候出现 <code>warning</code> ）</li>
+<li>是否用 <code>scp</code> 传进来的是压缩过的文件系统，而不是直接传了文件系统</li>
+<li>虚拟机中能否访问成功路由器的登录界面（不是主机）</li>
+</ol>
+<p>如果这四个操作全部做过，但依然访问失败的话，那么你可以开始慌了。因为上面的四种情况导致了主机中不能成功访问路由器登录界面的情况我都遇见过。如果还是不行的话，那确实是我没遇见的情况。下面我给出我执行四条命令后的输出错误信息（此时可以访问成功登录界面），如果还是无法成功访问路由器登录界面的话，可以比对下面的错误信息，看看哪里不同，去找到相应的解决方法</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/ # /etc/init.d/boot boot</span><br><span class="line">mount: mounting debugfs on /sys/kernel/debug failed: No such file or directory</span><br><span class="line">Mounting mnt partitions..mount: mounting /dev/mtdblock9 on /mnt/configcert failed: No such device</span><br><span class="line">mount: mounting /dev/mtdblock10 on /mnt/avcsign failed: No such device</span><br><span class="line">mount: mounting /dev/mtdblock11 on /mnt/webrootdb failed: No such device</span><br><span class="line">mount: mounting /dev/mtdblock12 on /mnt/license failed: No such device</span><br><span class="line">done.</span><br><span class="line"> create_meta_data_xml begin</span><br><span class="line"> meta_data_gen_state: 0</span><br><span class="line"> meta_data_gen_state: 1</span><br><span class="line"> create_meta_data_xml end</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">/ # generate_default_cert </span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">/usr/bin/certscript: line 1: can&#x27;t create /tmp/stats/certstats.tmp: nonexistent directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">Default</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/ # /etc/init.d/confd start</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /avc-meta-data --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /device-os-types --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">TRACE Connected (maapi) to ConfD</span><br><span class="line">attaching to init session...</span><br><span class="line">TRACE MAAPI_ATTACH  --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_DELETE /webfilter-meta-data --&gt; CONFD_OK</span><br><span class="line">TRACE MAAPI_LOAD_CONFIG_FILE  --&gt; CONFD_OK</span><br><span class="line">0</span><br><span class="line">uci: Entry not found</span><br><span class="line">0</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line">uci: Entry not found</span><br><span class="line"></span><br><span class="line">uci: Parse error (option/list command found before the first section) at line 2492, byte 1</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/etc/syslog_config_template&#x27;: No such file or directory</span><br><span class="line">sed: /tmp/syslog-ng.conf: No such file or directory</span><br><span class="line">Error opening configuration file; filename=&#x27;/tmp/syslog-ng.conf&#x27;, error=&#x27;Success (0)&#x27;</span><br><span class="line">SIOCGMIIPHY: No such device</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">Failed to parse json data: unexpected end of data</span><br><span class="line">Failed to connect to ubus</span><br><span class="line">0</span><br><span class="line">PnP Agent is starting!</span><br><span class="line"></span><br><span class="line">/ # /etc/init.d/nginx start</span><br><span class="line">chown: /var/firmware: No such file or directory</span><br><span class="line">chown: /var/3g-4g-driver: No such file or directory</span><br><span class="line">chown: /var/in_certs: No such file or directory</span><br><span class="line">chown: /var/signature: No such file or directory</span><br><span class="line">chown: /var/language-pack: No such file or directory</span><br><span class="line">chown: /var/configuration: No such file or directory</span><br><span class="line">FAILED: maapi_get_elem(ms, mtid, &amp;val, argv[0]), Error: item does not exist (1): /firewall-basic-settings:firewall/remote-web-management/cert does not exist, in function do_maapi_get, line 1463</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">FAILED: maapi_get_elem(ms, mtid, &amp;val, argv[0]), Error: item does not exist (1): /ciscosb-restconf:ciscosb-restconf/transport/https/cert does not exist, in function do_maapi_get, line 1463</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">FAILED: maapi_get_elem(ms, mtid, &amp;val, argv[0]), Error: item does not exist (1): /ciscosb-netconf:ciscosb-netconf/transport/ssh/cert does not exist, in function do_maapi_get, line 1463</span><br><span class="line">touch: /tmp/stats/certstats.tmp: No such file or directory</span><br><span class="line">perl: warning: Setting locale failed.</span><br><span class="line">perl: warning: Please check that your locale settings:</span><br><span class="line">	LANGUAGE = (unset),</span><br><span class="line">	LC_ALL = (unset),</span><br><span class="line">	LANG = &quot;en_US.UTF-8&quot;</span><br><span class="line">    are supported and installed on your system.</span><br><span class="line">perl: warning: Falling back to the standard locale (&quot;C&quot;).</span><br><span class="line">cp: can&#x27;t stat &#x27;/tmp/stats/certstats.tmp&#x27;: No such file or directory</span><br><span class="line">/ # [uWSGI] getting INI configuration from /etc/uwsgi/upload.ini</span><br><span class="line">[uWSGI] getting INI configuration from /etc/uwsgi/blockpage.ini</span><br><span class="line">[uWSGI] getting INI configuration from /etc/uwsgi/jsonrpc.ini</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 11:52:02 2023] ***</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: Router</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">setgid() to 33</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 11:52:02 2023] ***</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: Router</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">setgid() to 33</span><br><span class="line">setuid() to 33</span><br><span class="line">setuid() to 33</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9003 fd 3</span><br><span class="line">*** Starting uWSGI 2.0.15 (32bit) on [Mon Jul 31 11:52:02 2023] ***</span><br><span class="line">compiled with version: 4.8.3 on 17 October 2022 13:32:49</span><br><span class="line">os: Linux-3.2.0-4-vexpress #1 SMP Debian 3.2.51-1</span><br><span class="line">nodename: Router</span><br><span class="line">machine: armv7l</span><br><span class="line">clock source: unix</span><br><span class="line">pcre jit disabled</span><br><span class="line">detected number of CPU cores: 4</span><br><span class="line">current working directory: /</span><br><span class="line">detected binary path: /usr/sbin/uwsgi</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9000 fd 3</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">mapped 128512 bytes (125 KB) for 1 cores</span><br><span class="line">*** Operational MODE: single process ***</span><br><span class="line">initialized CGI path: /www/cgi-bin/upload.cgi</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI master process (pid: 4377)</span><br><span class="line">spawned uWSGI worker 1 (pid: 4380, cores: 1)</span><br><span class="line">setgid() to 33</span><br><span class="line">mapped 321280 bytes (313 KB) for 4 cores</span><br><span class="line">setuid() to 33</span><br><span class="line">your processes number limit is 961</span><br><span class="line">your memory page size is 4096 bytes</span><br><span class="line">detected max file descriptor number: 1024</span><br><span class="line">lock engine: pthread robust mutexes</span><br><span class="line">thunder lock: disabled (you can enable it with --thunder-lock)</span><br><span class="line">*** Operational MODE: preforking ***</span><br><span class="line">initialized CGI mountpoint: /jsonrpc = /www/cgi-bin/jsonrpc.cgi</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI master process (pid: 4375)</span><br><span class="line">spawned uWSGI worker 1 (pid: 4385, cores: 1)</span><br><span class="line">uwsgi socket 0 bound to TCP address 127.0.0.1:9001 fd 3</span><br><span class="line">your server socket listen backlog is limited to 100 connections</span><br><span class="line">your mercy for graceful operations on workers is 60 seconds</span><br><span class="line">spawned uWSGI worker 2 (pid: 4386, cores: 1)</span><br><span class="line">mapped 128512 bytes (125 KB) for 1 cores</span><br><span class="line">*** Operational MODE: single process ***</span><br><span class="line">initialized CGI mountpoint: /blocked.php = /www/cgi-bin/blockpage.cgi</span><br><span class="line">*** no app loaded. going in full dynamic mode ***</span><br><span class="line">*** uWSGI is running in multiple interpreter mode ***</span><br><span class="line">spawned uWSGI master process (pid: 4376)</span><br><span class="line">spawned uWSGI worker 3 (pid: 4387, cores: 1)</span><br><span class="line">spawned uWSGI worker 4 (pid: 4389, cores: 1)</span><br><span class="line">spawned uWSGI worker 1 (pid: 4388, cores: 1)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="漏洞成因"><a href="#漏洞成因" class="headerlink" title="漏洞成因"></a>漏洞成因</h2><p>关于这个洞的成因，我也跟 <strong>winmt</strong> 师傅聊了一下，这里我说一下我认为导致这个漏洞能利用的三个点。</p>
+<h3 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a>前提条件</h3><p>这里存在未授权的文件上传（如下），仅仅看这里也没啥用，因为文件上传到了 <code>/tmp/upload</code> 目录下，第二就是如果没有绕过那个正则检查的话，也会将上传的文件夹全删掉。所以这里仅是个前提条件</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011952910.png" style="zoom: 33%;" />
+
+<h3 id="根本原因"><a href="#根本原因" class="headerlink" title="根本原因"></a>根本原因</h3><p>根本原因是身份认证位于了漏洞发生处之后，只要 <code>system</code> 的命令执行成功，<code>sub_115EC</code> 函数的返回值就为 <code>0</code> ，又因为我们访问的 <code>URL</code> 为 <code>/api/operations/ciscosb-file:form-file-upload</code> ，所以会进入下面的 <code>if</code> 执行 <code>sub_125A8</code> 函数（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012022558.png" alt="image-20230801202228360"></p>
+<p>而 <code>sub_125A8</code> 函数中的如下位置会做身份认证，但是出现的问题就在于身份认证在漏洞触发点之后，所以做了跟没做一样，还是可以未授权文件上传。<strong>winmt</strong> 师傅说可能之前那是前置操作部分，开发者想把身份认证的位置放到前置操作之后，但是没想到前置操作部分就存在了一个漏洞点</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012030831.png" alt="image-20230801203018066"></p>
+<h3 id="临门一脚"><a href="#临门一脚" class="headerlink" title="临门一脚"></a>临门一脚</h3><p>就算上面两个条件都满足了，也只是可以将上传的文件移动到 <code>/tmp/www</code> 目录下，如果这下面没放什么东西的话，也不会有什么危害。但问题就在于 <code>/www/login.html</code> 和 <code>index.html</code>  两个文件软链接到了 <code>/tmp/www/login.html</code> 和 <code>/tmp/www/index.html</code> 上（如下图），只要覆盖掉 <code>/tmp/www/login.html</code> 或者 <code>/tmp/www/index.html</code> 就可以篡改掉登录首页面，从而完成了最终存储型 <code>XSS</code> 攻击</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012240680.png" alt="image-20230801224055546"></p>
+<h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><h3 id="配置文件分析"><a href="#配置文件分析" class="headerlink" title="配置文件分析"></a>配置文件分析</h3><p>第一个红框是该文件路径，第二个红框中的代码展示的是 <code>Nginx</code> 文件上传模块，下面对代码逐一分析</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312029702.png" alt="image-20230731202928569" style="zoom:67%;" />
+
+<p>首先是 <code>location /api/operations/ciscosb-file:form-file-upload</code> ，这个 <code>location</code> 块是 <code>Nginx</code> 配置文件中用于匹配 <code>URL</code> 路径的指令，就比如访问 <code>192.168.0.1：/api/operations/ciscosb-file:form-file-upload</code> 就可以执行到下面的代码。</p>
+<p>然后代码 <code>14</code> 到 <code>22</code> 行是很好理解的， <code>$http_authorization</code> 为空的话返回 <code>403</code> ，非空的话就可以执行下面的代码。这里的 <code>$http_authorization</code> 是 <code>HTTP</code> 请求中 <code>Authorization</code> 的值，从如下代码可以判断出来</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312039015.png" alt="image-20230731203908789" style="zoom:67%;" />
+
+
+
+<p><code>upload_pass /form-file-upload</code> 转至后台处理 <code>/form-file-upload</code> 这个 <code>URL</code></p>
+<p><code>upload_store /tmp/upload</code> 上传文件临时保存路径为 <code>/tmp/upload</code></p>
+<p><code>upload_store_access user:rw group:rw all:rw</code> 表示上传文件的权限</p>
+<p><code>upload_set_form_field</code> 设置额外的表单字段，一些变量如下。这块在最后编写 <code>EXP</code> 的时候有一个很重要的点，后面再说。	</p>
+<p><code>$upload_file_name</code> 文件原始名字<br><code>$upload_field_name</code> 表单的 <code>name</code> 值<br><code>$upload_content_type</code> 文件的类型<br><code>$upload_tmp_path</code> 文件上传后的地址</p>
+<p><code>upload_aggregate_form_field</code> 额外的变量，在上传成功后生成这几个字段</p>
+<p><code>$upload_file_md5</code> 文件的 <code>MD5</code> 校验值<br><code>$upload_file_size</code> 文件大小</p>
+<p><code>upload_cleanup 400 404 499 500-505</code> 如果 <code>pass</code> 页面是以下状态码，就删除本次上传的文件</p>
+<p>这地方的代码就很奇怪，因为这里只需要控制一下 <code>Authorization</code> 就可以将文件上传到 <code>/tmp/upload</code> 目录，也没有做 <code>sessionid</code> 的判断。可以看一下 <code>location /upload</code> 的代码（如下图），这里做了 <code>/tmp/websession/token/$cookie_sessionid</code> 文件是否存在的判断以及正则匹配的检查防止目录穿越</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312140872.png" alt="image-20230731214036747"></p>
+<p>说完此处的文件上传，再来看一下 <code>upload_pass /form-file-upload</code>，它会跳转到 <code>location /form-file-upload</code> 这里的代码来执行，这里有一个 <code>uwsgi_pass 127.0.0.1:9003</code> ，它会把请求转发给 <code>uwsgi</code> 给处理。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312144943.png" alt="image-20230731214411886"></p>
+<p>顺便提一下，在 <code>Nginx</code> 的启动脚本中最后一句是 <code>$UWSGI start</code> ，启动的就是这个 <code>uwsgi</code> 服务，它启动后会开启下面三个进程（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312148386.png" alt="image-20230731214830312"></p>
+<p> <code>uwsgi -m --ini /etc/uwsgi/upload.ini &amp;</code> 在这个进程中会调用 <code>upload.cgi</code> 进程（为什么是 <code>upload.cgi</code> 进程呢？因为在配置中记录了要执行的程序路径，如下），调用的方式是先 <code>fork</code> 了一个子进程，然后 <code>execvp</code> 来执行 <code>upload.cgi</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307312152741.png" alt="image-20230731215206683" style="zoom:50%;" />
+
+
+
+<h3 id="二进制程序upload-cgi分析"><a href="#二进制程序upload-cgi分析" class="headerlink" title="二进制程序upload.cgi分析"></a>二进制程序upload.cgi分析</h3><h4 id="静态分析"><a href="#静态分析" class="headerlink" title="静态分析"></a>静态分析</h4><p>接着来分析漏洞的触发点，它就位于这个 <code>/www/cgi-bin/upload.cgi</code> 二进制程序中。</p>
+<p>因为程序去除了符号表，所以我们从 <code>_libc_start_main</code> 中寻找 <code>main</code> 函数入口（该函数的第一个参数就是 <code>main</code> 函数）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308010933346.png" alt="image-20230801093346122"></p>
+<p>接下来从最终的利用点进行倒着分析，这个 <code>sub_115EC</code> 函数被调用于 <code>main</code> 函数。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308010956881.png" alt="image-20230801095627793" style="zoom:67%;" />
+
+<p>最终 <code>system</code> 会执行 <code>mv -f a2 v8/a3</code> ，而这三个变量都可以控制，<code>/www/login.html</code> 软链接到了 <code>/tmp/www/login.html</code> 这个文件上，因此如果我们能把 <code>a2</code> 控制为刚上传的文件路径，<code>v8</code> 控制为 <code>/tmp/www</code> ，<code>a3</code> 控制为 <code>login.html</code> 就能执行 <code>mv -f /tmp/upload/xxx /www/login.html</code> 从而完成对路由器登录界面的篡改。要将 <code>v8</code> 控制为 <code>/tmp/www</code> 则要设置 <code>a1</code> 的值为 <code>Portal</code> </p>
+<h4 id="参数控制"><a href="#参数控制" class="headerlink" title="参数控制"></a>参数控制</h4><p>上面对 <code>sub_115EC</code> 函数的三个实参进行了分析，下面看一下 <code> main</code> 函数中这三个参数是怎么控制的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011038849.png" alt="image-20230801103832666"></p>
+<p>溯源这些值的话，<code>v17</code> 是 <code>pathparam</code> 字段的值（根据上面的分析，将这个字段要控制为 <code>Portal</code>）， <code>v16</code> 是 <code>file.path</code> 字段的值（这里要为刚上传的文件路径），<code>v18</code> 是 <code>fileparam</code> 的值（这里要控制为 <code>login.html</code>）</p>
+<h4 id="动态调试解析报文字段"><a href="#动态调试解析报文字段" class="headerlink" title="动态调试解析报文字段"></a>动态调试解析报文字段</h4><p>问题是这些要控制的值怎么来呢？</p>
+<p>这需要分析下面的代码（此处的分析需要配合动态调试，关于如何动态调试这种 <code>cgi</code> 程序，请跳转到 <a href="#%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95">此处</a>）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011047636.png" alt="image-20230801104719584" style="zoom:67%;" />
+
+<p>因为程序中读入数据的只有 <code>fread</code> ，所以假定这里是读入 <code>POST</code> 请求,接着先来写一个报文发过去调试一下，这里要控制 <code>pathparam</code> 和 <code>fileparam</code> 为上面我们指定的值，至于那个 <code>file.path</code> 是什么还不知道，这里都一起发过去试试。（由上图中通过定位<code>boundary=</code>字符串获取报文分隔符，结合该<code>cgi</code>的具体功能文件上传，可知该报文需要以表单格式 <code>multipart/form-data</code>发送 <code>POST</code> 请求）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;pathparam&quot;</span><br><span class="line"></span><br><span class="line">Portal</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;fileparam&quot;</span><br><span class="line"></span><br><span class="line">login.html</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;file.path&quot;</span><br><span class="line"></span><br><span class="line">login.html</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;what&quot;;filename=&quot;login.html&quot;;Content-Type: application/octet-stream</span><br><span class="line"></span><br><span class="line">&lt;title&gt;test&lt;/title&gt;</span><br><span class="line">&lt;script&gt;alert(&#x27;debug&#x27;)&lt;/script&gt;</span><br><span class="line">------------	</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308012311784.png" alt="image-20230801231158599"></p>
+<p>我选择把断点打在了 <code>0x10EBC</code> 处，这里是刚刚执行完了 <code>fread</code> 函数。通过查看代码得知，<code>fread</code> 函数执行完会在读入的数据末尾加一个 <code>0</code> ，下图红框中的指令就是在做这件事，分析得知 <code>R5</code> 寄存器是存放着刚读入的数据，下面来查看一下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011335171.png" alt="image-20230801133541574"></p>
+<p>如此验证了猜测，这里确实是 <code>POST</code> 报文，接下来看一下后面是怎么把报文中的字段值解析出来的（补充一点，不知道为什么调试的时候是没办法用 <code>n</code> 来跳过函数的，我用的方法是打断点 <code>c</code> 过去）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011337661.png" alt="image-20230801133756369"></p>
+<p>下面我直接说解析字段的结论，如果有想弄清过程的师傅可以自己调试一下。这个 <code>multipart_parser_execute</code> 函数是将 <code>POST</code> 报文进行了字段的解析，就大概是做了一个键值对出来，可能用结构体来实现的（反正调试看到的是用多个堆块通过指针的方式，将键和值做一个匹配）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011348339.png" alt="image-20230801134843284"></p>
+<p>然后执行到 <code>jsonutil_get_string</code> 函数时，可以把 <code>file.path</code> <code>pathparam</code> 这种字段的值给解析出来，以 <code>jsonutil_get_string(dword_2348C, &amp;v26, &quot;\&quot;file.path\&quot;&quot;, -1);</code> 为例，下面放出该函数执行前和执行后的情况</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011358878.png" alt="image-20230801135829658" style="zoom: 80%;" />
+
+
+
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011359615.png" alt="image-20230801135913097" style="zoom:67%;" />
+
+<p>这里可以看到确实是把 <code>file.path</code> 解析出来了，值为 <code>login.html</code> 这是因为当时发送的报文就是这么设置的（如下）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Content-Disposition: form-data; name=&quot;file.path&quot;</span><br><span class="line"></span><br><span class="line">login.html</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h2><h3 id="执行流走偏"><a href="#执行流走偏" class="headerlink" title="执行流走偏"></a>执行流走偏</h3><p>其他几个字段的解析是同理的，然后我们继续调试，结果发现会进入这个 <code>if</code> 中（如下图）最后直接返回，并没有触发到有漏洞的 <code>sub_115EC</code> 函数</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011415992.png" alt="image-20230801141537947"></p>
+<p>需要注意，这里的 <code>IDA</code> 显示错误了（如上图），很明显这里是在进行正则匹配，但只有规则，没有要匹配的字符串，不过 <code>GDB</code> 依然给力，可以正常显示（如下图）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011417396.png" alt="image-20230801141716116" style="zoom:67%;" />
+
+<p>这个函数在对 <code>login.html</code> 字符串进行匹配，但在发送的报文中我们将 <code>file.path</code> 和 <code>fileparam</code> 都设置为了 <code>login.html</code> ，是匹配的哪个字段的值呢？我们通过 <code>IDA</code> 的汇编部分来寻找一下，通过下图可以看出来， <code>R1</code> 的值是从 <code>SP,#0x478+var_460</code> 位置拿到的，其实也就是 <code>SP+0x18</code> 的位置</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011420304.png" alt="image-20230801142014216"></p>
+<p>然后我们往上寻找，发现在解析 <code>file.path</code> 字段时，出现了这个地址。因此得出结论是 <code>match_regex</code> 会对 <code>file.path</code> 的值进行正则匹配，函数返回值为 <code>1</code> ，于是执行流就走偏了（做一些退出的工作，就结束了，在结束前会调用 <code>system</code> 函数将 <code>/tmp/upload</code> 下的所有文件删掉）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011421560.png" alt="image-20230801142143468"></p>
+<h3 id="控制file-path字段-方法一"><a href="#控制file-path字段-方法一" class="headerlink" title="控制file.path字段-方法一"></a>控制file.path字段-方法一</h3><p>要想成功的话，就得让 <code>file.path</code> 为 <code>/tmp/upload/xxx</code> ，正常的序号应该是下面这样，<code>/tmp/upload/0000000001</code> ，只需要把 <code>upload.cgi</code> 进程卡住，查看一下 <code>/tmp/upload</code> 目录下的文件即可（如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011443511.png" alt="image-20230801144341178" style="zoom:67%;" />
+
+
+
+<p>现在尝试一下，我们设置 <code>file.path</code> 字段的值为 <code>/tmp/upload/0000000001</code> 再发一次报文，看看能否通过正则检查，发现函数执行后的返回值为 <code>0</code>，如此通过了检查（如下图）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011446052.png" alt="image-20230801144610759" style="zoom: 67%;" />
+
+<p>刚刚发送的报文如下</p>
+<h4 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;pathparam&quot;</span><br><span class="line"></span><br><span class="line">Portal</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;fileparam&quot;</span><br><span class="line"></span><br><span class="line">login.html</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;file.path&quot;</span><br><span class="line"></span><br><span class="line">/tmp/upload/0000000001</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;what&quot;;filename=&quot;login.html&quot;;Content-Type: application/octet-stream</span><br><span class="line"></span><br><span class="line">&lt;title&gt;test&lt;/title&gt;</span><br><span class="line">&lt;script&gt;alert(&#x27;debug&#x27;)&lt;/script&gt;</span><br><span class="line">------------	</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011447139.png" alt="image-20230801144712953"></p>
+<p>继续调试，发现可以成功走到 <code>system</code> 函数，并执行 <code>mv</code> 命令（如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011459704.png" alt="image-20230801145913390" style="zoom:67%;" />
+
+<p>此时刷新路由器登录界面，发现已经被篡改掉了（如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011500528.png" alt="image-20230801150004288" style="zoom:67%;" />
+
+<h3 id="控制file-path字段-方法二"><a href="#控制file-path字段-方法二" class="headerlink" title="控制file.path字段-方法二"></a>控制file.path字段-方法二</h3><p>这里是 <strong>winmt</strong> 师傅使用的一种比较优雅控制 <code>file.path</code> 的方法，上面提到的方法 <code>file.path</code> 字段是我们主动发过去的，其实报文会根据配置文件来自动来添加一个 <code>xxx.path</code> ，配置文件分析这里其实就说了这个地方（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011519087.png" alt="image-20230801151915836"></p>
+<p>这里的 <code>$upload_file_name</code> 就是报文中 <code>Content-Disposition: form-data; name=&quot;what&quot;;filename=&quot;login.html&quot;</code> 的 <code>name</code> 字段，然后在 <code>upload_set_form_field $upload_field_name.path &quot;$upload_tmp_path&quot;</code> 这行代码，会把上传文件的路径记录到这个 <code>xxx.path</code> 字段，这个 <code>xxx</code> 也就是上面的 <code>name</code> 字段的值。</p>
+<p>验证的话，只需要看一下上面那次 <code>POST</code> 报文的数据就会发现 <code>what.path</code> 字段的值就是 <code>/tmp/upload/00000000001</code>  （如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011536829.png" alt="image-20230801153655724"></p>
+<p>所以实际上报文也可以这么写（如下），这样不需要手动传入 <code>file.path</code> 字段，这个的优点是不知道文件的上传路径依然也能够攻击成功。这次就不再调试了，执行流什么的和上面一样</p>
+<h4 id="POC-1"><a href="#POC-1" class="headerlink" title="POC"></a>POC</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;pathparam&quot;</span><br><span class="line"></span><br><span class="line">Portal</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;fileparam&quot;</span><br><span class="line"></span><br><span class="line">login.html</span><br><span class="line">------------</span><br><span class="line">Content-Disposition: form-data; name=&quot;file&quot;;filename=&quot;login.html&quot;;Content-Type: application/octet-stream</span><br><span class="line"></span><br><span class="line">&lt;title&gt;The website has been hacked!&lt;/title&gt;</span><br><span class="line">&lt;script&gt;alert(&#x27;The website has been hacked&#x27;)&lt;/script&gt;</span><br><span class="line">------------	</span><br></pre></td></tr></table></figure>
+
+<p>攻击效果</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011549144.png" alt="image-20230801154927968"></p>
+<h2 id="调试方法"><a href="#调试方法" class="headerlink" title="调试方法"></a>调试方法</h2><p>因为 <code>upload.cgi</code> 进程被调用是一闪而逝的，想正常查看进程号来附加进程调试是不可能的，所以下面介绍三种可以调试 <code>upload.cgi</code> 的方法</p>
+<h4 id="方法1-爆破"><a href="#方法1-爆破" class="headerlink" title="方法1-爆破"></a>方法1-爆破</h4><p>这个原理很好理解，就是写一个 <code>shell</code> 脚本不断的去捕获 <code>upload.cgi</code> 进程号，如果捕获到了就立刻去执行 <code>gdbserver</code> ，缺点是全凭概率，大概率是捕获不到的（感觉有三成的几率用循环能捕获到该进程），并且没法控制断点位置，因为我们无法干预捕获到进程号并加载调试的时间，有可能 <code>upload.cgi</code> 都快执行完才加载上去啥的，就随机性很大，大概率看不到自己想要的，但也算是一种调试方法。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">while true; do</span><br><span class="line">PID=$(pidof upload.cgi)</span><br><span class="line">if [ -n &quot;$PID&quot; ]; then</span><br><span class="line">  echo &quot;upload.cgi process ID is：$PID&quot;</span><br><span class="line">  ./gdbserver 0.0.0.0:9999 --attach $PID</span><br><span class="line">else</span><br><span class="line">  echo &quot;No get upload.cgi process ID&quot;</span><br><span class="line">fi</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>使用上面的爆破脚本开始运行，然后 <code>gdb</code> 执行 <code>target remote 192.168.45.66:9999</code> ，接着发送报文，此时会触发 <code>upload.cgi</code> 进程，如果运气好的话爆破脚本此时正好会捕捉到进程号，开启调试</p>
+<p>下图为爆破成功的情况</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011702409.png" alt="image-20230801170242715"></p>
+<h4 id="方法2-死循环"><a href="#方法2-死循环" class="headerlink" title="方法2-死循环"></a>方法2-死循环</h4><p>该方法对于这种 <code>fork</code> 子进程启动 <code>cgi</code> 最稳定的调试方法 – 也是 <strong>winmt</strong> 最爱的调试方法 😎</p>
+<p>在 <code>upload.cgi</code> 的 <code>main</code> 函数起始位置，将首次进行跳转的指令给改成跳到本条指令地址的指令，使程序陷入死循环</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011058828.png" alt="image-20230801105851693"></p>
+<p>上面 <code>getenv</code> 函数跳转时，正常的汇编代码应该如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011100923.png" alt="image-20230801110045838"></p>
+<p>然后现在把 <code>0x10E0C</code> 这个地址存放的指令 <code>BL getenv</code> 改成 <code>B 0x10E0C</code> 这样就可以让进程 <code>upload.cgi</code> 陷入死循环（使用插件 <code>keypatch</code> 进行修改）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011102814.png" alt="image-20230801110224722"></p>
+<p>此时改完之后查看伪代码应该是这样的，如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011104021.png" alt="image-20230801110405979"></p>
+<p>然后将 <code>patch</code> 完的文件保存后，放到 <code>/www/cgi-bin</code> 目录下（记得把原本正常的 <code>upload.cgi</code> 备份），直接重启 <code>nginx</code> 服务，然后发送攻击报文的话，路由器的界面会出现 <code>502</code> 错误（如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291336669.png" alt="image-20230729133639500" style="zoom:67%;" />
+
+<p> <code>nginx</code> 服务本身会报一个 <code>Permission denied</code> 的错误，这是因为传进来的 <code>upload.cgi</code> 属于 <code>root</code> 用户，但是启动 <code>upload.cgi</code> 进程的用户是 <code>www-data</code>（<code>ps -ef</code> 可以查看），它的 <code>uid</code> 是 <code>33</code>，权限不够。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291337395.png" alt="image-20230729133739275"></p>
+<p><strong>解决方法是把其他用户组的访问权限设置为 <code>7</code></strong> ，这里图方便直接执行了 <code>chmod 777 upload.cgi </code>（之前我还纳闷为什么可以成功的单独运行 upload.cgi 程序，却服务启动的时候说权限不够，现在知道了单独运行 <code>upload.cgi</code> 是因为执行的用户本身就是 <code>root</code> ，以前对于 <code>linux</code> 上的权限设置有些一知半解，这里要特别感谢 <strong>winmt</strong> 师傅帮我解决了这个问题并且还要感谢我的同学 <a target="_blank" rel="noopener" href="https://www.timochan.cn/">timochan</a> 帮助我彻底理解了这里）</p>
+<p>然后重启 <code>nginx</code> 服务，发送攻击报文，此时正常的话服务是卡住的，访问路由器登录界面没反应，并且也能看到 <code>upload.cgi</code> 的进程号</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011240122.png" alt="image-20230801124042711" style="zoom:50%;" />
+
+<p>用 <code>gdb.server + gdb</code> 实现远程调试 <a target="_blank" rel="noopener" href="https://github.com/stayliv3/gdb-static-cross/blob/master/prebuilt/gdbserver-7.7.1-armhf-eabi5-v1-sysv">gdbserver 下载链接</a>  。下载后需要用 <code>scp</code> 传入到 <code>qemu</code> 中。执行命令 <code>./gdbserver 0.0.0.0:9999 --attach PID</code></p>
+<p>在宿主机中执行 <code>sudo gdb-multiarch upload.cgi</code> 这里也设置 <code>upload.cgi</code> 是为了加载出来程序的符号</p>
+<p>执行 <code>set endian little</code> 设置一下字节序，执行 <code>set architecture arm</code> 设置一下架构再执行  <code>target remote 192.168.45.66:9999</code> 就可以附加 <code>upload.cgi </code> 进程进行调试了。</p>
+<p>一切正常的话，界面应该如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011250655.png" alt="image-20230801125049024"></p>
+<p>因为我们通过 <code>patch</code> 让进程陷入了死循环，所以要用 <code>set</code> 命令给改回正常的指令，查看之前备份的 <code>upload.cgi</code> 文件，发现这里原本机器码为 <strong>AA FF FF EB</strong> ，因此执行 <code>set *0x10e0c=0xebffffaa</code> 命令（因为小端序，这里是反着输入的）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011315543.png" alt="image-20230801131504461" style="zoom:67%;" />
+
+
+
+<p>至此就可以正常来调试 <code>upload.cgi</code> 进程（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307291350803.png" alt="image-20230729135054570"></p>
+<p>还有一个坑，调试的时候会发现，调试几分钟，就会出现右下角的报错（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011254422.png" alt="image-20230801125411430"></p>
+<p>原因是在 <code>uwsgi</code> 的配置文件中设置了时间限制（如下图），解决方法就把这个值改的很大即可</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308011322496.png" alt="image-20230801132239444" style="zoom:50%;" />
+
+
+
+<h4 id="方法3-父进程"><a href="#方法3-父进程" class="headerlink" title="方法3-父进程"></a>方法3-父进程</h4><p>该方法在这里没有实验成功，但理论上可行。去找到调用 <code>upload.cgi</code> 的进程（也就是 <code>uwsgi -m --ini /etc/uwsgi/upload.ini</code> ），调试 <code>upload.cgi</code> 的父进程，等到 <code>fork</code> 创建子进程，切换到子进程，并用 <code>catch exec</code> 命令捕获新事件，在执行 <code>execvp</code> 后即可跳转到 <code>upload.cgi</code> 上调试（<code>upload.cgi</code> 进程会替代原本的子进程 ），理论上是这个样子。失败原因：<code>gdb</code> 加载进程调试后，似乎出现了一些问题。第一是 <code>fork</code> 后子进程没出来（<code>gdb</code> 上看不到）；第二 <code>execvp</code> 这里执行后不支持 <code>catch exec</code> ；第三是 <code>gdb</code> 挂上来后，有些指令会导致进程的崩溃</p>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p><strong>CVE-2023-20073</strong> 的复现结束了，在这个过程中有过惊喜、不解、困惑各样的情绪。还记得当时我做了两天，启动服务这块还是失败的。后来用的网上找的内核镜像和磁盘映像文件（里面有一个老版本固件解出来的文件系统），直到整个复现过程的结束，我用的都不是自己解压出来的文件系统。这个点一个星期都在抽空不断的尝试，但都没有成功。第八天，不知什么时候我尝试了 <code>scp</code> 应该传压缩后的文件系统，并且 <code>binwalk</code> 要保留文件的软链接，这一次我成功将服务启动成功，用的是我自己解压出来的最新固件。当时我给 <strong>winmt</strong> 说现在的心情就和中了五百万一样，可实际上我只不过是成功的解压了一个固件启动了服务而已，这种心情很奇怪，可能只有各位亲自遇见了困扰自己许久的问题最终还是被自己给解决掉才能体会到（也不希望各位花费一个星期只为体会到这种心情，哈哈~）</p>
+<p>如果结尾只写一句话的话，应该是 “感谢 <strong>winmt</strong> 和坚持的 <strong>ZIKH26</strong> ，他教会了我很多，不止技术，还有态度” 🤩</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.iotsec-zone.com/article?id=383">思科企业级路由器0day漏洞挖掘（水漏洞版）- IOTsec-Zone物联网安全社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Reasonss/article/details/124420016">(57条消息) 解压UBI格式文件_解压ubi文件_老王-嵌入式linux的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/e512a7127f2d">Nginx upload上传模块(学习笔记十七) - 简书 (jianshu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jinjin666/archive/2013/01/29/2881772.html">nginx文件上传模块+Tonado - 浪迹天涯cc - 博客园 (cnblogs.com)</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIPS%E6%9E%B6%E6%9E%84/" rel="tag"># MIPS架构</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/d808b199.html" rel="prev" title="抓取和分析西门子S7COMM协议">
+                  <i class="fa fa-chevron-left"></i> 抓取和分析西门子S7COMM协议
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
