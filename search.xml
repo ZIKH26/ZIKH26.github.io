@@ -4762,7 +4762,7 @@
   <entry>
     <title>tools-函数库</title>
     <url>/posts/ad411136.html</url>
-    <content><![CDATA[<p>我和我的同学 <a href="https://www.cnblogs.com/trunk/">trunk</a> 写了一些方便解PWN题的<del>鸡肋</del>函数封装到了这个库里，第一是平常用起来方便顺手，第二顺便练习下编程能力，第三如果以后有可能的话，希望逐渐做成像 <strong>roderick</strong> 师傅的<a href="https://github.com/RoderickChan/pwncli">pwncli</a>那样。</p>
+    <content><![CDATA[<p>我和我的同学 <a href="https://www.cnblogs.com/trunk/">trunk</a> 还有我学弟 <a href="https://www.cnblogs.com/Sta8r9/">Sta8r9</a>  共同编写一些方便解PWN题的<del>鸡肋</del>函数封装到了这个库里，第一是平常用起来方便顺手，第二顺便练习下编程能力，第三如果以后有可能的话，希望逐渐做成像 <strong>roderick</strong> 师傅的<a href="https://github.com/RoderickChan/pwncli">pwncli</a>那样。</p>
 <p><a href="https://github.com/ZIKH26/tools/blob/master/tools.py">源代码</a></p>
 <p>一条命令下载 <code>tools</code> 函数库</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/ZIKH26/tools/master/tools.py</span><br></pre></td></tr></table></figure>
