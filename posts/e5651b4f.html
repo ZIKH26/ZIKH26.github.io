@@ -21,12 +21,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。特别感谢 winmt 师傅在我复现期间多次解答我的各种困惑 本文分析的固件为 EW_3.0(1)">
+    <meta name="description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="站在巨人肩膀上复现CVE-2023-34644">
 <meta property="og:url" content="https://zikh26.github.io/posts/e5651b4f.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。特别感谢 winmt 师傅在我复现期间多次解答我的各种困惑 本文分析的固件为 EW_3.0(1)">
+<meta property="og:description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121128678.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121127424.png">
@@ -76,7 +76,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121052534.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121055168.png">
 <meta property="article:published_time" content="2023-09-12T06:31:07.870Z">
-<meta property="article:modified_time" content="2023-09-12T06:36:30.641Z">
+<meta property="article:modified_time" content="2023-09-12T06:42:05.013Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="MIPS架构">
 <meta name="twitter:card" content="summary">
@@ -276,7 +276,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2023-09-12 14:31:07 / 修改时间：14:36:30" itemprop="dateCreated datePublished" datetime="2023-09-12T14:31:07+08:00">2023-09-12</time>
+      <time title="创建时间：2023-09-12 14:31:07 / 修改时间：14:42:05" itemprop="dateCreated datePublished" datetime="2023-09-12T14:31:07+08:00">2023-09-12</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -301,7 +301,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>winmt</strong> 师傅之前挖到了一个锐捷的未授权 <code>RCE</code> 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。<strong>winmt</strong> 师傅已经发布了 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm">相关的挖掘经历</a>，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 <strong>winmt</strong> 师傅文章中未提到的部分我会进行记录。特别感谢 <strong>winmt</strong> 师傅在我复现期间多次解答我的各种困惑</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>winmt</strong> 师傅之前挖到了一个锐捷的未授权 <code>RCE</code> 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。<strong>winmt</strong> 师傅已经发布了 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm">相关的挖掘经历</a>，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 <strong>winmt</strong> 师傅文章中未提到的部分我会进行记录。<span id="more"></span>特别感谢 <strong>winmt</strong> 师傅在我复现期间多次解答我的各种困惑</p>
 <p>本文分析的固件为 <code>EW_3.0(1)B11P204_EW1200GI</code>（已解密） 百度网盘链接：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1RutoNCTiGBiW74YpzKXfxg?pwd=vht7">https://pan.baidu.com/s/1RutoNCTiGBiW74YpzKXfxg?pwd=vht7</a>    提取码：vht7</p>
 <h2 id="固件解密"><a href="#固件解密" class="headerlink" title="固件解密"></a>固件解密</h2><p>上面已经提供了解密后的固件，但目前从锐捷官网下载的固件都是被加密的。此处记录一下解密的三种思路</p>
 <ol>
