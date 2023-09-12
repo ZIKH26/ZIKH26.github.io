@@ -153,7 +153,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">99</span>
+          <span class="site-state-item-count">100</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -185,6 +185,103 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/1694f8f0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/1694f8f0.html" class="post-title-link" itemprop="url">whctf2017 pwn题wp</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 18:31:37" itemprop="dateModified" datetime="2023-07-01T18:31:37+08:00">2023-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>今天做题的时候无意做了一道buu上的whctf2017 stackoverflow,做完之后发现另外几道whctf2017的题目也很不错，就打算全做了都学习一下，题目全部在buu上都可以找到</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>简单总结一下这四道题，它们分别考察了如下的知识点：</p>
+<p>第一题考察了scanf函数最终的输入是在内部的<code>count = _IO_SYSREAD(fp, fp-&gt;_IO_buf_base, fp-&gt;_IO_buf_end - fp-&gt;_IO_buf_base);</code>这行代码，只要能控制这几个字段并且对其他一些字段进行绕过，就可以实现IO的任意地址写</p>
+<p>第二题考察了条件竞争漏洞，在多线程的操作中访问同一个全局变量没有加锁，在delete函数中让全局指针被减到了位于got表的位置，从而malloc申请堆块的地址写入了got表里，没有开NX导致堆可执行，从而劫持got表跳转到堆的shellcode上</p>
+<p>第三题考察的是snprintf执行中的格式化字符串漏洞，snprintf是一个字符一个字符来处理的，可能是采取了一种循环遍历的方式，所以即使最初调用snprintf的时候format是%s，但后续的操作中format被改变了，然后再取格式化字符的时候触发了漏洞。<strong>snprintf拷贝字符的时候可能存在溢出</strong></p>
+<p>第四题考察的是未初始化漏洞，在打印之前，没有对操作的指针进行初始化，从而使用了栈里的残留数据，泄露出了canary，配合gets的栈溢出漏洞，ret2libc获取shell</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/1694f8f0.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1014,104 +1111,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/posts/fcb54cab.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/8cbdee5a.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/8cbdee5a.html" class="post-title-link" itemprop="url">hfctf_2020_marksman</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:27:28" itemprop="dateModified" datetime="2023-07-01T19:27:28+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>通过这道题的学习与收获有：</p>
-<p>1、atol函数放入的数据应该是打包之前的，而非是打包之后的数据</p>
-<p>2、exit函数执行流程，<strong>exit函数的调用流程exit函数—&gt;run_exit_handlers函数—&gt;_dl_fini函数—&gt; rtld_lock_unlock_recursive指针</strong> 如果我们能够将最后的指针所指向的内容修改为one_gadget，那么即可获取shell。这个劫持exit_hook的可取之处在于，程序正常结束的话，最后都会调用这个exit函数</p>
-<p>3、学会了重新绑定程序所对应的libc动态库（patch libc和ld）</p>
-<p>4、用这个方法可以在开了PIE的程序中下断点。gdb.attach(p, ‘b * $rebase(0xd63)\nc’)</p>
-<p>5、one_gadget加上参数-l2可以搜索更多的one_gadget。</p>
-<p>6、即使相同的libc库，在小版本不同的情况下，某些内容的偏移也是不一样的。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/8cbdee5a.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>

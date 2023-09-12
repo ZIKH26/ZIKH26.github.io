@@ -21,26 +21,76 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="万古凡间一过客，九天之上第一仙">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ZIKH26&#39;s Blog">
-<meta property="og:url" content="https://zikh26.github.io/index.html">
+    <meta name="description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。特别感谢 winmt 师傅在我复现期间多次解答我的各种困惑 本文分析的固件为 EW_3.0(1)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="站在巨人肩膀上复现CVE-2023-34644">
+<meta property="og:url" content="https://zikh26.github.io/posts/e5651b4f.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:description" content="前言winmt 师傅之前挖到了一个锐捷的未授权 RCE 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。winmt 师傅已经发布了 相关的挖掘经历，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 winmt 师傅文章中未提到的部分我会进行记录。特别感谢 winmt 师傅在我复现期间多次解答我的各种困惑 本文分析的固件为 EW_3.0(1)">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121128678.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121127424.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121145573.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121146061.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513243.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513988.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513739.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513124.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513757.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513875.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513373.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308241513060.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308311122302.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291338524.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291342074.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291344320.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291349507.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291430860.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291436977.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291500311.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291617137.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291632275.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291631518.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291701815.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291711972.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291723184.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291724142.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291641637.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291644044.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308300959950.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308301007797.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308301020203.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308301025970.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308301028645.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308301517529.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308311455808.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308311456572.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291028707.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291044499.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291048141.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291052228.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308291054903.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308251011899.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309091227332.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309091231861.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121052534.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121055168.png">
+<meta property="article:published_time" content="2023-09-12T06:31:07.870Z">
+<meta property="article:modified_time" content="2023-09-12T06:36:30.641Z">
 <meta property="article:author" content="ZIKH26">
-<meta property="article:tag" content="CTF PWN IT">
+<meta property="article:tag" content="MIPS架构">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309121128678.png">
 
 
-<link rel="canonical" href="https://zikh26.github.io/">
+<link rel="canonical" href="https://zikh26.github.io/posts/e5651b4f.html">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/e5651b4f.html","path":"posts/e5651b4f.html","title":"站在巨人肩膀上复现CVE-2023-34644"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ZIKH26's Blog</title>
+<title>站在巨人肩膀上复现CVE-2023-34644 | ZIKH26's Blog</title>
   
 
 
@@ -73,7 +123,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">ZIKH26's Blog</h1>
+      <p class="site-title">ZIKH26's Blog</p>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -126,7 +176,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -139,6 +189,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BA%E4%BB%B6%E8%A7%A3%E5%AF%86"><span class="nav-number">2.</span> <span class="nav-text">固件解密</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lua%E6%96%87%E4%BB%B6%E7%9A%84%E8%B0%83%E7%94%A8%E9%93%BE%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">lua文件的调用链分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">二进制文件分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="nav-number">4.1.</span> <span class="nav-text">读取数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90%E6%95%B0%E6%8D%AE"><span class="nav-number">4.2.</span> <span class="nav-text">解析数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E6%93%8D%E4%BD%9C"><span class="nav-number">4.3.</span> <span class="nav-text">具体操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E5%85%B3%E9%94%AE%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="nav-number">4.3.1.</span> <span class="nav-text">操作关键信号量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8Euf-cmd-call%E5%87%BD%E6%95%B0%E5%BC%80%E5%A7%8B"><span class="nav-number">4.3.2.</span> <span class="nav-text">从uf_cmd_call函数开始</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E5%89%8D%E5%A4%95"><span class="nav-number">4.3.3.</span> <span class="nav-text">命令执行前夕</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%87%E6%8D%A2%E7%BA%BF%E7%A8%8B-%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C"><span class="nav-number">4.3.4.</span> <span class="nav-text">切换线程-命令执行</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#POC"><span class="nav-number">4.4.</span> <span class="nav-text">POC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%BC%94%E7%A4%BA"><span class="nav-number">4.5.</span> <span class="nav-text">攻击演示</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E9%97%AE-amp-amp-%E8%A7%A3%E5%86%B3"><span class="nav-number">5.</span> <span class="nav-text">疑问&amp;&amp;解决</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#deal-remote-config-handle%E5%87%BD%E6%95%B0%E6%98%AF%E6%80%8E%E4%B9%88%E8%A2%AB%E8%A7%A6%E5%8F%91%E7%9A%84"><span class="nav-number">5.1.</span> <span class="nav-text">deal_remote_config_handle函数是怎么被触发的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%B2%A1%E6%9C%89%E4%BC%A0%E5%85%A5%E6%95%B0%E6%8D%AE%E6%97%B6%EF%BC%8C%E8%BF%9B%E7%A8%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E8%A2%AB%E9%98%BB%E5%A1%9E%E4%BA%86%EF%BC%9F"><span class="nav-number">5.2.</span> <span class="nav-text">用户没有传入数据时，进程在哪里被阻塞了？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8Edeal-remote-config-handle%E5%87%BD%E6%95%B0%E5%A6%82%E4%BD%95%E6%89%A7%E8%A1%8C%E5%88%B0uf-cmd-call%E5%87%BD%E6%95%B0"><span class="nav-number">5.3.</span> <span class="nav-text">从deal_remote_config_handle函数如何执行到uf_cmd_call函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#scp%E5%91%BD%E4%BB%A4%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3"><span class="nav-number">5.4.</span> <span class="nav-text">scp命令报错解决</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E7%BB%AD%E5%88%A9%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">后续利用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%BF%E5%88%B0%E7%AE%A1%E7%90%86%E5%91%98%E5%90%8E%E5%8F%B0%E5%AF%86%E7%A0%81"><span class="nav-number">6.1.</span> <span class="nav-text">拿到管理员后台密码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BE%E5%A3%B0"><span class="nav-number">7.</span> <span class="nav-text">尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">8.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -184,16 +235,17 @@
 
     </div>
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/e5651b4f.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -207,13 +259,13 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="name" content="站在巨人肩膀上复现CVE-2023-34644 | ZIKH26's Blog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/e5651b4f.html" class="post-title-link" itemprop="url">站在巨人肩膀上复现CVE-2023-34644</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          站在巨人肩膀上复现CVE-2023-34644
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -249,8 +301,7 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>winmt</strong> 师傅之前挖到了一个锐捷的未授权 <code>RCE</code> 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。<strong>winmt</strong> 师傅已经发布了 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm">相关的挖掘经历</a>，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 <strong>winmt</strong> 师傅文章中未提到的部分我会进行记录。特别感谢 <strong>winmt</strong> 师傅在我复现期间多次解答我的各种困惑</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>winmt</strong> 师傅之前挖到了一个锐捷的未授权 <code>RCE</code> 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。<strong>winmt</strong> 师傅已经发布了 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm">相关的挖掘经历</a>，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 <strong>winmt</strong> 师傅文章中未提到的部分我会进行记录。特别感谢 <strong>winmt</strong> 师傅在我复现期间多次解答我的各种困惑</p>
 <p>本文分析的固件为 <code>EW_3.0(1)B11P204_EW1200GI</code>（已解密） 百度网盘链接：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1RutoNCTiGBiW74YpzKXfxg?pwd=vht7">https://pan.baidu.com/s/1RutoNCTiGBiW74YpzKXfxg?pwd=vht7</a>    提取码：vht7</p>
 <h2 id="固件解密"><a href="#固件解密" class="headerlink" title="固件解密"></a>固件解密</h2><p>上面已经提供了解密后的固件，但目前从锐捷官网下载的固件都是被加密的。此处记录一下解密的三种思路</p>
 <ol>
@@ -566,7 +617,6 @@
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4">https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4</a></p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zujipi8736/article/details/86606093">https://blog.csdn.net/zujipi8736/article/details/86606093</a></p>
 
-      
     </div>
 
     
@@ -574,281 +624,21 @@
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
+          <div class="post-tags">
+              <a href="/tags/MIPS%E6%9E%B6%E6%9E%84/" rel="tag"># MIPS架构</a>
+          </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/848296ab.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/848296ab.html" class="post-title-link" itemprop="url">从零开始复现CVE-2023-20073</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2023-08-03 10:22:28 / 修改时间：10:31:39" itemprop="dateCreated datePublished" datetime="2023-08-03T10:22:28+08:00">2023-08-03</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/IOT%E5%AE%89%E5%85%A8/%E5%A4%8D%E7%8E%B0CVE/" itemprop="url" rel="index"><span itemprop="name">复现CVE</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这算第二次复现 <code>IOT</code> 漏洞，第一次是很老的 <code>DIR-815</code> ，第二次直接复现的是 <strong>winmt</strong> 师傅今年挖到的一个思科漏洞 <strong>CVE-2023-20073</strong> 。年份上跨越不算小，就导致了复现过程中屡屡遇到问题而没什么解决的办法，而网上除了 <strong>winmt</strong> 师傅本人做了漏洞的分析之外，也没有找到其他资料。这里发自内心的感谢 <strong>winmt</strong> 师傅给予我提供的指导和帮助，否则可能要走更多的弯路甚至会对很多地方一知半解的就完成了所谓的 “复现” ，写这篇文章的一个重要目的就是想帮助之后复现这个漏洞的师傅提供一些参考，毕竟不是每个人都能遇见一个万能的 <strong>winmt</strong> QAQ。本文对于 <strong>CVE-2023-20073</strong> 复现过程做了详尽的记录，其中包括了遇见过的各种坑和解决问题的方法及思路。再次对 <strong>winmt</strong> 师傅表示感谢！</p>
-<h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><p><code>Cisco RV340</code>，<code>RV340W</code>，<code>RV345</code>和 <code>RV345P</code> 四款型号的路由器中最新固件均存在一个未授权任意文件上传漏洞 （且目前尚未修复），攻击者可以在未授权的情况下将文件上传到 <code>/tmp/upload</code> 目录中，然后利用 <code>upload.cgi</code> 程序中存在的漏洞，最终造成存储型 <code>XSS</code> 攻击。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/848296ab.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d808b199.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/d808b199.html" class="post-title-link" itemprop="url">抓取和分析西门子S7COMM协议</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2023-07-20 17:07:12 / 修改时间：17:19:49" itemprop="dateCreated datePublished" datetime="2023-07-20T17:07:12+08:00">2023-07-20</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B7%A5%E6%8E%A7%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">工控安全</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>近期在初步入门工控安全，进行了第一次协议分析，本文将介绍如何对 <code>S7COMM</code> 协议进行从零到一的分析。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/d808b199.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/848296ab.html" rel="prev" title="从零开始复现CVE-2023-20073">
+                  <i class="fa fa-chevron-left"></i> 从零开始复现CVE-2023-20073
+                </a>
             </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d1f081a9.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/d1f081a9.html" class="post-title-link" itemprop="url">D-Link DIR-815路由器溢出漏洞分析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-23 13:07:26" itemprop="dateCreated datePublished" datetime="2023-05-23T13:07:26+08:00">2023-05-23</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:44:32" itemprop="dateModified" datetime="2023-07-01T16:44:32+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>网上关于 <code>D-Link DIR-815</code> 路由器漏洞复现的文章还是蛮多的，因此第一次的复现选择了这个软柿子🤔。因为相关文章很多的缘故，所以我尽可能来写一些大多文章没有提到的点。</p>
-<blockquote>
-<p><strong>漏洞描述 ：DIR-815 固件中的 Hedwig.cgi 脚本中，在处理 HTTP 头时，如果 Cookie 字段中含 uid&#x3D; 的值则存在栈溢出漏洞，从而获得路由器远程控制权限</strong></p>
-<p><strong>影响版本 ：DIR-815&#x2F;300&#x2F;600&#x2F;645等</strong></p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/d1f081a9.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
+            <div class="post-nav-item">
             </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+          </div>
     </footer>
   </article>
 </div>
@@ -856,566 +646,7 @@
 
 
 
-    
 
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/919c29c4.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/919c29c4.html" class="post-title-link" itemprop="url">IOT安全入门学习--MIPS汇编基础</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 15:51:54" itemprop="dateCreated datePublished" datetime="2023-05-15T15:51:54+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:45:02" itemprop="dateModified" datetime="2023-07-01T16:45:02+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><p>说下学习 <code>MIPS</code> 汇编基础的思路，作为一个接触新知识面的小白，我首先去查了一下如何编译 <code>MIPS</code> 架构的程序，然后自己写了一个简单的代码，放入 <code>IDA</code> 后开始进行汇编代码的学习，遇见一条指令就学习一条指令，为了观察更细致的内存变化同时还要学习如何用 <code>gdb</code> 来进行 <code>MIPS</code> 架构程序的调试。在这个过程中记录见到的汇编指令和寄存器等等，接着是函数调用约定的学习，参考着网上的文章再结合 <code>gdb</code> 调试基本就能理解透彻。感觉对 <code>MIPS</code> 汇编基础和函数调用约定已经得心应手，就可以做一些 <code>PWN</code> 题以此来稳固打下的基础，最后尝试来手写各种的 <code>shellcode</code>。希望这个思路能给之后自学者一点借鉴。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/919c29c4.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/e4508dbd.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/e4508dbd.html" class="post-title-link" itemprop="url">Ciscn2023-华中赛区分区赛-pwn-wp</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-06-30 13:39:54" itemprop="dateCreated datePublished" datetime="2023-06-30T13:39:54+08:00">2023-06-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:44:14" itemprop="dateModified" datetime="2023-07-01T16:44:14+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>今年国赛的华中分区赛一共放了两道 <code>PWN</code> ，一个一解，一个零解。零解的是 <code>LLVM PASS PWN</code> ，这个没有研究过，暂且先复现另一个题目（考察的是 <code>house of muney</code>）还有一个 <code>AWD</code> 环节的 <code>PWN</code> （考察的格式化字符串漏洞）</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/e4508dbd.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/12effc43.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/12effc43.html" class="post-title-link" itemprop="url">关于 kernel-RW Any Memory 的学习总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:46:23" itemprop="dateModified" datetime="2023-07-01T16:46:23+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>通过 <code>2019STARCTF hackeme</code> 这道题目的学习，了解到了在内核中内存具有任意地址读写的能力后，可以利用的手法。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/12effc43.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/a31a5755.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/a31a5755.html" class="post-title-link" itemprop="url">关于 kernel-ROP & ret2user & bypass-SMEP 的学习总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:47:06" itemprop="dateModified" datetime="2023-07-01T16:47:06+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>内核态的 <code>ROP</code> 和用户态的思路和做法是一样的，都是利用 <code>gadget</code> 来不断控制执行流，进行任意的函数调用。不过获取基地址还有搜索 <code>gadget</code> 等一些小细节发生了变化，但思想不变，所以理解起来应该还是很快的</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/a31a5755.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/6176bce9.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/6176bce9.html" class="post-title-link" itemprop="url">关于 kernel-Double Fetch 的学习总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:48:49" itemprop="dateModified" datetime="2023-07-01T16:48:49+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p><code>Double Fetch</code> 从漏洞原理上属于条件竞争漏洞，是一种内核态与用户态之间的数据访问竞争。</p>
-<p>在 Linux 等现代操作系统中，虚拟内存地址通常被划分为内核空间和用户空间。内核空间负责运行内核代码、驱动模块代码等，权限较高。而用户空间运行用户代码，并通过系统调用进入内核完成相关功能。通常情况下，用户空间向内核传递数据时，内核先通过通过 <code>copy_from_user</code> 等拷贝函数将用户数据拷贝至内核空间进行校验及相关处理，但<strong>在输入数据较为复杂时，内核可能只引用其指针，而将数据暂时保存在用户空间进行后续处理。此时，该数据存在被其他恶意线程篡改风险，造成内核验证通过数据与实际使用数据不一致，导致内核代码执行异常</strong>。</p>
-<p>一个典型的 <code>Double Fetch</code> 漏洞原理如下图所示，一个用户态线程准备数据并通过系统调用进入内核，该数据在内核中有两次被取用，内核第一次取用数据进行安全检查（如缓冲区大小、指针可用性等），当检查通过后内核第二次取用数据进行实际处理。而在两次取用数据之间，另一个用户态线程可创造条件竞争，对已通过检查的用户态数据进行篡改，在真实使用时造成访问越界或缓冲区溢出，最终导致内核崩溃或权限提升。</p>
-</blockquote>
-<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202304041615674.png" alt="image-20230404161502570" style="zoom:50%;" />
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/6176bce9.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/406ce0e2.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/406ce0e2.html" class="post-title-link" itemprop="url">关于 kernel-UAF 的学习总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:49:24" itemprop="dateModified" datetime="2023-07-01T16:49:24+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>终于来到了关于内核的学习，目前打算浅尝一下内核的基础知识和漏洞。之后每个学习的新漏洞都单独写一篇文章，每篇学到的新的前置知识都放到对应的文章中吧，暂时先不做汇总。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/406ce0e2.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
 
 </div>
   </main>
