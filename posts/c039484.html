@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="需求：之前在复现 IOT 漏洞，为了捋清调用链进行 GDB 调试，但由于固件的代码量较大，而且函数之间的调用和跳转很多。导致了 GDB 这边每次函数跳转后都需要在 IDA 手动同步一下。久而久之，我发现这是一个重复且无意义且浪费时间的工作，我在想能否开发一个 IDA 插件用来自动同步 GDB 调试时的 PC 寄存器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SynGDB--同步GDB调试的IDA小插件">
+<meta property="og:url" content="https://zikh26.github.io/posts/c039484.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="需求：之前在复现 IOT 漏洞，为了捋清调用链进行 GDB 调试，但由于固件的代码量较大，而且函数之间的调用和跳转很多。导致了 GDB 这边每次函数跳转后都需要在 IDA 手动同步一下。久而久之，我发现这是一个重复且无意义且浪费时间的工作，我在想能否开发一个 IDA 插件用来自动同步 GDB 调试时的 PC 寄存器">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309201102744.png">
+<meta property="article:published_time" content="2023-09-19T02:29:18.900Z">
+<meta property="article:modified_time" content="2023-09-20T10:08:03.023Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="小工具">
+<meta property="article:tag" content="IDA插件">
+<meta property="article:tag" content="GDB命令">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309201102744.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/c039484.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/c039484.html","path":"posts/c039484.html","title":"SynGDB--同步GDB调试的IDA小插件"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SynGDB--同步GDB调试的IDA小插件 | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">需求：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E6%9E%9C"><span class="nav-number">2.</span> <span class="nav-text">成果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%94%E7%A4%BA%E8%A7%86%E9%A2%91"><span class="nav-number">3.</span> <span class="nav-text">演示视频</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%80%E5%88%9D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="nav-number">4.</span> <span class="nav-text">最初的设计思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%A5%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">该设计思路存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B"><span class="nav-number">6.</span> <span class="nav-text">改进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDB%E5%91%BD%E4%BB%A4%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="nav-number">7.</span> <span class="nav-text">GDB命令的代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IDA%E6%8F%92%E4%BB%B6%E4%BB%A3%E7%A0%81"><span class="nav-number">8.</span> <span class="nav-text">IDA插件代码</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">101</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">103</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/c039484.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="SynGDB--同步GDB调试的IDA小插件 | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SynGDB--同步GDB调试的IDA小插件
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-09-19 10:29:18" itemprop="dateCreated datePublished" datetime="2023-09-19T10:29:18+08:00">2023-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-20 18:08:03" itemprop="dateModified" datetime="2023-09-20T18:08:03+08:00">2023-09-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B0%9D%E8%AF%95%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">尝试开发小工具</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h3 id="需求："><a href="#需求：" class="headerlink" title="需求："></a>需求：</h3><p>之前在复现 <code>IOT</code> 漏洞，为了捋清调用链进行 <code>GDB</code> 调试，但由于固件的代码量较大，而且函数之间的调用和跳转很多。导致了 <code>GDB</code> 这边每次函数跳转后都需要在 <code>IDA</code> 手动同步一下。久而久之，我发现这是一个重复且无意义且浪费时间的工作，我在想能否开发一个 <code>IDA</code> 插件用来自动同步 <code>GDB</code> 调试时的 <code>PC</code> 寄存器</p>
+<span id="more"></span>
+
+<h3 id="成果"><a href="#成果" class="headerlink" title="成果"></a>成果</h3><p>写了两个 <code>GDB</code> 命令，分别为 <code>local</code> 和 <code>sl</code> ，以及 <code>IDA</code> 的一个插件 <code>SynGDB</code></p>
+<p>在 <code>IDA</code> 开启 <code>SynGDB</code> 后， <code>GDB</code> 界面输入 <code>local</code> 命令可以立刻将 <code>IDA</code> 同步到 <code>GDB</code> 当前的 <code>PC</code> 寄存器的位置，<code>sl</code> 命令可以让 <code>GDB</code> 单步执行一条指令并同步给 <code>IDA</code> </p>
+<h3 id="演示视频"><a href="#演示视频" class="headerlink" title="演示视频"></a>演示视频</h3><p><video controls height='100%' width='100%' src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/video%2FE76604E910DA9BAC493BCF802C425DD3.mp4"></video></p>
+<h3 id="最初的设计思路"><a href="#最初的设计思路" class="headerlink" title="最初的设计思路"></a>最初的设计思路</h3><p>我平常动态调试程序是放到虚拟机 <code>Ubuntu18.04</code> 中完成，而静态分析放到宿主机中的 <code>IDA</code> 进行。因此考虑将 <code>IDA</code> 插件启动一个服务端，虚拟机中写一个 <code>GDB</code> 的命令来启一个客户端。</p>
+<p><code>GDB</code> 命令：首先建立与服务端的连接，监视 <code>PC</code> 寄存器，每当值发生改变时，就把当前 <code>PC</code> 寄存器的值发送给服务端</p>
+<p><code>IDA</code> 插件：与客户端建立连接后，开启一个新的线程，不断循环，等待接受客户端发送过来的数据，用 <code>IDA pro python API</code> 中的函数，跳转到接收到的地址</p>
+<p>之前已经将这部分的代码实现完成，但后来发现有问题又给删了，没有保留这部分代码。</p>
+<h3 id="该设计思路存在的问题"><a href="#该设计思路存在的问题" class="headerlink" title="该设计思路存在的问题"></a>该设计思路存在的问题</h3><p>上述思路最直观的问题就是下了几个断点，然后 <code>C</code> 过去，那么 <code>PC</code> 寄存器会在极短时间内改变多次，从而短时间内多次发送给服务端数据。导致了服务端那边处理异常。</p>
+<p>重新思考下这个插件的目的，这个插件只是为了自动同步 <code>GDB</code> 调试的位置，并没有必要每条指令都同步到 <code>IDA</code> 上，通常来说，只有我查看 <code>IDA</code> 的时候，我才希望去同步。那么我就没必要每条指令都同步给 <code>IDA</code> 这里。</p>
+<h3 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h3><p>因此我决定写成两个命令，一个为 <code>sl</code> ，一个为 <code>local</code></p>
+<p><code>local</code> 命令是获取当前 <code>PC</code> 寄存器的值，然后发送给 <code>IDA</code> 使其同步。这个命令通常用于在 <code>GDB</code> 中执行了 <code>c</code> 命令或者多次 <code>n</code> 命令后，准备查看 <code>IDA</code> 时，执行 <code>local</code> ，同步 <code>IDA</code> 的位置</p>
+<p><code>sl</code> 命令是对 <code>local</code> 命令的一个封装并添加了执行 <code>si</code> 命令的操作。如果需要具体调试某处地方观察上下文信息，那么需要 <code>GDB</code> 一边调试，一边查看 <code>IDA</code> 代码，那么可以执行 <code>sl</code> 命令， <code>GDB</code> 单步走一次，并同步到 <code>IDA</code> 上</p>
+<h3 id="GDB命令的代码"><a href="#GDB命令的代码" class="headerlink" title="GDB命令的代码"></a>GDB命令的代码</h3><p><code>local</code> 命令的实现逻辑</p>
+<ol>
+<li>执行 <code>show architecture</code> 命令，根据返回值来判断当前程序的架构（因为不同架构的 <code>PC</code> 寄存器的名称不一样）</li>
+<li>执行 <code>x/gx $pc</code> 命令，获取当前 <code>PC</code> 寄存器的值</li>
+<li>对 <code>PC</code> 寄存器的值进行处理（因为有时候接收到的数据可能为 <code>0x411082 &lt;setvbuf@plt&gt;</code> 这种样子，所以需要对数据进行提取处理）</li>
+<li>将处理后的地址发送给服务端</li>
+</ol>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> gdb</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">host = <span class="string">&#x27;10.214.43.180&#x27;</span></span><br><span class="line">port = <span class="number">12626</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">handle_pc_address</span>(<span class="params">raw_data</span>):</span><br><span class="line">    pattern=<span class="string">r&quot;^0x[0-9a-fA-f]+&quot;</span></span><br><span class="line">    <span class="keyword">match</span>=re.search(pattern,raw_data)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">match</span>.group()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;[*] Abnormal data--Unable to parse the value of the current PC register&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">socket_write_data</span>(<span class="params">address</span>):</span><br><span class="line">    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    client_socket.connect((host, port))</span><br><span class="line">    client_socket.send(<span class="built_in">str</span>(address).encode())</span><br><span class="line">    client_socket.close()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_pc_name</span>():</span><br><span class="line">    arch_info = gdb.execute(<span class="string">&quot;show architecture&quot;</span>, to_string=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;x86-64&quot;</span> <span class="keyword">in</span> arch_info:</span><br><span class="line">        register_name = <span class="string">&quot;rip&quot;</span> </span><br><span class="line">    <span class="keyword">elif</span> <span class="string">&quot;i386&quot;</span> <span class="keyword">in</span> arch_info:</span><br><span class="line">        register_name = <span class="string">&quot;eip&quot;</span> </span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        register_name = <span class="string">&quot;pc&quot;</span></span><br><span class="line">    <span class="keyword">return</span> register_name</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">local_cmd</span>():</span><br><span class="line">    register=get_pc_name()</span><br><span class="line">    raw_address=gdb.execute(<span class="string">f&quot;x/gx $<span class="subst">&#123;register&#125;</span>&quot;</span>, to_string=<span class="literal">True</span>)</span><br><span class="line">    address=handle_pc_address(raw_address)</span><br><span class="line">    socket_write_data(address)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sl_cmd</span>():</span><br><span class="line">    gdb.execute(<span class="string">&quot;si&quot;</span>)</span><br><span class="line">    local_cmd()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">gdb.execute(<span class="string">&quot;define sl\n\tpython sl_cmd()\nend&quot;</span>)</span><br><span class="line">gdb.execute(<span class="string">&quot;define local\n\tpython local_cmd()\nend&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>然后在 <code>.gdbinit</code> 文件中添加如下代码</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">source /home/zikh/Desktop/gdb_command/bind_ida.py</span><br><span class="line"></span><br><span class="line">define sl</span><br><span class="line">	python sl_cmd()</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">define local</span><br><span class="line">	python local_cmd()</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="IDA插件代码"><a href="#IDA插件代码" class="headerlink" title="IDA插件代码"></a>IDA插件代码</h3><p><code>IDA python</code> 插件编写，要有一个注册插件的函数</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">PLUGIN_ENTRY</span>():</span><br><span class="line">    <span class="keyword">return</span> SynGDB()<span class="comment">#该函数名要和插件名一样</span></span><br></pre></td></tr></table></figure>
+
+<p>然后定义一个插件类，名称也为 <code>SynGDB</code> ，下面插件类中的方法和属性都是必须的，少一个内容，<code>IDA</code> 插件都无法正常检测到</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SynGDB</span>(ida_idaapi.plugin_t):</span><br><span class="line">    flags = ida_idaapi.PLUGIN_UNL</span><br><span class="line">    comment = <span class="string">&quot;Current instructions for synchronous GDB debugging&quot;</span></span><br><span class="line">    wanted_name = <span class="string">&quot;SynGDB&quot;</span></span><br><span class="line">    wanted_hotkey = <span class="string">&quot;Alt-F5&quot;</span><span class="comment">#这里设置的是插件快捷键</span></span><br><span class="line">    <span class="built_in">help</span>= <span class="string">&quot;Coming soon...&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">init</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="comment">#初始化操作，比如打印提示信息，导入功能模块；</span></span><br><span class="line">        <span class="keyword">return</span> ida_idaapi.PLUGIN_OK</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, arg</span>):</span><br><span class="line">        <span class="comment">#插件的入口函数，调用功能模块的函数</span></span><br><span class="line">		<span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">term</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="comment">#结束时调用的方法</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <code>run</code> 函数中先开启 <code>socket</code> ，等待客户端的连接。这里要进行多线程操作，最初我这里用的是程序中直接开启 <code>socket</code> 等待客户端连接，然后在等待的连接中就直接造成了 <code>IDA</code> 未响应。所以这里必须要再开一个线程来处理接收数据</p>
+<p>接收到地址后，用 <code>ida_kernwin.jumpto(address)</code> 函数来执行跳转。</p>
+<p>正常来说，我需要在 <code>term</code> 函数中来关闭之前开的 <code>socket</code> ，因为这是插件关闭或者 <code>IDA</code> 退出时触发的函数（至少我在网上搜到是这样描述的），但我测试了一下发现，不知道为什么我这个插件刚运行的时候，<code>term</code> 函数就被触发了（观察下图能发现 <code>SynGDB plugin terminated</code> 这行字符串确实被输出了，而此时我刚刚启动插件，这个 <code>term</code> 函数就被触发）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309201102744.png" alt="image-20230920105745918"></p>
+<p>这意味着我无法在 <code>term</code> 函数中关闭之前开启的 <code>socket</code> ，因为这里的 <code>term</code> 函数并不是我要退出 <code>IDA</code> 时触发的。不关闭 <code>socket</code> 资源，就意味着之前占用的 <code>12626</code> 端口就始终存在。如果 <code>IDA</code> 关闭再打开，启动 <code>SynGDB</code> 插件时会报错，说端口已经被占用。我实在没想到有什么好方法在 <code>IDA</code> 退出时自动关闭掉之前打开的资源，退而求其次是给插件写一个专门的函数，并手动触发进行关闭 <code>socket</code>，但这并不是我期望的这样（这违背了我想减少做重复且无意义的初衷）</p>
+<p>最终另辟蹊径，我在每次插件开启时，先去检测固定的端口 <code>12626</code> 是否被某个进程占用，如果被占用的话，则去关闭掉之前的进程，并进行后续操作</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 导入IDA Python模块</span></span><br><span class="line"><span class="keyword">import</span> ida_kernwin</span><br><span class="line"><span class="keyword">import</span> ida_idaapi</span><br><span class="line"><span class="keyword">import</span> ida_funcs</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">host = <span class="string">&#x27;0.0.0.0&#x27;</span></span><br><span class="line">port = <span class="number">12626</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">PLUGIN_ENTRY</span>():<span class="comment"># 注册插件</span></span><br><span class="line">    <span class="keyword">return</span> SynGDB()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">execute_and_jump_to_address</span>(<span class="params">address</span>):</span><br><span class="line">    func = ida_funcs.get_func(address)</span><br><span class="line">    <span class="keyword">if</span> func <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;invalid address：0x<span class="subst">&#123;address:X&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    <span class="comment"># 执行跳转</span></span><br><span class="line">    ida_kernwin.jumpto(address)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">Ensure_port_availability</span>(<span class="params">port</span>):</span><br><span class="line">    <span class="keyword">with</span> os.popen(<span class="string">f&#x27;netstat -aon|findstr &quot;<span class="subst">&#123;port&#125;</span>&quot;&#x27;</span>) <span class="keyword">as</span> res:</span><br><span class="line">        res = res.read().split(<span class="string">&quot;\n&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(res)&gt;<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">for</span> line <span class="keyword">in</span> res:</span><br><span class="line">            temp=line.split()</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;LISTENING&quot;</span> <span class="keyword">in</span> temp:</span><br><span class="line">                pid=<span class="built_in">int</span>(temp[-<span class="number">1</span>])</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;The PID <span class="subst">&#123;pid&#125;</span> occupying port <span class="subst">&#123;port&#125;</span>\n&quot;</span>)</span><br><span class="line">                <span class="keyword">try</span>:</span><br><span class="line">                    os.popen(<span class="string">f&quot;taskkill /F /PID <span class="subst">&#123;pid&#125;</span>&quot;</span>)</span><br><span class="line">                    time.sleep(<span class="number">1</span>)</span><br><span class="line">                <span class="keyword">except</span>:</span><br><span class="line">                    <span class="built_in">print</span>(<span class="string">f&quot;Try to kill <span class="subst">&#123;pid&#125;</span>,but failed&quot;</span>)</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;Successfully killed PID:<span class="subst">&#123;pid&#125;</span>&quot;</span>)</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Port <span class="subst">&#123;port&#125;</span> available&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">init_socket</span>():</span><br><span class="line">    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    <span class="keyword">if</span> Ensure_port_availability(port):</span><br><span class="line">        server_socket.bind((host, port))</span><br><span class="line">        <span class="keyword">return</span> server_socket</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;Port <span class="subst">&#123;port&#125;</span> is not available&quot;</span>)</span><br><span class="line">        exit(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">socket_get_address</span>(<span class="params">server_socket</span>):</span><br><span class="line">    server_socket.listen(<span class="number">1</span>)  </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Waiting for gdb&#x27;s connection...&quot;</span>)</span><br><span class="line">    client_socket, client_address = server_socket.accept()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Connected to gdb: <span class="subst">&#123;client_address&#125;</span>&quot;</span>)</span><br><span class="line">    data = client_socket.recv(<span class="number">64</span>)</span><br><span class="line">    client_socket.close()</span><br><span class="line">    received_number = <span class="built_in">int</span>(data.decode(), <span class="number">16</span>)</span><br><span class="line">    <span class="keyword">return</span> received_number</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个IDA插件类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SynGDB</span>(ida_idaapi.plugin_t):</span><br><span class="line">    flags = ida_idaapi.PLUGIN_UNL</span><br><span class="line">    comment = <span class="string">&quot;Current instructions for synchronous GDB debugging&quot;</span></span><br><span class="line">    wanted_name = <span class="string">&quot;SynGDB&quot;</span></span><br><span class="line">    wanted_hotkey = <span class="string">&quot;Alt-F5&quot;</span></span><br><span class="line">    <span class="built_in">help</span>= <span class="string">&quot;Coming soon...&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">init</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;SynGDB plugin initialized&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> ida_idaapi.PLUGIN_OK</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run</span>(<span class="params">self, arg</span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            server_socket = init_socket()</span><br><span class="line">            thread = threading.Thread(target=self.run_thread, args=(server_socket,))</span><br><span class="line">            thread.start()</span><br><span class="line">        <span class="keyword">except</span> ValueError:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;Transfer data failed or invalid address&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">run_thread</span>(<span class="params">self, server_socket</span>):</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            address = socket_get_address(server_socket)</span><br><span class="line">            <span class="keyword">if</span> address != <span class="number">0</span>:</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&quot;jump to address 0x<span class="subst">&#123;address:X&#125;</span>&quot;</span>)</span><br><span class="line">                ida_kernwin.execute_sync(<span class="keyword">lambda</span>: execute_and_jump_to_address(address), ida_kernwin.MFF_WRITE)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">term</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;SynGDB plugin terminated&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>IDA</code> 中加载插件的方法：</p>
+<ol>
+<li>先将上面的代码保存成一个名为 <code>SynGDB.py</code> 的文件并放到 <code>IDA</code> 的 <code>plugins</code> 目录下</li>
+<li>打开 <code>IDA</code> 选择 <code>Edit-&gt;Plugins-&gt;SynGDB</code> 即可启动插件</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/%E7%BC%96%E7%A8%8B/" rel="tag"># 编程</a>
+              <a href="/tags/%E5%B0%8F%E5%B7%A5%E5%85%B7/" rel="tag"># 小工具</a>
+              <a href="/tags/IDA%E6%8F%92%E4%BB%B6/" rel="tag"># IDA插件</a>
+              <a href="/tags/GDB%E5%91%BD%E4%BB%A4/" rel="tag"># GDB命令</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/e5651b4f.html" rel="prev" title="站在巨人肩膀上复现CVE-2023-34644">
+                  <i class="fa fa-chevron-left"></i> 站在巨人肩膀上复现CVE-2023-34644
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
