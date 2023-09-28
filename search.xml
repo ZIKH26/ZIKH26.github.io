@@ -112,7 +112,8 @@
 
 <p>将其执行后，调用 <code>whoami</code> 可以看到下图中已经触发了后门，并且用各种方法检查环境变量 <code>LD_PRELOAD</code> 发现一切正常，如下图</p>
 <p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271900896.png" alt="image-20230927190012341"></p>
-<h3 id="参考文章："><a href="#参考文章：" class="headerlink" title="参考文章："></a>参考文章：</h3><p><a href="https://blog.csdn.net/Rong_Toa/article/details/108474167">https://blog.csdn.net/Rong_Toa/article/details/108474167</a></p>
+<h3 id="参考文章："><a href="#参考文章：" class="headerlink" title="参考文章："></a>参考文章：</h3><p><a href="https://cloud.tencent.com/developer/article/1683272">https://cloud.tencent.com/developer/article/1683272</a></p>
+<p><a href="https://blog.csdn.net/Rong_Toa/article/details/108474167">https://blog.csdn.net/Rong_Toa/article/details/108474167</a></p>
 <p><a href="https://www.baeldung.com/linux/ld_preload-trick-what-is">https://www.baeldung.com/linux/ld_preload-trick-what-is</a></p>
 <p><a href="https://www.yuque.com/cyberangel/rg9gdm/gg3r9m#MDRY6">https://www.yuque.com/cyberangel/rg9gdm/gg3r9m#MDRY6</a></p>
 <p><a href="https://blog.csdn.net/llm_hao/article/details/115493516">https://blog.csdn.net/llm_hao/article/details/115493516</a></p>
