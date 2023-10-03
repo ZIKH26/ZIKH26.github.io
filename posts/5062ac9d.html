@@ -28,8 +28,7 @@
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
 <meta property="og:description" content="1、什么是shellcode这里我谈谈自己的理解，shellcode 就是一段可执行的机器码，如果可以让 CPU 从 shellcode 首字节开始往下执行，那么 shellcode 执行完毕就会达到编写者想要的目的（shellcode 不一定非要是获取 shell 的机器码），至少初学者先这么理解应该是没什么问题的。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203805.png">
-<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203921.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310031702450.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203064.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203570.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203055.png">
@@ -39,11 +38,11 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271210448.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271211378.png">
 <meta property="article:published_time" content="2023-05-14T23:36:47.673Z">
-<meta property="article:modified_time" content="2023-09-27T04:11:20.943Z">
+<meta property="article:modified_time" content="2023-10-03T09:02:04.557Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="shellcode编写">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203805.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310031702450.png">
 
 
 <link rel="canonical" href="https://zikh26.github.io/posts/5062ac9d.html">
@@ -245,7 +244,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-09-27 12:11:20" itemprop="dateModified" datetime="2023-09-27T12:11:20+08:00">2023-09-27</time>
+      <time title="修改时间：2023-10-03 17:02:04" itemprop="dateModified" datetime="2023-10-03T17:02:04+08:00">2023-10-03</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -291,8 +290,7 @@
 <li>避免出现 <code>\x00</code> 字符来截断，当然了 <code>\x00</code> 并不是所有情况都会截断函数，只有用 <code>strcpy</code> 这类函数时才会考虑 <code>\x00</code> 截断，具体截断的话，可以参考下面两张图片</li>
 <li><code>xor rsi,rsi</code> 比 <code>mov rsi,0</code> 所需的字节数更少</li>
 </ol>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203805.png" alt="image-20230926230513064"></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309271203921.png"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310031702450.png" alt="image-20231003170202299"></p>
 <p>图片出自<a target="_blank" rel="noopener" href="https://xuanxuanblingbling.github.io/ctf/pwn/2020/12/16/input/">Clang裁缝店</a></p>
 <p>接着是将第一个参数存入 <code>rdi</code>，以前我一直以为是 <code>rdi</code> 写成 <code>/bin/sh</code> 对应的 <code>ascii</code> 码，可是踩坑后才明白，<font color=red>我们只是要把&#x2F;bin&#x2F;sh对应的ascii码的 <strong>地址</strong> 给rdi即可</font>  传参的时候，要调用的函数会自己去这个地址里找到对应的&#x2F;bin&#x2F;sh。</p>
 <p>因此这步要写成</p>
