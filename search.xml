@@ -1,6 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>玩转树莓派之zero w配合P4wnP1 ALOA实现badusb</title>
+    <url>/posts/1bb8b02f.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近浅玩了一下树莓派，本以为要焊接电路板，搞硬件。也算是为之后拆路由器读芯片练练手，接触后发现给树莓派烧录完系统，基本还是玩的软件层（也可能是境界不够🤔）。本文记录了我用树莓派 <code>zero w</code> 配合 <a href="https://github.com/RoganDawes/P4wnP1_aloa">P4wnP1 ALOA</a> 做了一个 <strong>badusb</strong> ，最终配合 <code>Cobalt Strike</code> 生成的木马以及红队大哥做的免杀，可以达到插谁，谁成肉鸡的效果😎</p>
+<span id="more"></span>
+
+<p><strong>声明</strong>：文中所涉及的技术、思路和工具仅供以安全为目的的学习研究使用，任何人不得将其用于非法用途以及盈利等目的，由此产生的任何后果，自行承担！</p>
+<h2 id="效果演示"><a href="#效果演示" class="headerlink" title="效果演示"></a>效果演示</h2><p><video controls height='100%' width='100%' src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/video/badusb.mp4"></video></p>
+<h2 id="给树莓派烧录系统"><a href="#给树莓派烧录系统" class="headerlink" title="给树莓派烧录系统"></a>给树莓派烧录系统</h2><p>在京东上买了个树莓派 <code>zero w</code> ，到手后看到是长这个样子的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121457256.jpg" alt="_-1234400694_IMG_20231012_145519_1697093734000_xg_0"></p>
+<p>再准备一张内存卡（我用的 <code>16G</code> ）和读卡器</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121505064.jpg" alt="_2131233179__cd67aa62f855909728f1bd3210ca6ed2_347696290_IMG_20231012_150450_0_xg_0"></p>
+<p>下载 <code>SDFormatter</code> ，先格式化内存卡</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281253959.png" alt="image-20230928125302819"></p>
+<p>这里确定选好盘后，直接点击格式化即可</p>
+<p>然后去下载想要烧录的镜像，我这里是直接用的 <a href="https://github.com/RoganDawes/P4wnP1_aloa/releases/tag/v0.1.1-beta">P4wnP1_aloa</a>  ，它是一个基于 <code>kali</code> 的系统</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121510600.png" alt="image-20231012151057467"></p>
+<p>将镜像解压出来后，下载 <code>Win32DiskImager</code> ，用其将镜像烧录到内存卡中</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258994.png" alt="image-20230928125821950"></p>
+<p>选择好镜像和要写入的设备，点击写入即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258475.png" alt="image-20230928125854421"></p>
+<p>这里会有一个弹框，点击 <code>yes</code> ，等待十分钟左右烧录完毕</p>
+<h2 id="启动和访问树莓派"><a href="#启动和访问树莓派" class="headerlink" title="启动和访问树莓派"></a>启动和访问树莓派</h2><p>将烧录完系统的内存卡插入到树莓派，拿一根 <code>USB</code> 数据线插到图中标红的接口，这个接口既可以给树莓派供电又可以传输数据，而左边看起来相同的接口只可以供电</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121528649.png" alt="image-20231012152802290"></p>
+<p>如此树莓派就启动了，可以选择用一个转接头加上扩展坞连接键盘，并插上一根 <code>HDMI</code> 线连接一个显示器，当做正常的电脑来使用。也可以选择只插一根 <code>USB</code> 数据线进行供电，然后连接树莓派自身热点（密码为 <code>MaMe82-P4wnP1</code>），热点名称就是很显眼的这个</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121532933.png" alt="image-20231012153230886"></p>
+<p>通过 <code>ssh</code> 连接（用户名 <code>root</code>，密码 <code>toor</code>）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221162.png" alt="image-20231012154234134"></p>
+<p>因为我手头正好有显示器和扩展坞，所以这两种方法我都用过了。</p>
+<h2 id="HIDScript"><a href="#HIDScript" class="headerlink" title="HIDScript"></a>HIDScript</h2><p><code>P4wnP1_aloa</code> 的 <code>web</code> 端其实做的挺好的，访问 <code>172.24.0.1:8000</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221640.png" alt="image-20231012155258706"></p>
+<p>这里其他的选项，看名称或者查看官方说明都能知道个七七八八。我直接记录好玩的地方，选择这个 <code>HIDSCRIPT</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222755.png" alt="image-20231012155641198"></p>
+<p>这里我们可以编辑代码，让树莓派来充当 <strong>badusb</strong> 的作用，模拟键盘的输入。因为我玩的也比较浅，这里记住这五个的用法其实就差不多了</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">layout</span>(<span class="string">&#x27;us&#x27;</span>); <span class="comment">//键盘布局，这里运行脚本时一定要切成英文的输入法，最好用成美式键盘，不然可能会输出中文导致命令错误</span></span><br><span class="line"><span class="title function_">typingSpeed</span>(标准间隔,随机值); <span class="comment">//ms为单位，标准间隔是每个字符敲击的间隔，随机值是敲击每个字符所落下的时间</span></span><br><span class="line"><span class="title function_">delay</span>(time); <span class="comment">//ms为单位，等待时间</span></span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;xxxxx\n&#x27;</span>); <span class="comment">//输入字符串，模拟键盘敲击按键</span></span><br><span class="line"><span class="title function_">press</span>(<span class="string">&#x27;GUI r&#x27;</span>); <span class="comment">//按下按键再松开 ，这个按的是windows+r键</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>编写一段代码，用 <code>powershell</code> 来打开记事本，并写下几个字符串试试</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">layout</span>(<span class="string">&#x27;us&#x27;</span>);</span><br><span class="line"><span class="title function_">typingSpeed</span>(<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line"><span class="title function_">press</span>(<span class="string">&#x27;GUI r&#x27;</span>);</span><br><span class="line"><span class="title function_">delay</span>(<span class="number">500</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;notepad\n&#x27;</span>);</span><br><span class="line"><span class="title function_">delay</span>(<span class="number">800</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;hello world\nit is test!\n&#x27;</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&quot;it&#x27;s cool!\n&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>确实全程自动输入指定内容（注意：最好用成美式键盘，别忘记 <code>\n</code> 来模拟敲击回车）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222369.png" alt="image-20231012161126193"></p>
+<p>整个的过程也可以遥控，就是将树莓派插到主机 <code>A</code> 中，然后用另一台设备（手机也可以）连接树莓派的热点，来运行编写好的  <code>HIDScript</code> ，这样主机 <code>A</code> 的鼠标和键盘就可以自己动了</p>
+<h3 id="HIDScript-执行始终处于-Running-jobs问题"><a href="#HIDScript-执行始终处于-Running-jobs问题" class="headerlink" title="HIDScript 执行始终处于 Running jobs问题"></a>HIDScript 执行始终处于 Running jobs问题</h3><p>注意：我开始做的时候，点击 <code>RUN</code> 是无法成功执行 <code>HIDScript</code> 的，会始终处于 <code>Running jobs</code> 状态（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121619986.png" alt="image-20231012161904822"></p>
+<p>折腾了两天，并查阅资料，无果。并且在 <code>github</code> 的项目上有相关的 <a href="https://github.com/RoganDawes/P4wnP1_aloa/issues/206">Issues</a> ，阅读之后也没发现到底是哪出了问题。最终我找同学借了六根 <code>USB</code> 数据线，逐一试过后，惊喜的发现有一根插上后运行 <code>HIDScript</code> 成功，其余五根均失败。这六根线都是可以传输数据和充电的，如此确定是数据线的某些未知原因导致的 <code>HIDScript</code> 执行是卡住（应该就是数据没传给主机）</p>
+<h2 id="Badusb-远控木马"><a href="#Badusb-远控木马" class="headerlink" title="Badusb + 远控木马"></a>Badusb + 远控木马</h2><p>为了当一把黑客小子😎，我打算一不做二不休，最终想实现这个树莓派插入一台电脑，就能直接对其进行控制（只是找同学的电脑进行学习测试😆）</p>
+<p>思路：我选择用 <code>Cobalt Strike</code> （下文简称 <code>CS</code>）来生成一个远控木马（并找红队大哥做了下免杀…），然后将木马上传至自己的服务器，通过直接访问链接就可以进行下载。最后用 <strong>badusb</strong> 模拟键盘输入，执行下载木马的命令</p>
+<p><code>CS</code> 分为服务端和客户端，如果自己没有服务器的话，就只能把客户端和服务端部署在同一个局域网里，同一局域网的肉鸡上线后，通过服务端的转发，来实现客户端对其间接控制。如果有服务器的话，那服务端就可以部署到公网中，即使肉鸡和客户端处于两个不同局域网中，客户端依然可以通过服务端的转发，实现间接控制（前提是客户端和肉鸡都能上网😅）</p>
+<p>利用 <code>nginx</code> 将服务器上的静态文件（恶意木马）通过 <code>HTTP</code> 协议展现给客户端，以便于用户直接下载。我是先安装了 <code>nginx</code> ，然后把几个恶意程序都放到了 <code>/var/www/html</code> 目录下，然后启动 <code>nginx</code> 服务。写一个测试文件，看下效果。这里在 <code>/var/www/html</code> 目录下放的是一个文本文件，通过 <code>ip + port</code> 直接访问这个文件就能查看到（如下图），如果是 <code>exe</code> 文件的话，访问其路径会自动下载文件。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310130945972.png" alt="image-20231013094534872"></p>
+<p>攻击的完整过程如下图，至于为什么不能让 <strong>badusb</strong> 插入后直接执行下载木马的命令，这是因为做完免杀后，实际上要下载三个文件。如果都写到 <code>HIDScript</code> 里的话，<strong>badusb</strong> 模拟键盘输入会出现错误，字符会乱序并且重复打印（具体原因不知道，经过测试姑且猜测是脚本太长了），为了缩短命令，我就做了一个启动脚本，真正下载木马并执行写在了启动脚本里。而 <strong>badusb</strong> 只需要下载启动脚本并执行即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131121410.png" alt="image-20231013112141288"></p>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p>最终攻击效果在文章开头已经展示了，这个过程总的来说确实叫玩，这算是真正体验了一把黑客小子的感觉，并且学习到了一些新知识。但目前我并不打算再花费更多的时间继续去研究这个黑客小工具了，它对于学习的帮助至此就够了，再花时间就纯属于为了装逼而研究🥱。本想学习树莓派来对后面硬件的拆解和焊接打一点基础，但没想到歪打正着当了把黑客小子，学习之余装了一把🤠</p>
+<p>当然了，也许以后我想玩<del>想装逼</del>的时候，可能还会折腾点新花样出来，哈哈QAQ</p>
+<p>最后就是感谢一下红队大哥 <strong>邓阮叶</strong> 写的免杀（大佬都喜欢低调，就不挂大哥的链接了😎），还有我的全能室友 <a href="https://www.cnblogs.com/jxdgx/">jxdgx</a> 帮忙剪辑的攻击效果视频（加的蒙版是真炫嗷）</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://github.com/RoganDawes/P4wnP1_aloa#1-features">https://github.com/RoganDawes/P4wnP1_aloa#1-features</a></p>
+<p><a href="https://www.cnblogs.com/azureology/p/12343267.html">树莓派zero w入坑指南 - azureology - 博客园 (cnblogs.com)</a></p>
+<p><a href="https://www.bilibili.com/video/BV1dy4y1C7wb/?spm_id_from=333.880.my_history.page.click&vd_source=bea0e85c91c884d3a927e3c65f2f60df">如何让树莓派变成黑客工具_哔哩哔哩_bilibili</a></p>
+<p><a href="https://houwenda.github.io/2019/01/22/hid-attack-with-P4wnP1-a-l-o-a/">如何用P4wnP1_aloa进行HID攻击 | 漏断’s Blog (houwenda.github.io)</a></p>
+<p><a href="https://www.ascotbe.com/2019/06/29/raspberry/">P4wnP1全家桶安装及实战 | ascotbe</a></p>
+<p><a href="https://blog.csdn.net/qq_43341224/article/details/109958459">Cobalt Strike基础操作_cobaltstrike截图后存放-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/weixin_44268918/article/details/128857998">Cobalt Strike工具安装与基础使用_cobalt strike下载_剁椒鱼头没剁椒的博客-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>树莓派</category>
+        <category>探究</category>
+      </categories>
+      <tags>
+        <tag>黑客小子</tag>
+        <tag>木马</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>关于环境变量LD_PRELOAD的利用</title>
     <url>/posts/af0595fa.html</url>
     <content><![CDATA[<h3 id="LD-PRELOAD"><a href="#LD-PRELOAD" class="headerlink" title="LD_PRELOAD"></a>LD_PRELOAD</h3><p><code>LD_PRELOAD</code> 是 <code>Linux</code> 系统的一个环境变量，它允许运行程序时优先强制加载指定的动态链接库，并且由于 <strong>全局符号介入机制</strong> 的影响，<code>LD_PRELOAD</code> 指定的动态链接库中的函数会<strong>覆盖之后其他动态链接库中的同名函数</strong>。对于调试程序或者向程序中注入自定义的代码都是很方便的，本文记录了如何通过 <code>LD_PRELOAD</code> 环境变量来 <code>hook</code> 程序，达到植入后门和调试的目的</p>
@@ -3226,7 +3302,7 @@
 
 <p>触发这个 <code>PROTECT_PTR</code> 宏，有两种情况，第一种是当前 <code>free</code> 的堆块是第一个进入 <code>tcache bin</code> 的（此前 <code>tcache bin</code> 中没有堆块），这种情况原本 <code>next</code> 的值就是 <code>0</code> ，第二种情况则是原本的 <code>next</code> 值已经有数据了。<strong>如果是第一种情况的话，对于 <code>safe-Linking</code> 机制而言，可能并没有起到预期的作用，因为将当前堆地址右移 <code>12</code> 位和 <code>0</code> 异或，其实值没有改变，如果我们能泄露出这个运算后的结果，再将其左移 <code>12</code> 位就可以反推出来堆地址，如果有了堆地址之后，那我们依然可以篡改 <code>next</code> 指针，达到任意地址申请的效果</strong> </p>
 <p>恢复 <code>next</code> 的宏为 <code>#define REVEAL_PTR(ptr)  PROTECT_PTR (&amp;ptr, ptr)</code> ，其实这个宏最终还是调用了 <code>PROTECT_PTR</code> ，原理就是 <code>A=B^C ; C=A^B</code> </p>
-<h3 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h3><h4 id="NCTF2021-ezheap"><a href="#NCTF2021-ezheap" class="headerlink" title="NCTF2021-ezheap"></a>NCTF2021-ezheap</h4><p>[题目链接](<a href="https://github.com/X1cT34m/NCTF2021/tree/main/Pwn/ezheap">NCTF2021&#x2F;Pwn&#x2F;ezheap at main · X1cT34m&#x2F;NCTF2021 (github.com)</a>)</p>
+<h3 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h3><h4 id="NCTF2021-ezheap"><a href="#NCTF2021-ezheap" class="headerlink" title="NCTF2021-ezheap"></a>NCTF2021-ezheap</h4><p><a href="https://github.com/X1cT34m/NCTF2021/tree/main/Pwn/ezheap">题目链接</a></p>
 <p>本题的 <code>libc</code> 版本为 <code>2.32</code>，因为是本地复现，所以我就随便选了一个 <code>2.32</code> 的小版本来做了</p>
 <h5 id="保护策略："><a href="#保护策略：" class="headerlink" title="保护策略："></a>保护策略：</h5><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202303191044578.png" alt="image-20230319104415444" style="zoom:67%;" />
 

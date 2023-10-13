@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言最近浅玩了一下树莓派，本以为要焊接电路板，搞硬件。也算是为之后拆路由器读芯片练练手，接触后发现给树莓派烧录完系统，基本还是玩的软件层（也可能是境界不够🤔）。本文记录了我用树莓派 zero w 配合 P4wnP1 ALOA 做了一个 badusb ，最终配合 Cobalt Strike 生成的木马以及红队大哥做的免杀，可以达到插谁，谁成肉鸡的效果😎">
+<meta property="og:type" content="article">
+<meta property="og:title" content="玩转树莓派之zero w配合P4wnP1 ALOA实现badusb">
+<meta property="og:url" content="https://zikh26.github.io/posts/1bb8b02f.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言最近浅玩了一下树莓派，本以为要焊接电路板，搞硬件。也算是为之后拆路由器读芯片练练手，接触后发现给树莓派烧录完系统，基本还是玩的软件层（也可能是境界不够🤔）。本文记录了我用树莓派 zero w 配合 P4wnP1 ALOA 做了一个 badusb ，最终配合 Cobalt Strike 生成的木马以及红队大哥做的免杀，可以达到插谁，谁成肉鸡的效果😎">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121457256.jpg">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121505064.jpg">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281253959.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121510600.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258994.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258475.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121528649.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121532933.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221162.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221640.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222755.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222369.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121619986.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310130945972.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131121410.png">
+<meta property="article:published_time" content="2023-10-13T04:13:07.192Z">
+<meta property="article:modified_time" content="2023-10-13T04:30:35.938Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="黑客小子">
+<meta property="article:tag" content="木马">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121457256.jpg">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/1bb8b02f.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/1bb8b02f.html","path":"posts/1bb8b02f.html","title":"玩转树莓派之zero w配合P4wnP1 ALOA实现badusb"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>玩转树莓派之zero w配合P4wnP1 ALOA实现badusb | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%88%E6%9E%9C%E6%BC%94%E7%A4%BA"><span class="nav-number">2.</span> <span class="nav-text">效果演示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%99%E6%A0%91%E8%8E%93%E6%B4%BE%E7%83%A7%E5%BD%95%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">给树莓派烧录系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%92%8C%E8%AE%BF%E9%97%AE%E6%A0%91%E8%8E%93%E6%B4%BE"><span class="nav-number">4.</span> <span class="nav-text">启动和访问树莓派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HIDScript"><span class="nav-number">5.</span> <span class="nav-text">HIDScript</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HIDScript-%E6%89%A7%E8%A1%8C%E5%A7%8B%E7%BB%88%E5%A4%84%E4%BA%8E-Running-jobs%E9%97%AE%E9%A2%98"><span class="nav-number">5.1.</span> <span class="nav-text">HIDScript 执行始终处于 Running jobs问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Badusb-%E8%BF%9C%E6%8E%A7%E6%9C%A8%E9%A9%AC"><span class="nav-number">6.</span> <span class="nav-text">Badusb + 远控木马</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BE%E5%A3%B0"><span class="nav-number">7.</span> <span class="nav-text">尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">8.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">104</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">107</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/1bb8b02f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="玩转树莓派之zero w配合P4wnP1 ALOA实现badusb | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          玩转树莓派之zero w配合P4wnP1 ALOA实现badusb
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-10-13 12:13:07 / 修改时间：12:30:35" itemprop="dateCreated datePublished" datetime="2023-10-13T12:13:07+08:00">2023-10-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%A0%91%E8%8E%93%E6%B4%BE/" itemprop="url" rel="index"><span itemprop="name">树莓派</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%A0%91%E8%8E%93%E6%B4%BE/%E6%8E%A2%E7%A9%B6/" itemprop="url" rel="index"><span itemprop="name">探究</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近浅玩了一下树莓派，本以为要焊接电路板，搞硬件。也算是为之后拆路由器读芯片练练手，接触后发现给树莓派烧录完系统，基本还是玩的软件层（也可能是境界不够🤔）。本文记录了我用树莓派 <code>zero w</code> 配合 <a target="_blank" rel="noopener" href="https://github.com/RoganDawes/P4wnP1_aloa">P4wnP1 ALOA</a> 做了一个 <strong>badusb</strong> ，最终配合 <code>Cobalt Strike</code> 生成的木马以及红队大哥做的免杀，可以达到插谁，谁成肉鸡的效果😎</p>
+<span id="more"></span>
+
+<p><strong>声明</strong>：文中所涉及的技术、思路和工具仅供以安全为目的的学习研究使用，任何人不得将其用于非法用途以及盈利等目的，由此产生的任何后果，自行承担！</p>
+<h2 id="效果演示"><a href="#效果演示" class="headerlink" title="效果演示"></a>效果演示</h2><p><video controls height='100%' width='100%' src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/video/badusb.mp4"></video></p>
+<h2 id="给树莓派烧录系统"><a href="#给树莓派烧录系统" class="headerlink" title="给树莓派烧录系统"></a>给树莓派烧录系统</h2><p>在京东上买了个树莓派 <code>zero w</code> ，到手后看到是长这个样子的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121457256.jpg" alt="_-1234400694_IMG_20231012_145519_1697093734000_xg_0"></p>
+<p>再准备一张内存卡（我用的 <code>16G</code> ）和读卡器</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121505064.jpg" alt="_2131233179__cd67aa62f855909728f1bd3210ca6ed2_347696290_IMG_20231012_150450_0_xg_0"></p>
+<p>下载 <code>SDFormatter</code> ，先格式化内存卡</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281253959.png" alt="image-20230928125302819"></p>
+<p>这里确定选好盘后，直接点击格式化即可</p>
+<p>然后去下载想要烧录的镜像，我这里是直接用的 <a target="_blank" rel="noopener" href="https://github.com/RoganDawes/P4wnP1_aloa/releases/tag/v0.1.1-beta">P4wnP1_aloa</a>  ，它是一个基于 <code>kali</code> 的系统</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121510600.png" alt="image-20231012151057467"></p>
+<p>将镜像解压出来后，下载 <code>Win32DiskImager</code> ，用其将镜像烧录到内存卡中</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258994.png" alt="image-20230928125821950"></p>
+<p>选择好镜像和要写入的设备，点击写入即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202309281258475.png" alt="image-20230928125854421"></p>
+<p>这里会有一个弹框，点击 <code>yes</code> ，等待十分钟左右烧录完毕</p>
+<h2 id="启动和访问树莓派"><a href="#启动和访问树莓派" class="headerlink" title="启动和访问树莓派"></a>启动和访问树莓派</h2><p>将烧录完系统的内存卡插入到树莓派，拿一根 <code>USB</code> 数据线插到图中标红的接口，这个接口既可以给树莓派供电又可以传输数据，而左边看起来相同的接口只可以供电</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121528649.png" alt="image-20231012152802290"></p>
+<p>如此树莓派就启动了，可以选择用一个转接头加上扩展坞连接键盘，并插上一根 <code>HDMI</code> 线连接一个显示器，当做正常的电脑来使用。也可以选择只插一根 <code>USB</code> 数据线进行供电，然后连接树莓派自身热点（密码为 <code>MaMe82-P4wnP1</code>），热点名称就是很显眼的这个</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121532933.png" alt="image-20231012153230886"></p>
+<p>通过 <code>ssh</code> 连接（用户名 <code>root</code>，密码 <code>toor</code>）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221162.png" alt="image-20231012154234134"></p>
+<p>因为我手头正好有显示器和扩展坞，所以这两种方法我都用过了。</p>
+<h2 id="HIDScript"><a href="#HIDScript" class="headerlink" title="HIDScript"></a>HIDScript</h2><p><code>P4wnP1_aloa</code> 的 <code>web</code> 端其实做的挺好的，访问 <code>172.24.0.1:8000</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131221640.png" alt="image-20231012155258706"></p>
+<p>这里其他的选项，看名称或者查看官方说明都能知道个七七八八。我直接记录好玩的地方，选择这个 <code>HIDSCRIPT</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222755.png" alt="image-20231012155641198"></p>
+<p>这里我们可以编辑代码，让树莓派来充当 <strong>badusb</strong> 的作用，模拟键盘的输入。因为我玩的也比较浅，这里记住这五个的用法其实就差不多了</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">layout</span>(<span class="string">&#x27;us&#x27;</span>); <span class="comment">//键盘布局，这里运行脚本时一定要切成英文的输入法，最好用成美式键盘，不然可能会输出中文导致命令错误</span></span><br><span class="line"><span class="title function_">typingSpeed</span>(标准间隔,随机值); <span class="comment">//ms为单位，标准间隔是每个字符敲击的间隔，随机值是敲击每个字符所落下的时间</span></span><br><span class="line"><span class="title function_">delay</span>(time); <span class="comment">//ms为单位，等待时间</span></span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;xxxxx\n&#x27;</span>); <span class="comment">//输入字符串，模拟键盘敲击按键</span></span><br><span class="line"><span class="title function_">press</span>(<span class="string">&#x27;GUI r&#x27;</span>); <span class="comment">//按下按键再松开 ，这个按的是windows+r键</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>编写一段代码，用 <code>powershell</code> 来打开记事本，并写下几个字符串试试</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title function_">layout</span>(<span class="string">&#x27;us&#x27;</span>);</span><br><span class="line"><span class="title function_">typingSpeed</span>(<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line"><span class="title function_">press</span>(<span class="string">&#x27;GUI r&#x27;</span>);</span><br><span class="line"><span class="title function_">delay</span>(<span class="number">500</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;notepad\n&#x27;</span>);</span><br><span class="line"><span class="title function_">delay</span>(<span class="number">800</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&#x27;hello world\nit is test!\n&#x27;</span>);</span><br><span class="line"><span class="title function_">type</span>(<span class="string">&quot;it&#x27;s cool!\n&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>确实全程自动输入指定内容（注意：最好用成美式键盘，别忘记 <code>\n</code> 来模拟敲击回车）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131222369.png" alt="image-20231012161126193"></p>
+<p>整个的过程也可以遥控，就是将树莓派插到主机 <code>A</code> 中，然后用另一台设备（手机也可以）连接树莓派的热点，来运行编写好的  <code>HIDScript</code> ，这样主机 <code>A</code> 的鼠标和键盘就可以自己动了</p>
+<h3 id="HIDScript-执行始终处于-Running-jobs问题"><a href="#HIDScript-执行始终处于-Running-jobs问题" class="headerlink" title="HIDScript 执行始终处于 Running jobs问题"></a>HIDScript 执行始终处于 Running jobs问题</h3><p>注意：我开始做的时候，点击 <code>RUN</code> 是无法成功执行 <code>HIDScript</code> 的，会始终处于 <code>Running jobs</code> 状态（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310121619986.png" alt="image-20231012161904822"></p>
+<p>折腾了两天，并查阅资料，无果。并且在 <code>github</code> 的项目上有相关的 <a target="_blank" rel="noopener" href="https://github.com/RoganDawes/P4wnP1_aloa/issues/206">Issues</a> ，阅读之后也没发现到底是哪出了问题。最终我找同学借了六根 <code>USB</code> 数据线，逐一试过后，惊喜的发现有一根插上后运行 <code>HIDScript</code> 成功，其余五根均失败。这六根线都是可以传输数据和充电的，如此确定是数据线的某些未知原因导致的 <code>HIDScript</code> 执行是卡住（应该就是数据没传给主机）</p>
+<h2 id="Badusb-远控木马"><a href="#Badusb-远控木马" class="headerlink" title="Badusb + 远控木马"></a>Badusb + 远控木马</h2><p>为了当一把黑客小子😎，我打算一不做二不休，最终想实现这个树莓派插入一台电脑，就能直接对其进行控制（只是找同学的电脑进行学习测试😆）</p>
+<p>思路：我选择用 <code>Cobalt Strike</code> （下文简称 <code>CS</code>）来生成一个远控木马（并找红队大哥做了下免杀…），然后将木马上传至自己的服务器，通过直接访问链接就可以进行下载。最后用 <strong>badusb</strong> 模拟键盘输入，执行下载木马的命令</p>
+<p><code>CS</code> 分为服务端和客户端，如果自己没有服务器的话，就只能把客户端和服务端部署在同一个局域网里，同一局域网的肉鸡上线后，通过服务端的转发，来实现客户端对其间接控制。如果有服务器的话，那服务端就可以部署到公网中，即使肉鸡和客户端处于两个不同局域网中，客户端依然可以通过服务端的转发，实现间接控制（前提是客户端和肉鸡都能上网😅）</p>
+<p>利用 <code>nginx</code> 将服务器上的静态文件（恶意木马）通过 <code>HTTP</code> 协议展现给客户端，以便于用户直接下载。我是先安装了 <code>nginx</code> ，然后把几个恶意程序都放到了 <code>/var/www/html</code> 目录下，然后启动 <code>nginx</code> 服务。写一个测试文件，看下效果。这里在 <code>/var/www/html</code> 目录下放的是一个文本文件，通过 <code>ip + port</code> 直接访问这个文件就能查看到（如下图），如果是 <code>exe</code> 文件的话，访问其路径会自动下载文件。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310130945972.png" alt="image-20231013094534872"></p>
+<p>攻击的完整过程如下图，至于为什么不能让 <strong>badusb</strong> 插入后直接执行下载木马的命令，这是因为做完免杀后，实际上要下载三个文件。如果都写到 <code>HIDScript</code> 里的话，<strong>badusb</strong> 模拟键盘输入会出现错误，字符会乱序并且重复打印（具体原因不知道，经过测试姑且猜测是脚本太长了），为了缩短命令，我就做了一个启动脚本，真正下载木马并执行写在了启动脚本里。而 <strong>badusb</strong> 只需要下载启动脚本并执行即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310131121410.png" alt="image-20231013112141288"></p>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p>最终攻击效果在文章开头已经展示了，这个过程总的来说确实叫玩，这算是真正体验了一把黑客小子的感觉，并且学习到了一些新知识。但目前我并不打算再花费更多的时间继续去研究这个黑客小工具了，它对于学习的帮助至此就够了，再花时间就纯属于为了装逼而研究🥱。本想学习树莓派来对后面硬件的拆解和焊接打一点基础，但没想到歪打正着当了把黑客小子，学习之余装了一把🤠</p>
+<p>当然了，也许以后我想玩<del>想装逼</del>的时候，可能还会折腾点新花样出来，哈哈QAQ</p>
+<p>最后就是感谢一下红队大哥 <strong>邓阮叶</strong> 写的免杀（大佬都喜欢低调，就不挂大哥的链接了😎），还有我的全能室友 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/jxdgx/">jxdgx</a> 帮忙剪辑的攻击效果视频（加的蒙版是真炫嗷）</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://github.com/RoganDawes/P4wnP1_aloa#1-features">https://github.com/RoganDawes/P4wnP1_aloa#1-features</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/azureology/p/12343267.html">树莓派zero w入坑指南 - azureology - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1dy4y1C7wb/?spm_id_from=333.880.my_history.page.click&vd_source=bea0e85c91c884d3a927e3c65f2f60df">如何让树莓派变成黑客工具_哔哩哔哩_bilibili</a></p>
+<p><a target="_blank" rel="noopener" href="https://houwenda.github.io/2019/01/22/hid-attack-with-P4wnP1-a-l-o-a/">如何用P4wnP1_aloa进行HID攻击 | 漏断’s Blog (houwenda.github.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.ascotbe.com/2019/06/29/raspberry/">P4wnP1全家桶安装及实战 | ascotbe</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43341224/article/details/109958459">Cobalt Strike基础操作_cobaltstrike截图后存放-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44268918/article/details/128857998">Cobalt Strike工具安装与基础使用_cobalt strike下载_剁椒鱼头没剁椒的博客-CSDN博客</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%BB%91%E5%AE%A2%E5%B0%8F%E5%AD%90/" rel="tag"># 黑客小子</a>
+              <a href="/tags/%E6%9C%A8%E9%A9%AC/" rel="tag"># 木马</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/d1f2e628.html" rel="prev" title="c语言中warning:hex escape sequence out of range的探究">
+                  <i class="fa fa-chevron-left"></i> c语言中warning:hex escape sequence out of range的探究
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
