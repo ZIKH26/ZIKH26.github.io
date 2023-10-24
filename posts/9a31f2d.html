@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="这道所谓的工控题目其实就是一道CTF的流量分析+逆向的迷宫题。鉴于是第一次认真复现和总结流量分析和逆向的题目，感觉学到了不少东西，写篇博客记录一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze">
+<meta property="og:url" content="https://zikh26.github.io/posts/9a31f2d.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="这道所谓的工控题目其实就是一道CTF的流量分析+逆向的迷宫题。鉴于是第一次认真复现和总结流量分析和逆向的题目，感觉学到了不少东西，写篇博客记录一下。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241843107.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241646140.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241647390.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241649246.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241652035.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241654253.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241710560.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713917.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713130.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241714552.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241715552.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241717738.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241720237.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241723309.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241742791.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241749962.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241802516.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241806726.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241808131.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241811035.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241812331.png">
+<meta property="article:published_time" content="2023-10-24T10:41:17.972Z">
+<meta property="article:modified_time" content="2023-10-24T10:45:32.044Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="逆向">
+<meta property="article:tag" content="流量分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241843107.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/9a31f2d.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/9a31f2d.html","path":"posts/9a31f2d.html","title":"2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E9%99%84%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">题目附件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">流量分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E9%80%86%E5%90%91"><span class="nav-number">3.</span> <span class="nav-text">代码逆向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">105</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">109</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/9a31f2d.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-10-24 18:41:17 / 修改时间：18:45:32" itemprop="dateCreated datePublished" datetime="2023-10-24T18:41:17+08:00">2023-10-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241843107.png" alt="img"></p>
+<p>这道所谓的工控题目其实就是一道CTF的流量分析+逆向的迷宫题。鉴于是第一次认真复现和总结流量分析和逆向的题目，感觉学到了不少东西，写篇博客记录一下。</p>
+<span id="more"></span>
+
+<h2 id="题目附件"><a href="#题目附件" class="headerlink" title="题目附件"></a>题目附件</h2><p>链接：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1RFHOLYmpAFbkPiR29dnA7g?pwd=c1cs">https://pan.baidu.com/s/1RFHOLYmpAFbkPiR29dnA7g?pwd=c1cs</a><br>提取码：c1cs</p>
+<h2 id="流量分析"><a href="#流量分析" class="headerlink" title="流量分析"></a>流量分析</h2><p>开始拿到流量包是这么一个情况</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241646140.png" alt="image-20231024164647831"></p>
+<p>选择一个 <code>TCP</code> 包，追踪流</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241647390.png" alt="image-20231024164744234"></p>
+<p>选择红框标注的这个箭头，可以往后翻找数据流</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241649246.png" alt="image-20231024164912089"></p>
+<p>再往后翻一个流的时候，发现是 <code>7z</code> 字符串开头的，猜测这个流量里可能藏了一个 <code>7z</code> 文件</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241652035.png" alt="image-20231024165234880"></p>
+<p>查看一下这个流对应的几个数据包，发现最后的包是 <code>RST</code> 标志位，这表明因为异常中断了这次的通信连接，所以这个流显示的并不是文件完整的数据。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241654253.png" alt="image-20231024165406121"></p>
+<p>因为之后会换个端口继续重传，结合这第一部分的信息可知，用 <code>(ip.src == 192.168.40.199 &amp;&amp; ip.dst == 192.168.40.41) &amp;&amp; (tcp.flags.push == 1) </code> 过滤出 <code>192.168.40.199</code> 与 <code>192.168.40.41</code> 通信时在应用层传输有效数据的报文（如下所示）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241710560.png" alt="image-20231024171057410"></p>
+<p>用命令 <code>tshark -r maze.pcapng -Y &quot;(ip.src == 192.168.40.199 &amp;&amp; ip.dst == 192.168.40.41) &amp;&amp; (tcp.flags.push == 1)&quot; -T fields -e tcp.payload &gt; 1.txt</code></p>
+<p>将数据以文本形式导入到 <code>1.txt</code> 文件中，再用 <code>010editor</code> 打开是这个样子的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713917.png" alt="image-20231024171302683"></p>
+<p>选择 <code>010editor</code> 里面的导入十六进制，导入的文件用的就是 <code>1.txt</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713130.png" alt="image-20231024171333047" style="zoom:50%;" />
+
+
+
+<p>这样就拿到了这个 <code>7z</code> 文件的原始数据</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241714552.png" alt="image-20231024171449459" style="zoom:50%;" />
+
+
+
+<p>将其保存后，就能正常解压里面的文件。拿到后发现是个 <code>exe</code> 文件，直接放到 <code>IDA</code> 里逆向分析</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241715552.png" alt="image-20231024171553486" style="zoom:50%;" />
+
+
+
+<h2 id="代码逆向"><a href="#代码逆向" class="headerlink" title="代码逆向"></a>代码逆向</h2><p>通过下面的关键代码能猜测出这是一个迷宫游戏（部分变量已将其重命名）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241717738.png" alt="image-20231024171731597"></p>
+<p>结合着运行程序和静态分析时的关键字符串，能够判断出走通迷宫的字符串，能输出 <code>Congratulations!</code> ，那么这个字符串就是 <code>flag</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241720237.png" alt="image-20231024172004109"></p>
+<p>结合着 <code>IDA</code> 动态调试，首先能够确定输入函数和输出函数。当输入完数据后，确定了两个变量，分别是输入的字符串 <code>buf</code> 和字符串长度 <code>buf_length</code>（已经对其重命名）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241723309.png" alt="image-20231024172352249" style="zoom:50%;" />
+
+
+
+<p>迷宫题通常会用一个一维数组来表明一个图（团队里的逆向手说的 😋），因此上下移动的话，移动距离应该加一行的长度，而左右移动的话距离只加很短，由此能判断是横向移动还是纵向移动。</p>
+<p>通过这个规律，最终能重命名出表示横、纵、单次移动距离、移动次数这些变量名称（具体逆向过程不再记录，下面给出我重命名变量后的代码）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">switch</span> ( buf[(_DWORD)v7] )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;B&#x27;</span>:</span><br><span class="line">          heng = v18 + <span class="number">2</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;H&#x27;</span>:</span><br><span class="line">          ++zong;</span><br><span class="line">          move_num += <span class="number">10</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;K&#x27;</span>:</span><br><span class="line">          heng = v18 - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;M&#x27;</span>:</span><br><span class="line">          zong += <span class="number">2</span>;</span><br><span class="line">          move_num += <span class="number">20</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;P&#x27;</span>:</span><br><span class="line">          heng = v18 - <span class="number">2</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;Q&#x27;</span>:</span><br><span class="line">          --zong;</span><br><span class="line">          move_num -= <span class="number">10</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;V&#x27;</span>:</span><br><span class="line">          zong -= <span class="number">2</span>;</span><br><span class="line">          move_num -= <span class="number">20</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;W&#x27;</span>:</span><br><span class="line">          heng = v18 + <span class="number">1</span>;</span><br><span class="line">LABEL_18:</span><br><span class="line">          ++step;</span><br><span class="line">          v18 = heng;</span><br><span class="line">          <span class="keyword">if</span> ( heng &gt;= <span class="number">1</span> )</span><br><span class="line">          &#123;</span><br><span class="line">            v9 = heng &lt;= <span class="number">8</span>;</span><br><span class="line">LABEL_20:</span><br><span class="line">            <span class="keyword">if</span> ( v9 &amp;&amp; *((_DWORD *)v16 + heng + move_num) != <span class="number">1</span> )</span><br><span class="line">              <span class="keyword">goto</span> LABEL_22;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_27;</span><br></pre></td></tr></table></figure>
+
+<p>移动的规则明白后，就剩起点和终点的坐标，以及地图和地图边界问题了。</p>
+<p>起点坐标就是变量 <code>heng</code> <code>zong</code> 的初始值 <code>(1,1)</code></p>
+<p>终点坐标通过下面三行代码可以分析出来，输出 <code>Congratulations!</code> 的条件就是移动次数要小于等于 <code>12</code> 且 <code>heng</code> 和 <code>zong</code> 要为 <code>8</code> ，所以判断出终点坐标为 <code>(8,8)</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> ( step &gt; <span class="number">12</span> || zong != <span class="number">8</span> || heng != <span class="number">8</span> )</span><br><span class="line">  <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">v10 = sub_2916F0(<span class="built_in">std</span>::<span class="built_in">cout</span>, <span class="string">&quot;Congratulations!&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>再看下输出 <code>Congratulations!</code> 的条件，每次执行任何一个操作（移动策略），都会到 <code>LABEL_20</code> 代码处进行判断，也就是每次移动后都要判断当前位置是否已经到达终点。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241742791.png" alt="image-20231024174245709"></p>
+<p>关键代码 <code>if ( v9 &amp;&amp; *((_DWORD *)v16 + heng + move_num) != 1 )</code> 表面 <code>heng</code> <code>zong</code> 都要小于等于 <code>8</code> ，且 <code>(v16+heng+move_num)</code> 不等于 <code>1</code> 才能往下走。第一个条件的 <code>8</code> 有可能就代表地图的边界，也就是一行只有八个可移动点，第二个条件则代表当前位置是否位于墙，也就是不可走的点位（众所周知，迷宫一定都是有墙的，这里的 <code>1</code> 能猜测到就是墙的意思）</p>
+<p>如果说地图边界是 <code>8</code>的话，就很难解释纵向移动 <code>1</code> 或者 <code>2</code> 时，为什么 <code>move_num</code> 这个变量（已被重命名）加减的是 <code>10</code> 或者 <code>20</code> 了。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241749962.png" alt="image-20231024174944908" style="zoom: 67%;" />
+
+
+
+<p>经过分析后，只有一种解释。横向和纵向可移动的点位只有 <code>8</code> 个，但是横纵的边界是有墙的。而 <code>move_num</code> 每次加一行算的是所有可移动点位和不可移动点位。（大致轮廓确定如下，<code>1</code> 代表墙 <code>0</code> 代表可走的范围）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 1 1 1 1 1 1 1 1 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 1 1 1 1 1 1 1 1 1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>最后一步就是根据数组画出真正的图，根据上面分析，已知存在一百个点位。观察数组 <code>v16</code> ，一共有 <code>25</code> 个元素，每个元素占 <code>16</code> 个字节，总共是 <code>400</code> 字节。能猜测到 <code>4</code> 字节来表示一个点位。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241802516.png" alt="image-20231024180212398" style="zoom: 67%;" />
+
+
+
+<p>以 <code>v16[0]</code> 为例，<code>IDA</code> 看到的数据是这样的，这样的显示误导我了很久（我一直以为这个直接看到的就是最终的点位图，但这和前面分析的不一样，连周围的墙都没有…）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241806726.png" alt="image-20231024180617688"></p>
+<p>实际上应该将其转为 <code>dd</code> （双字型，<code>Define Double Word</code>），这样看到的数据才是对的。把所有的数据全部转换出来，按照每十个点位一行来把图画出来</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241808131.png" alt="image-20231024180855089"></p>
+<p>最终的地图如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1, 1, 1, 1, 1, 1, 1, 1, 1, 1</span><br><span class="line">1, 0, 0, 1, 0, 0, 0, 1, 0, 1</span><br><span class="line">1, 1, 0, 1, 0, 0, 0, 1, 0, 1</span><br><span class="line">1, 0, 0, 0, 0, 1, 1, 0, 0, 1</span><br><span class="line">1, 0, 1, 1, 1, 0, 0, 0, 0, 1</span><br><span class="line">1, 0, 0, 0, 1, 0, 1, 0, 1, 1</span><br><span class="line">1, 0, 1, 0, 0, 0, 1, 0, 0, 1</span><br><span class="line">1, 0, 1, 1, 1, 1, 1, 1, 0, 1</span><br><span class="line">1, 1, 0, 0, 0, 0, 0, 0, 0, 1</span><br><span class="line">1, 1, 1, 1, 1, 1, 1, 1, 1, 1</span><br></pre></td></tr></table></figure>
+
+<p>按照这个走法，输入对应的字符即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241811035.png" alt="image-20231024181113991"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241812331.png" alt="image-20231024181215291"></p>
+<p>所以最后的 <code>flag</code> 为 <code>flag&#123;WMKMBHBVBMWM&#125;</code></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wgf4242/p/17767653.html#autoid-0-8-0">2023工业信息安全技能大赛—鹏城锦标赛 WriteUp - wgf4242 - 博客园 (cnblogs.com)</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%80%86%E5%90%91/" rel="tag"># 逆向</a>
+              <a href="/tags/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/" rel="tag"># 流量分析</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/1bb8b02f.html" rel="prev" title="玩转树莓派之zero w配合P4wnP1 ALOA实现badusb">
+                  <i class="fa fa-chevron-left"></i> 玩转树莓派之zero w配合P4wnP1 ALOA实现badusb
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,6 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze</title>
+    <url>/posts/9a31f2d.html</url>
+    <content><![CDATA[<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241843107.png" alt="img"></p>
+<p>这道所谓的工控题目其实就是一道CTF的流量分析+逆向的迷宫题。鉴于是第一次认真复现和总结流量分析和逆向的题目，感觉学到了不少东西，写篇博客记录一下。</p>
+<span id="more"></span>
+
+<h2 id="题目附件"><a href="#题目附件" class="headerlink" title="题目附件"></a>题目附件</h2><p>链接：<a href="https://pan.baidu.com/s/1RFHOLYmpAFbkPiR29dnA7g?pwd=c1cs">https://pan.baidu.com/s/1RFHOLYmpAFbkPiR29dnA7g?pwd=c1cs</a><br>提取码：c1cs</p>
+<h2 id="流量分析"><a href="#流量分析" class="headerlink" title="流量分析"></a>流量分析</h2><p>开始拿到流量包是这么一个情况</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241646140.png" alt="image-20231024164647831"></p>
+<p>选择一个 <code>TCP</code> 包，追踪流</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241647390.png" alt="image-20231024164744234"></p>
+<p>选择红框标注的这个箭头，可以往后翻找数据流</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241649246.png" alt="image-20231024164912089"></p>
+<p>再往后翻一个流的时候，发现是 <code>7z</code> 字符串开头的，猜测这个流量里可能藏了一个 <code>7z</code> 文件</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241652035.png" alt="image-20231024165234880"></p>
+<p>查看一下这个流对应的几个数据包，发现最后的包是 <code>RST</code> 标志位，这表明因为异常中断了这次的通信连接，所以这个流显示的并不是文件完整的数据。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241654253.png" alt="image-20231024165406121"></p>
+<p>因为之后会换个端口继续重传，结合这第一部分的信息可知，用 <code>(ip.src == 192.168.40.199 &amp;&amp; ip.dst == 192.168.40.41) &amp;&amp; (tcp.flags.push == 1) </code> 过滤出 <code>192.168.40.199</code> 与 <code>192.168.40.41</code> 通信时在应用层传输有效数据的报文（如下所示）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241710560.png" alt="image-20231024171057410"></p>
+<p>用命令 <code>tshark -r maze.pcapng -Y &quot;(ip.src == 192.168.40.199 &amp;&amp; ip.dst == 192.168.40.41) &amp;&amp; (tcp.flags.push == 1)&quot; -T fields -e tcp.payload &gt; 1.txt</code></p>
+<p>将数据以文本形式导入到 <code>1.txt</code> 文件中，再用 <code>010editor</code> 打开是这个样子的</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713917.png" alt="image-20231024171302683"></p>
+<p>选择 <code>010editor</code> 里面的导入十六进制，导入的文件用的就是 <code>1.txt</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241713130.png" alt="image-20231024171333047" style="zoom:50%;" />
+
+
+
+<p>这样就拿到了这个 <code>7z</code> 文件的原始数据</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241714552.png" alt="image-20231024171449459" style="zoom:50%;" />
+
+
+
+<p>将其保存后，就能正常解压里面的文件。拿到后发现是个 <code>exe</code> 文件，直接放到 <code>IDA</code> 里逆向分析</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241715552.png" alt="image-20231024171553486" style="zoom:50%;" />
+
+
+
+<h2 id="代码逆向"><a href="#代码逆向" class="headerlink" title="代码逆向"></a>代码逆向</h2><p>通过下面的关键代码能猜测出这是一个迷宫游戏（部分变量已将其重命名）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241717738.png" alt="image-20231024171731597"></p>
+<p>结合着运行程序和静态分析时的关键字符串，能够判断出走通迷宫的字符串，能输出 <code>Congratulations!</code> ，那么这个字符串就是 <code>flag</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241720237.png" alt="image-20231024172004109"></p>
+<p>结合着 <code>IDA</code> 动态调试，首先能够确定输入函数和输出函数。当输入完数据后，确定了两个变量，分别是输入的字符串 <code>buf</code> 和字符串长度 <code>buf_length</code>（已经对其重命名）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241723309.png" alt="image-20231024172352249" style="zoom:50%;" />
+
+
+
+<p>迷宫题通常会用一个一维数组来表明一个图（团队里的逆向手说的 😋），因此上下移动的话，移动距离应该加一行的长度，而左右移动的话距离只加很短，由此能判断是横向移动还是纵向移动。</p>
+<p>通过这个规律，最终能重命名出表示横、纵、单次移动距离、移动次数这些变量名称（具体逆向过程不再记录，下面给出我重命名变量后的代码）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">switch</span> ( buf[(_DWORD)v7] )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;B&#x27;</span>:</span><br><span class="line">          heng = v18 + <span class="number">2</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;H&#x27;</span>:</span><br><span class="line">          ++zong;</span><br><span class="line">          move_num += <span class="number">10</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;K&#x27;</span>:</span><br><span class="line">          heng = v18 - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;M&#x27;</span>:</span><br><span class="line">          zong += <span class="number">2</span>;</span><br><span class="line">          move_num += <span class="number">20</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;P&#x27;</span>:</span><br><span class="line">          heng = v18 - <span class="number">2</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_18;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;Q&#x27;</span>:</span><br><span class="line">          --zong;</span><br><span class="line">          move_num -= <span class="number">10</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;V&#x27;</span>:</span><br><span class="line">          zong -= <span class="number">2</span>;</span><br><span class="line">          move_num -= <span class="number">20</span>;</span><br><span class="line">          ++step;</span><br><span class="line">          <span class="keyword">if</span> ( zong &lt; <span class="number">1</span> )</span><br><span class="line">            <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">          v9 = zong &lt;= <span class="number">8</span>;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_20;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&#x27;W&#x27;</span>:</span><br><span class="line">          heng = v18 + <span class="number">1</span>;</span><br><span class="line">LABEL_18:</span><br><span class="line">          ++step;</span><br><span class="line">          v18 = heng;</span><br><span class="line">          <span class="keyword">if</span> ( heng &gt;= <span class="number">1</span> )</span><br><span class="line">          &#123;</span><br><span class="line">            v9 = heng &lt;= <span class="number">8</span>;</span><br><span class="line">LABEL_20:</span><br><span class="line">            <span class="keyword">if</span> ( v9 &amp;&amp; *((_DWORD *)v16 + heng + move_num) != <span class="number">1</span> )</span><br><span class="line">              <span class="keyword">goto</span> LABEL_22;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">goto</span> LABEL_27;</span><br></pre></td></tr></table></figure>
+
+<p>移动的规则明白后，就剩起点和终点的坐标，以及地图和地图边界问题了。</p>
+<p>起点坐标就是变量 <code>heng</code> <code>zong</code> 的初始值 <code>(1,1)</code></p>
+<p>终点坐标通过下面三行代码可以分析出来，输出 <code>Congratulations!</code> 的条件就是移动次数要小于等于 <code>12</code> 且 <code>heng</code> 和 <code>zong</code> 要为 <code>8</code> ，所以判断出终点坐标为 <code>(8,8)</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> ( step &gt; <span class="number">12</span> || zong != <span class="number">8</span> || heng != <span class="number">8</span> )</span><br><span class="line">  <span class="keyword">goto</span> LABEL_27;</span><br><span class="line">v10 = sub_2916F0(<span class="built_in">std</span>::<span class="built_in">cout</span>, <span class="string">&quot;Congratulations!&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>再看下输出 <code>Congratulations!</code> 的条件，每次执行任何一个操作（移动策略），都会到 <code>LABEL_20</code> 代码处进行判断，也就是每次移动后都要判断当前位置是否已经到达终点。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241742791.png" alt="image-20231024174245709"></p>
+<p>关键代码 <code>if ( v9 &amp;&amp; *((_DWORD *)v16 + heng + move_num) != 1 )</code> 表面 <code>heng</code> <code>zong</code> 都要小于等于 <code>8</code> ，且 <code>(v16+heng+move_num)</code> 不等于 <code>1</code> 才能往下走。第一个条件的 <code>8</code> 有可能就代表地图的边界，也就是一行只有八个可移动点，第二个条件则代表当前位置是否位于墙，也就是不可走的点位（众所周知，迷宫一定都是有墙的，这里的 <code>1</code> 能猜测到就是墙的意思）</p>
+<p>如果说地图边界是 <code>8</code>的话，就很难解释纵向移动 <code>1</code> 或者 <code>2</code> 时，为什么 <code>move_num</code> 这个变量（已被重命名）加减的是 <code>10</code> 或者 <code>20</code> 了。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241749962.png" alt="image-20231024174944908" style="zoom: 67%;" />
+
+
+
+<p>经过分析后，只有一种解释。横向和纵向可移动的点位只有 <code>8</code> 个，但是横纵的边界是有墙的。而 <code>move_num</code> 每次加一行算的是所有可移动点位和不可移动点位。（大致轮廓确定如下，<code>1</code> 代表墙 <code>0</code> 代表可走的范围）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 1 1 1 1 1 1 1 1 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 0 0 0 0 0 0 0 0 1</span><br><span class="line">1 1 1 1 1 1 1 1 1 1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>最后一步就是根据数组画出真正的图，根据上面分析，已知存在一百个点位。观察数组 <code>v16</code> ，一共有 <code>25</code> 个元素，每个元素占 <code>16</code> 个字节，总共是 <code>400</code> 字节。能猜测到 <code>4</code> 字节来表示一个点位。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241802516.png" alt="image-20231024180212398" style="zoom: 67%;" />
+
+
+
+<p>以 <code>v16[0]</code> 为例，<code>IDA</code> 看到的数据是这样的，这样的显示误导我了很久（我一直以为这个直接看到的就是最终的点位图，但这和前面分析的不一样，连周围的墙都没有…）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241806726.png" alt="image-20231024180617688"></p>
+<p>实际上应该将其转为 <code>dd</code> （双字型，<code>Define Double Word</code>），这样看到的数据才是对的。把所有的数据全部转换出来，按照每十个点位一行来把图画出来</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241808131.png" alt="image-20231024180855089"></p>
+<p>最终的地图如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1, 1, 1, 1, 1, 1, 1, 1, 1, 1</span><br><span class="line">1, 0, 0, 1, 0, 0, 0, 1, 0, 1</span><br><span class="line">1, 1, 0, 1, 0, 0, 0, 1, 0, 1</span><br><span class="line">1, 0, 0, 0, 0, 1, 1, 0, 0, 1</span><br><span class="line">1, 0, 1, 1, 1, 0, 0, 0, 0, 1</span><br><span class="line">1, 0, 0, 0, 1, 0, 1, 0, 1, 1</span><br><span class="line">1, 0, 1, 0, 0, 0, 1, 0, 0, 1</span><br><span class="line">1, 0, 1, 1, 1, 1, 1, 1, 0, 1</span><br><span class="line">1, 1, 0, 0, 0, 0, 0, 0, 0, 1</span><br><span class="line">1, 1, 1, 1, 1, 1, 1, 1, 1, 1</span><br></pre></td></tr></table></figure>
+
+<p>按照这个走法，输入对应的字符即可</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241811035.png" alt="image-20231024181113991"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310241812331.png" alt="image-20231024181215291"></p>
+<p>所以最后的 <code>flag</code> 为 <code>flag&#123;WMKMBHBVBMWM&#125;</code></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.cnblogs.com/wgf4242/p/17767653.html#autoid-0-8-0">2023工业信息安全技能大赛—鹏城锦标赛 WriteUp - wgf4242 - 博客园 (cnblogs.com)</a></p>
+]]></content>
+      <categories>
+        <category>赛题WP</category>
+      </categories>
+      <tags>
+        <tag>逆向</tag>
+        <tag>流量分析</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>玩转树莓派之zero w配合P4wnP1 ALOA实现badusb</title>
     <url>/posts/1bb8b02f.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近浅玩了一下树莓派，本以为要焊接电路板，搞硬件。也算是为之后拆路由器读芯片练练手，接触后发现给树莓派烧录完系统，基本还是玩的软件层（也可能是境界不够🤔）。本文记录了我用树莓派 <code>zero w</code> 配合 <a href="https://github.com/RoganDawes/P4wnP1_aloa">P4wnP1 ALOA</a> 做了一个 <strong>badusb</strong> ，最终配合 <code>Cobalt Strike</code> 生成的木马以及红队大哥做的免杀，可以达到插谁，谁成肉鸡的效果😎</p>
