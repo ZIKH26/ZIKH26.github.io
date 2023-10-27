@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言该漏洞的利用是通过发送 POST 报文在正常字段 SERVICES&#x3D;DEVICE.ACCOUNT 后紧跟了一个 AUTHORIZED_GROUP&#x3D;1 （二者用 %0a 连接），导致 cgibin 文件解析时先识别到了第一个 &#x3D; ，认为 SERVICES 是键，DEVICE.ACCOUNT%0aAUTHORIZED_GROUP&#x3D;1 是值。随后又对字符串进行解码，%0a 处理为 \n，此时内存中字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CVE-2018-7034复现（TrendNet路由器登录信息泄露）">
+<meta property="og:url" content="https://zikh26.github.io/posts/5f982ad5.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言该漏洞的利用是通过发送 POST 报文在正常字段 SERVICES&#x3D;DEVICE.ACCOUNT 后紧跟了一个 AUTHORIZED_GROUP&#x3D;1 （二者用 %0a 连接），导致 cgibin 文件解析时先识别到了第一个 &#x3D; ，认为 SERVICES 是键，DEVICE.ACCOUNT%0aAUTHORIZED_GROUP&#x3D;1 是值。随后又对字符串进行解码，%0a 处理为 \n，此时内存中字">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271916033.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261012393.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261016586.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261017973.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261018801.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261332309.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261333566.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261345501.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261353378.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261359173.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261420231.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261421775.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261422090.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261433805.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261443250.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261449095.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261500377.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261504153.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261516142.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261520522.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271240993.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271436225.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271418333.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271447968.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271503192.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271516991.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271653934.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271620972.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271631185.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271632621.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271636298.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271643019.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271646961.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261021021.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271919678.png">
+<meta property="article:published_time" content="2023-10-27T11:30:10.742Z">
+<meta property="article:modified_time" content="2023-10-27T12:26:18.005Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="MIPS架构">
+<meta property="article:tag" content="信息泄露">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271916033.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/5f982ad5.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/5f982ad5.html","path":"posts/5f982ad5.html","title":"CVE-2018-7034复现（TrendNet路由器登录信息泄露）"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>CVE-2018-7034复现（TrendNet路由器登录信息泄露） | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BA%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="nav-number">2.</span> <span class="nav-text">固件下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PHP%E4%BB%A3%E7%A0%81"><span class="nav-number">3.</span> <span class="nav-text">PHP代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%A8%8B%E5%BA%8F%E9%80%86%E5%90%91"><span class="nav-number">4.</span> <span class="nav-text">二进制程序逆向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#phpcgi-main%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.1.</span> <span class="nav-text">phpcgi_main函数分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cgibin-parse-request%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.2.</span> <span class="nav-text">cgibin_parse_request函数分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sub-40445C%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.3.</span> <span class="nav-text">sub_40445C函数分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sub-403864%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.4.</span> <span class="nav-text">sub_403864函数分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sobj-unescape-uri%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.5.</span> <span class="nav-text">sobj_unescape_uri函数分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sub-405AC0%E5%87%BD%E6%95%B0%E5%88%86%E6%9E%90"><span class="nav-number">4.6.</span> <span class="nav-text">sub_405AC0函数分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%95%88%E6%9E%9C"><span class="nav-number">5.</span> <span class="nav-text">攻击效果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BE%E5%A3%B0"><span class="nav-number">6.</span> <span class="nav-text">尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">107</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">111</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/5f982ad5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="CVE-2018-7034复现（TrendNet路由器登录信息泄露） | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CVE-2018-7034复现（TrendNet路由器登录信息泄露）
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2023-10-27 19:30:10 / 修改时间：20:26:18" itemprop="dateCreated datePublished" datetime="2023-10-27T19:30:10+08:00">2023-10-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/%E5%A4%8D%E7%8E%B0CVE/" itemprop="url" rel="index"><span itemprop="name">复现CVE</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>该漏洞的利用是通过发送 <code>POST</code> 报文在正常字段 <code>SERVICES=DEVICE.ACCOUNT</code> 后紧跟了一个 <code>AUTHORIZED_GROUP=1</code> （二者用 <code>%0a</code> 连接），导致 <code>cgibin</code> 文件解析时先识别到了第一个 <code>=</code> ，认为 <code>SERVICES</code> 是键，<code>DEVICE.ACCOUNT%0aAUTHORIZED_GROUP=1</code> 是值。随后又对字符串进行解码，<code>%0a</code> 处理为 <code>\n</code>，此时内存中字符串为 <code>_POST_SERVICES=DEVICE.ACCOUNT\nAUTHORIZED_GROUP=1</code> ，后续在 <code>cgibin</code> 中认证失败，在此基础上添加了 <code>AUTHORIZED_GROUP=-1</code> 。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271916033.png" alt="image-20231027191647900"></p>
+<p>之后把整个数据发送给 <code>php</code> 文件进行处理， <code>getcfg.php</code> 文件中<code>if($AUTHORIZED_GROUP &lt; 0)</code> 获取字段值时，首先解析到的是 <code>AUTHORIZED_GROUP=1</code> 从而通过了验证。又因为可以加载 <code>htdocs/webinc/getcfg</code> 目录下的任意文件，最终造成敏感文件的信息泄露</p>
+<span id="more"></span>
+
+<h2 id="固件下载"><a href="#固件下载" class="headerlink" title="固件下载"></a>固件下载</h2><p>由于平常复现漏洞的时候，师傅们一般都把固件上传到了文章中，因此每次复现的时候我都没有考虑过固件下载的问题。如果现在要我进行漏洞挖掘或者复现很新的漏洞，我确实没有把握一定能找到对应厂商发布的固件…😶‍🌫️，之后再复现漏洞我打算都把找固件的过程也记录一下（萌新确实是菜成这样的…）</p>
+<p>本篇文章要复现 <strong>TrendNet</strong>  的漏洞，根据几次找固件的经验来看，应该在搜索引擎里搜 <code>TrendNet support</code> （因为也没人告诉过我这一点，全靠为数不多的<del>经验</del>猜的，不保证正确和严谨😥，至少这次是没问题的🥰）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261012393.png" alt="image-20231026101220172" style="zoom: 50%;" />
+
+
+
+
+
+<p>根据 <a target="_blank" rel="noopener" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-7034">CVE-2018-7034</a> 披露信息</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261016586.png" alt="image-20231026101606523"></p>
+<p>可知 <code>TRENDnet TEW-751DR v1.03B03</code> 、<code>TEW-752DRU v1.03B01</code> 和 <code>TEW733GR v1.03B01</code> 设备存在认证绕过漏洞，通过使用 <code>AUTHORIZED_GROUP=1</code> 值，攻击者可以绕过认证，如通过请求 <code>getcfg.php</code> 进行信息泄露</p>
+<p>我这里搜索的型号为 <code>TEW-751DR</code> ，尽管英语不太好，但是点进去看到 <code>Firmware</code> 和 <code>Download</code> 也知道是下载固件了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261017973.png" alt="image-20231026101730807"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261018801.png" alt="image-20231026101830688"></p>
+<p>后续解压固件就不再提了，<code>binwalk</code> 直接解</p>
+<h2 id="PHP代码"><a href="#PHP代码" class="headerlink" title="PHP代码"></a>PHP代码</h2><p><code>htdocs/web/getcfg.php</code> </p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line">HTTP/<span class="number">1.1</span> <span class="number">200</span> OK</span><br><span class="line">Content-Type: text/xml</span><br><span class="line"></span><br><span class="line"><span class="meta">&lt;?</span><span class="keyword">echo</span> <span class="string">&quot;&lt;?&quot;</span>;<span class="meta">?&gt;</span>xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span><span class="meta">&lt;?</span><span class="keyword">echo</span> <span class="string">&quot;?&gt;&quot;</span>;<span class="meta">?&gt;</span></span><br><span class="line">&lt;postxml&gt;</span><br><span class="line"><span class="meta">&lt;?</span> <span class="keyword">include</span> <span class="string">&quot;/htdocs/phplib/trace.php&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="variable">$_POST</span>[<span class="string">&quot;CACHE&quot;</span>] == <span class="string">&quot;true&quot;</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">echo</span> <span class="title function_ invoke__">dump</span>(<span class="number">1</span>, <span class="string">&quot;/runtime/session/&quot;</span>.<span class="variable">$SESSION_UID</span>.<span class="string">&quot;/postxml&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span>(<span class="variable">$AUTHORIZED_GROUP</span> &lt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* not a power user, return error message */</span></span><br><span class="line">		<span class="keyword">echo</span> <span class="string">&quot;\t&lt;result&gt;FAILED&lt;/result&gt;\n&quot;</span>;</span><br><span class="line">		<span class="keyword">echo</span> <span class="string">&quot;\t&lt;message&gt;Not authorized&lt;/message&gt;\n&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* cut_count() will return 0 when no or only one token. */</span></span><br><span class="line">		<span class="variable">$SERVICE_COUNT</span> = <span class="title function_ invoke__">cut_count</span>(<span class="variable">$_POST</span>[<span class="string">&quot;SERVICES&quot;</span>], <span class="string">&quot;,&quot;</span>);</span><br><span class="line">		<span class="title function_ invoke__">TRACE_debug</span>(<span class="string">&quot;GETCFG: got &quot;</span>.<span class="variable">$SERVICE_COUNT</span>.<span class="string">&quot; service(s): &quot;</span>.<span class="variable">$_POST</span>[<span class="string">&quot;SERVICES&quot;</span>]);</span><br><span class="line">		<span class="variable">$SERVICE_INDEX</span> = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">while</span> (<span class="variable">$SERVICE_INDEX</span> &lt; <span class="variable">$SERVICE_COUNT</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="variable">$GETCFG_SVC</span> = <span class="title function_ invoke__">cut</span>(<span class="variable">$_POST</span>[<span class="string">&quot;SERVICES&quot;</span>], <span class="variable">$SERVICE_INDEX</span>, <span class="string">&quot;,&quot;</span>);</span><br><span class="line">			<span class="title function_ invoke__">TRACE_debug</span>(<span class="string">&quot;GETCFG: serivce[&quot;</span>.<span class="variable">$SERVICE_INDEX</span>.<span class="string">&quot;] = &quot;</span>.<span class="variable">$GETCFG_SVC</span>);</span><br><span class="line">			<span class="keyword">if</span> (<span class="variable">$GETCFG_SVC</span>!=<span class="string">&quot;&quot;</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="variable">$file</span> = <span class="string">&quot;/htdocs/webinc/getcfg/&quot;</span>.<span class="variable">$GETCFG_SVC</span>.<span class="string">&quot;.xml.php&quot;</span>;</span><br><span class="line">				<span class="comment">/* GETCFG_SVC will be passed to the child process. */</span></span><br><span class="line">				<span class="keyword">if</span> (<span class="title function_ invoke__">isfile</span>(<span class="variable">$file</span>)==<span class="string">&quot;1&quot;</span>) <span class="title function_ invoke__">dophp</span>(<span class="string">&quot;load&quot;</span>, <span class="variable">$file</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="variable">$SERVICE_INDEX</span>++;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span>&lt;/postxml&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>因为 <code>php</code> 我基本也不太懂，不过也能大概猜个意思， <code>$_POST[&quot;SERVICES&quot;]</code> 是用户通过 <code>POST</code> 传参可控的，将这个可控的字段拼接到固定的路径里，然后检查这个文件是否存在，如果存在的话就进行加载</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="variable">$GETCFG_SVC</span> = <span class="title function_ invoke__">cut</span>(<span class="variable">$_POST</span>[<span class="string">&quot;SERVICES&quot;</span>], <span class="variable">$SERVICE_INDEX</span>, <span class="string">&quot;,&quot;</span>);			</span><br><span class="line"><span class="variable">$file</span> = <span class="string">&quot;/htdocs/webinc/getcfg/&quot;</span>.<span class="variable">$GETCFG_SVC</span>.<span class="string">&quot;.xml.php&quot;</span>;</span><br><span class="line"><span class="keyword">if</span> (<span class="title function_ invoke__">isfile</span>(<span class="variable">$file</span>)==<span class="string">&quot;1&quot;</span>) <span class="title function_ invoke__">dophp</span>(<span class="string">&quot;load&quot;</span>, <span class="variable">$file</span>);</span><br></pre></td></tr></table></figure>
+
+<p><code>/htdocs/webinc/getcfg/</code> 路径下面正好有一个敏感文件是以 <code>.xml.php</code> 结尾，<code>DEVICE.ACCOUNT.xml.php</code> 该文件可以泄露用户名和密码等信息</p>
+<figure class="highlight php"><table><tr><td class="code"><pre><span class="line"><span class="keyword">foreach</span>(<span class="string">&quot;/device/account/entry&quot;</span>)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="variable">$InDeX</span> &gt; <span class="variable">$cnt</span>) <span class="keyword">break</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t&lt;entry&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;uid&gt;&quot;</span>.		<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>,<span class="string">&quot;uid&quot;</span>).	<span class="string">&quot;&lt;/uid&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;name&gt;&quot;</span>.		<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>,<span class="string">&quot;name&quot;</span>).	<span class="string">&quot;&lt;/name&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;usrid&gt;&quot;</span>.		<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>,<span class="string">&quot;usrid&quot;</span>).	<span class="string">&quot;&lt;/usrid&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;password&gt;&quot;</span>.	<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>,<span class="string">&quot;password&quot;</span>).<span class="string">&quot;&lt;/password&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;group&gt;&quot;</span>.		<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>, <span class="string">&quot;group&quot;</span>).	<span class="string">&quot;&lt;/group&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t\t&lt;description&gt;&quot;</span>.<span class="title function_ invoke__">get</span>(<span class="string">&quot;x&quot;</span>,<span class="string">&quot;description&quot;</span>).<span class="string">&quot;&lt;/description&gt;\n&quot;</span>;</span><br><span class="line">	<span class="keyword">echo</span> <span class="string">&quot;\t\t\t&lt;/entry&gt;\n&quot;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以能通过验证的话，将 <code>SERVICES</code> 设置为 <code>DEVICE.ACCOUNT</code> 就能泄露路由器的信息。<code>if($AUTHORIZED_GROUP &lt; 0)</code> 这个可以通过伪造一个全局变量 <code>$AUTHORIZED_GROUP</code> 绕过验证。因为传入的数据都是先通过登录验证文件 <code>htdocs/cgibin</code> 的解析后，发送给 <code>php</code> 等文件进行处理，下面通过分析 <code>cgibin</code> 是如何设置 <code>$AUTHORIZED_GROUP </code> 字段，从而寻找一下利用的机会</p>
+<h2 id="二进制程序逆向"><a href="#二进制程序逆向" class="headerlink" title="二进制程序逆向"></a>二进制程序逆向</h2><h3 id="phpcgi-main函数分析"><a href="#phpcgi-main函数分析" class="headerlink" title="phpcgi_main函数分析"></a>phpcgi_main函数分析</h3><p>因为 <code>phpcgi</code> 软链接到了 <code>cgibin</code> 上，这里 <code>*argv</code> 取的就是 <code>phpcgi</code> ，所以调用了 <code>phpcgi_main</code> 函数</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261332309.png" alt="image-20231026133236156"> </p>
+<p><code>sobj_new</code> 创建了一个结构体，用于存放之后解析出来的各个字段，<code>sobj_add_string</code> 函数是将 <code>*(a2+4)</code> 的字符串给添加到刚刚的结构体中，因为 <code>a2</code> 就是 <code>main</code> 函数的 <code>argv</code> ，所以 <code>+4</code> 就取到了第一个命令行参数（必须要给一个命令行参数，否则会进入 <code>if(a1&lt;2)</code> 退出 ）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261333566.png" alt="image-20231026133346499" style="zoom:50%;" />
+
+
+
+<p>最初的 <code>qemu</code> 用户级仿真的脚本是这样的（后续我也再根据报错和问题不断的调整）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">qemu-mipsel-static -E CONTENT_TYPE=&quot;application/&quot; -E REQUEST_METHOD=&quot;POST&quot;  -g 1234 ./phpcgi 123</span><br></pre></td></tr></table></figure>
+
+
+
+<p>下面是动态调试结构体的情况，可以看到 <code>sobj_add_string</code> 函数执行后确实把第一个命令行参数 <code>123</code> 给添加进去了。执行了 <code>sobj_add_char</code> 后又在 <code>123</code> 的后面添加了一个 <code>\n</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261345501.png" alt="image-20231026134500357" style="zoom:50%;" />
+
+
+
+<p>接下来是一个循环，<code>a3</code> 是 <code>main</code> 函数的 <code>envp</code> ，那么结合上面的分析不难猜测出这里是把所有的环境变量按照 <code>_SERVER_+环境变量+\n</code> 的形式添加到结构体里</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261353378.png" alt="image-20231026135320293" style="zoom:50%;" />
+
+<p>调试界面可以看到确实把环境变量都添加到了这个结构体里…🤔，因为我没有用 <code>chroot</code> 来做调试的隔离环境，貌似把所有环境变量都遍历出来了？（emm，这里是我有意为之，我就是想看一下如果不做隔离环境，后面的分析和调试会不会出现问题）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261359173.png" alt="image-20231026135935844"></p>
+<p>于是乎，我重新来一次在隔离环境中的调试。我执行了命令 <code>sudo chroot . ./qemu-mipsel-static -E REQUEST_METHOD=&quot;POST&quot;  -E CONTENT_TYPE=&quot;application/&quot; -g 1234 ./phpcgi 123</code> ，但是报错 <code>Error while loading ./phpcgi: No such file or directory</code> ，有点奇怪，于是我直接回到了文件系统的根目录，执行命令 <code>sudo chroot . ./qemu-mipsel-static -E REQUEST_METHOD=&quot;POST&quot; -E CONTENT_TYPE=&quot;application/&quot; -g 1234 ./usr/sbin/phpcgi 123</code> 。这次一切正常，重新调试</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261420231.png"></p>
+<p>……还是这么多环境变量，那看起来这个地方用不用 <code>chroot</code> 都是一样的。</p>
+<p>总之呢，这里就确实是把我设置的环境变量给导到结构体里了</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261421775.png" alt="image-20231026142111731"></p>
+<p>下面这部分代码先判断了 <code>REQUEST_METHOD</code> 的值，<code>HEAD</code> 或 <code>GET</code> 将 <code>sub_405CF8</code> 函数指针赋值给 <code>v11</code> ，<code>POST</code> 则将 <code>sub_405AC0</code> 函数指针赋值给 <code>v11</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261422090.png" alt="image-20231026142257022" style="zoom:50%;" />
+
+<h3 id="cgibin-parse-request函数分析"><a href="#cgibin-parse-request函数分析" class="headerlink" title="cgibin_parse_request函数分析"></a>cgibin_parse_request函数分析</h3><p>目光直接聚焦到 <code>cgibin_parse_request</code> 函数，它的第一个参数是放的函数指针，第二个参数是结构体。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261433805.png" alt="image-20231026143301719"></p>
+<p>这个 <code>parse_uri</code> 函数进去简单看了一下，貌似是把 <code>REQUEST_URI</code> 中的 <code>?</code> 后面部分给存入了结构体里，本来我是没传这个环境变量的，但是我发现不传的话，就会返回 <code>-1</code> （代码如下）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261443250.png" alt="image-20231026144301176" style="zoom:50%;" />
+
+
+
+<p>因此加上这个环境变量，继续重调，此时的启动脚本如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chroot . ./qemu-mipsel-static -E REQUEST_METHOD=&quot;POST&quot; -E CONTENT_TYPE=&quot;application/&quot;  -E REQUEST_URI=&quot;wtf?COOL&quot; -g 1234 ./usr/sbin/phpcgi 123</span><br></pre></td></tr></table></figure>
+
+
+
+<p>结果走了没几步发现又退出了，发现 <code>CONTENT_TYPE</code> 和 <code>CONTENT_LENGTH</code> 的值也必须存在</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261449095.png" alt="image-20231026144935033"></p>
+<p>继续改改改，现在的脚本是这样</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chroot . ./qemu-mipsel-static -E REQUEST_METHOD=&quot;POST&quot; -E CONTENT_TYPE=&quot;application/&quot;  -E CONTENT_LENGTH=&quot;26214&quot; -E REQUEST_URI=&quot;wtf?COOL&quot; -g 1234 ./usr/sbin/phpcgi 123</span><br></pre></td></tr></table></figure>
+
+
+
+<p>现在终于能来到这个位置了，想执行到第 <code>38</code> 行的指针，需要通过 <code>strncasecmp</code> 函数的检测</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261500377.png" alt="image-20231026150055286"></p>
+<p>把目光看到 <code>0x433014</code> 的地址处（下图），这里很明显能看出来是三个内存单元组成了一个结构体，第一个成员是字符串常量，也就是 <code>strncasecmp</code> 比较时的 <code>v14</code>，第二个成员变量是 <code>strncasecmp</code> 函数的第三个参数 <code>v12</code> ，如果通过了检查就执行第三个成员变量（一个函数指针），所以这部分就是在匹配 <code>CONTENT_TYPE</code> 中的类型来执行不同的函数</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261504153.png" alt="image-20231026150428111"></p>
+<h3 id="sub-40445C函数分析"><a href="#sub-40445C函数分析" class="headerlink" title="sub_40445C函数分析"></a>sub_40445C函数分析</h3><p>当我进入 <code>sub_40445C</code> 函数后发现有个 <code>strncasecmp</code> 进行判断，通过动态调试我发现这个参数 <code>a4</code> 貌似没控制到（如果你好奇为什么我只进入字符串 <code>application/</code> 对应的函数，其实只需要看一下另外几个函数就知道了，他们的返回值都是 <code>-1</code> ，后续都直接从程序退出了）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261516142.png" alt="image-20231026151634927"></p>
+<p>感觉这里有一点奇怪，我就执行了 <code>grep -r &quot;application&quot; ./</code> 命令，搜到了下面的内容，这让我猜测 <code>qemu</code> 启动时设置的环境变量 <code>CONTENT_TYPE</code> 是 <code>application/x-www-form-urlencoded</code> 而不是 <code>application/</code> （<code>WEB</code> 常识没学好……）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261520522.png" alt="image-20231026152006138"></p>
+<p>继续重调…</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chroot . ./qemu-mipsel-static -E REQUEST_METHOD=&quot;POST&quot; -E CONTENT_TYPE=&quot;application/x-www-form-urlencoded&quot;  -E CONTENT_LENGTH=&quot;26214&quot; -E REQUEST_URI=&quot;wtf?COOL&quot; -g 1234 ./usr/sbin/phpcgi 123</span><br></pre></td></tr></table></figure>
+
+
+
+<p>先分析一下这里的 <code>select</code> 函数，它的作用是监视多个文件描述符的状态，当有任意一个文件描述符准备就绪（可读或者可写），<code>select</code> 函数就会通知程序，从而避免轮询文件描述符。下面代码的 <code>select</code> 函数中的第一个参数 <code>1</code> 指的是要检查的最大文件描述符加一，因此这里只监视了文件描述符 <code>0</code>（标准输入流）。第二个参数放的是要监视的可读文件描述符集合， <code>v21.__fds_bits[0] |= 1u</code> 这里把第一个元素（文件描述符为 <code>0</code> ）设置为 <code>1</code> ，这表示监视标准输入流中是否有数据。第三个参数和第四个参数都是 <code>0</code>，这表示没有要监视可写和异常的文件。第五个参数 <code>timeout</code> 则是该函数最长的等待时间。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">v21.__fds_bits[<span class="number">0</span>] |= <span class="number">1u</span>;</span><br><span class="line">     timeout.tv_usec = <span class="number">0</span>;</span><br><span class="line">     timeout.tv_sec = <span class="number">5</span>;</span><br><span class="line">     v7 = select(<span class="number">1</span>, &amp;v21, <span class="number">0</span>, <span class="number">0</span>, &amp;timeout);</span><br></pre></td></tr></table></figure>
+
+<p>我最初调试到这个 <code>select</code> 函数的时候，它会卡住五秒，然后返回一个 <code>0</code>（代表超时了），因为一旦这里返回 <code>0</code> 的话，后面就没办法走到 <code>read</code> 函数了（此处 <code>read</code> 函数读入的数据就是实际环境中 <code>POST</code> 报文的数据）。为了模拟真实的场景，我直接选择用 <code>set $v0=1</code> 逆天改命了一手，这样也确实能走到 <code>read</code> 函数。不过我后来重新思考了一波🤔， <code>select</code> 不就是没检测到标准输入流的数据么，可我压根还没输入数据怎么会检测到呢（我原先都是想着等 <code>read</code> 函数执行时，阻塞住等待输入再写入数据）</p>
+<p>于是乎，我在 <code>select</code> <strong>函数执行前</strong>就把数据写到了 <code>qemu</code> 这边（下图右部分），而后 <code>select</code> 函数执行后立刻返回了 <code>1</code> （下图左部分）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271240993.png" alt="image-20231027124041484"></p>
+<p>这样就可以顺理执行到 <code>read</code> 函数，如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271436225.png" alt="image-20231027143656986"></p>
+<p>注意上图中，我在启动 <code>qemu</code> 的时候，给的 <code>CONTENT_LENGTH</code> 值是 <code>100</code> ，在下图中我标注了这段代码的执行流程，可见要想让 <code>sub_40445C</code> 函数返回 <code>1</code> 就得<strong>保证读入的数据长度和 <code>CONTENT_LENGTH</code> 一致</strong>，否则多跑一轮没有读到数据的话，就会返回 <code>-1</code> （这里也卡住我了一段时间，好险…差点又放弃了😅）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271418333.png" alt="image-20231027141800217"></p>
+<p>如果 <code>sub_40445C</code> 返回 <code>-1</code> 的话， <code>cgibin_parse_request</code> 函数也返回 <code>-1</code> ，这样会触发 <code>cgibin_print_http_status(400, &quot;unsupported HTTP request&quot;, &quot;unsupported HTTP request&quot;)</code> 函数，这明显是报错了🙃</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271447968.png" alt="image-20231027144737899"></p>
+<p>因此 <code>CONTENT_LENGTH</code> 必须要严格和输入的数据长度一样（实际 <code>POST</code> 报文的发送，这个 <code>CONTENT_LENGTH</code> 也不需要我们去刻意控制，它自己就能取到正常的值，这里是本地搭建的环境，要刻意设置一下），<code>cgibin_parse_request</code> 函数返回 <code>1</code> 的话，就可以执行下面的内容 </p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271503192.png" alt="image-20231027150333144"></p>
+<p><code>sess_validate</code> 函数在验证用户的身份，如果没有通过验证返回 <code>-1</code> ，这里本身就是未授权获取路由器的管理员用户名和密码，自然就没验证成功。于是乎 <code>AUTHORIZED_GROUP=-1</code> 就被添加到了结构体里</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sprintf</span>(v16, <span class="string">&quot;AUTHORIZED_GROUP=%d&quot;</span>, v13);</span><br><span class="line">sobj_add_string(v6, v16);</span><br><span class="line">sobj_add_char(v6, <span class="string">&#x27;\n&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在此之前，<code>read</code> 读入的数据也被解析到了结构体里，现在的结构体里存放的字符串是这样</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271516991.png" alt="image-20231027151602637"></p>
+<p>后续调用了 <code>xmldbc_ephp</code> 函数，这是把上图中的字符串通过套接字传输，写到了 <code>/var/run/xmldb_sock</code> 文件中，然后其他程序再从该文件中读取数据，而 <code>getcfg.php</code> 文件在读取 <code>$AUTHORIZED_GROUP</code> 值的时候，先读取到了我们伪造的 <code>AUTHORIZED_GROUP=1</code> 继而绕过验证</p>
+<p>为了不影响主线，上面并没有提到 <code>_POST_SERVICES=DEVICE.ACCOUNT\nAUTHORIZED_GROUP=1</code> 是何时被写入内存的，它具体靠 <code>sub_403864</code> 函数来实现</p>
+<h3 id="sub-403864函数分析"><a href="#sub-403864函数分析" class="headerlink" title="sub_403864函数分析"></a>sub_403864函数分析</h3><p>直接上图解，应该不难看懂</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271653934.png" alt="image-20231027165331769" style="zoom:50%;" />
+
+<p>在看 <code>sub_40445C</code> 函数的时候，<code>IDA</code> 中 <code>72</code> 行的 <code>sub_403864(&amp;v16, (int)v22, v9);</code> 调用时，我一直纳闷，<code>sub_403864</code> 函数明明直接就是个死循环 <code>while</code> ，只能 <code>return</code> ，如何执行到后面对字符串的解码和写入操作的。完整调试完才发现，不是在 <code>72</code> 行进行的解码和写入操作，而是在 <code>80</code> 行再次调用了 <code>sub_403864</code> 函数时进行的操作…🥲</p>
+<h3 id="sobj-unescape-uri函数分析"><a href="#sobj-unescape-uri函数分析" class="headerlink" title="sobj_unescape_uri函数分析"></a>sobj_unescape_uri函数分析</h3><p><code>sobj_unescape_uri</code> 函数看名字就是对 <code>uri</code>  进行解码的，这部分就是在扫描字符串中是否有 <code>%</code> ，如果有 <code>%</code> 的话，取它的下一位和下下一位，将其转换为一个十六进制数字，最后用 <code>sobj_add_char</code> 将这个字符添加回字符串中。比如传入的字符串是 <code>abc%0a123</code> ，那么解码后则为 <code>abc\n123</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271620972.png" alt="image-20231027162050749" style="zoom:50%;" />
+
+
+
+<h3 id="sub-405AC0函数分析"><a href="#sub-405AC0函数分析" class="headerlink" title="sub_405AC0函数分析"></a>sub_405AC0函数分析</h3><p>此处的 <code>v9</code> 就是在 <code>phpcgi_main</code> 函数中的那个函数指针 <code>0x405AC0</code> ，</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271631185.png" alt="image-20231027163119133" style="zoom: 67%;" />
+
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271632621.png" alt="image-20231027163251517" style="zoom:50%;" />
+
+
+
+<p>再看 <code>sub_405AC0</code> 函数，开始的 <code>if(*a2)</code> 是 <code>0</code> ，直接看 <code>else</code> 部分（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271636298.png" alt="image-20231027163622243"></p>
+<p>首先是往 <code>a1</code> 里面添加了字符串 <code>_POST_</code> （这个 <code>a1</code> 是之前一直存放解析各种数据的结构体）</p>
+<p>接着 <code>sobj_add_string((_DWORD *)a1, v5)</code> 向 <code>a1</code> 里面添加了 <code>POST</code> 内容（也就是 <code>read</code> 读入的数据）中 <code>=</code> 前面的部分（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271643019.png" alt="image-20231027164319210"></p>
+<p>随后又向 <code>a1</code> 里写入了 <code>=</code> 和 <code>=</code> 后半部分以及 <code>\n</code> ，就不再赘述了。这个函数执行完毕后，就把 <code>POST</code> 报文的内容给按照一定格式解析写到了内存里</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271646961.png" alt="image-20231027164657601"></p>
+<h2 id="攻击效果"><a href="#攻击效果" class="headerlink" title="攻击效果"></a>攻击效果</h2><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310261021021.png" alt="image-20231026102104827"></p>
+<p>获取了用户名和密码，成功登录管理员后台</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310271919678.png" alt="image-20231027191932315"></p>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p>做这个漏洞复现的时候，感慨了好几次。好险…差一点又放弃了😅  因为网上的文章大多都千篇一律（除了 <strong>winmt</strong> 师傅😋他写的还是比较详细的），感觉就是拿 <code>poc</code> 打了一遍，然后过程写的省略就算了，说实话我还感觉有些驴唇不对马嘴…😶‍🌫️ 所以做的时候基本自己就遇见一个坑就分析一个坑，每个坑都是差点没爬出来（当时的想法是已经写的比其他人详细了，放弃这里的细节研究貌似也没啥）。好在没有得过且过，在每次想放弃的时候又坚持了一下，最终也是把自己有疑问的地方都分析清楚了</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-7034">CVE - CVE-2018-7034 (mitre.org)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.iotsec-zone.com/article/384#d-link-%E7%99%BB%E5%BD%95%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%9D%83%E9%99%90%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E">一些经典IoT漏洞的分析与复现（新手向） - IOTsec-Zone</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/MIPS%E6%9E%B6%E6%9E%84/" rel="tag"># MIPS架构</a>
+              <a href="/tags/%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2/" rel="tag"># 信息泄露</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/719b289c.html" rel="prev" title="CVE-2017-17215复现（华为HG532命令执行）">
+                  <i class="fa fa-chevron-left"></i> CVE-2017-17215复现（华为HG532命令执行）
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
