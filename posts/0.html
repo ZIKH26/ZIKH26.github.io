@@ -21,39 +21,35 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建">
+    <meta name="description" content="前言事情的起因是想去复现一下 D-Link DIR-825 、 TRENDnet TEW-632BRP 命令注入漏洞 （CVE-2020-10216 ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 DIR-825 固件中的 cgibin 。大致看了一下后，又想着下载一个型号相近的看看 cgibin 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞） 果然，经过简单">
 <meta property="og:type" content="article">
-<meta property="og:title" content="关于gdb源码调试环境搭建">
-<meta property="og:url" content="https://zikh26.github.io/posts/c5c57579.html">
+<meta property="og:title" content="ZIKH26&#39;s Blog">
+<meta property="og:url" content="https://zikh26.github.io/posts/0.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建">
+<meta property="og:description" content="前言事情的起因是想去复现一下 D-Link DIR-825 、 TRENDnet TEW-632BRP 命令注入漏洞 （CVE-2020-10216 ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 DIR-825 固件中的 cgibin 。大致看了一下后，又想着下载一个型号相近的看看 cgibin 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞） 果然，经过简单">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172522191-1508848149.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172035738-582520439.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172035504-1672278744.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172035082-1039167232.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172618725-1985569220.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172034631-573661594.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172716344-725839155.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172034380-1120493636.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172033716-637621406.png">
-<meta property="og:image" content="https://zikh26.github.io/img/2706180-20220415172032901-1046593594.png">
-<meta property="article:published_time" content="2023-05-14T23:36:47.587Z">
-<meta property="article:modified_time" content="2023-07-01T10:18:13.789Z">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803502.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081825805.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081924910.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081930234.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081932595.png">
+<meta property="article:published_time" content="2023-11-08T05:38:44.891Z">
+<meta property="article:modified_time" content="2023-11-09T01:34:18.709Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="CTF PWN IT">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zikh26.github.io/img/2706180-20220415172522191-1508848149.png">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png">
 
 
-<link rel="canonical" href="https://zikh26.github.io/posts/c5c57579.html">
+<link rel="canonical" href="https://zikh26.github.io/posts/0.html">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/c5c57579.html","path":"posts/c5c57579.html","title":"关于gdb源码调试环境搭建"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/0.html","path":"posts/0.html","title":""}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>关于gdb源码调试环境搭建 | ZIKH26's Blog</title>
+<title> | ZIKH26's Blog</title>
   
 
 
@@ -152,7 +148,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#glibc%E6%BA%90%E7%A0%81%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.</span> <span class="nav-text">glibc源码下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%BE%E4%B8%80%E4%B8%8B%E5%87%BD%E6%95%B0%E6%89%80%E5%9C%A8%E7%9A%84%E6%BA%90%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">找一下函数所在的源文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-gdbinit"><span class="nav-number">3.</span> <span class="nav-text">配置.gdbinit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E%E6%95%88%E6%9E%9C"><span class="nav-number">4.</span> <span class="nav-text">最后效果</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E4%BC%BC%E7%9A%84%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">疑似的命令注入？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%96%91%E4%BC%BC%E7%9A%84%E6%A0%88%E6%BA%A2%E5%87%BA%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">疑似的栈溢出？</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -209,7 +205,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/c5c57579.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/0.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -222,12 +218,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="关于gdb源码调试环境搭建 | ZIKH26's Blog">
+      <meta itemprop="name" content=" | ZIKH26's Blog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          关于gdb源码调试环境搭建
+          
         </h1>
 
         <div class="post-meta-container">
@@ -238,23 +234,14 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-11-08 13:38:44" itemprop="dateCreated datePublished" datetime="2023-11-08T13:38:44+08:00">2023-11-08</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 18:18:13" itemprop="dateModified" datetime="2023-07-01T18:18:13+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" itemprop="url" rel="index"><span itemprop="name">环境搭建</span></a>
-        </span>
+      <time title="修改时间：2023-11-09 09:34:18" itemprop="dateModified" datetime="2023-11-09T09:34:18+08:00">2023-11-09</time>
     </span>
 
   
@@ -266,45 +253,31 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>有时候我们要去追踪一些函数或是数据，需要用gdb动态调试并去结合着源码分析。下面介绍一下gdb源码调试的环境如何搭建</p>
-<span id="more"></span>
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>事情的起因是想去复现一下 <code>D-Link DIR-825</code> 、 <code>TRENDnet TEW-632BRP</code> 命令注入漏洞 （<code>CVE-2020-10216</code> ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 <code>DIR-825</code> 固件中的 <code>cgibin</code> 。大致看了一下后，又想着下载一个型号相近的看看 <code>cgibin</code> 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞）</p>
+<p>果然，经过简单的分析。我发现了一处疑似命令注入漏洞和一处疑似栈溢出漏洞的地方</p>
+<h2 id="疑似的命令注入？"><a href="#疑似的命令注入？" class="headerlink" title="疑似的命令注入？"></a>疑似的命令注入？</h2><p>位于 <code>soapcgi_main</code> 函数中，这里 <code>REQUEST_URI</code> 内容给到了 <code>v3</code> 后续判断是否有 <code>?service=</code> ，做了简单的过滤后最终可以命令执行</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png" alt="image-20231108180343514"></p>
+<h2 id="疑似的栈溢出？"><a href="#疑似的栈溢出？" class="headerlink" title="疑似的栈溢出？"></a>疑似的栈溢出？</h2><p>位于 <code>sessioncgi_main</code> 函数这里 <code>REQUEST_URI</code> 无论匹配到的是 <code>form_login</code> 还是 <code>form_logout</code> 都可以触发 <code>weblogin_log</code> 函数</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803502.png" alt="image-20231108180318418" style="zoom:50%;" />
 
-<h2 id="glibc源码下载"><a href="#glibc源码下载" class="headerlink" title="glibc源码下载"></a>glibc源码下载</h2><p>glibc源码可以在下面这个链接下载</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">https://launchpad.net/ubuntu/+source/glibc/</span><br></pre></td></tr></table></figure>
-<p><img src="/../img/2706180-20220415172522191-1508848149.png"></p>
-<p>选择需要的glibc版本，我以2.27-3ubuntu 1.5为例</p>
-<p><img src="/../img/2706180-20220415172035738-582520439.png" alt="image-20220415164406215"></p>
-<p>选择这个最大的文件，下载。</p>
-<p>然后拖到ubuntu里面解压</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tar -xf filename</span><br></pre></td></tr></table></figure>
 
-<p><img src="/../img/2706180-20220415172035504-1672278744.png" alt="image-20220415164603510"></p>
-<p>新建一个大的文件夹，用来存放各个版本的glibc，然后进入新下载的glibc，ls看一下发现东西都在里面。然后我们需要去找源码所在的文件夹。</p>
-<p><img src="/../img/2706180-20220415172035082-1039167232.png" alt="image-20220415164836238"></p>
-<h2 id="找一下函数所在的源文件"><a href="#找一下函数所在的源文件" class="headerlink" title="找一下函数所在的源文件"></a>找一下函数所在的源文件</h2><p>比如我现在想进行exit源码调试，先去下面这个网站搜一下exit源码在哪个文件里面。</p>
-<p><a target="_blank" rel="noopener" href="https://code.woboq.org/">在线查看源码网站</a></p>
-<p><img src="/../img/2706180-20220415172618725-1985569220.png"></p>
-<p>进去之后，搜索想找的函数，然后就可以看到它所在的文件。发现exit.c在stdlib文件中。</p>
-<p><img src="/../img/2706180-20220415172034631-573661594.png" alt="image-20220415165453694"></p>
-<p>我们去看一下，果然是在stdlib中发现了exit.c</p>
-<p><img src="/../img/2706180-20220415172716344-725839155.png"></p>
-<h2 id="配置-gdbinit"><a href="#配置-gdbinit" class="headerlink" title="配置.gdbinit"></a>配置.gdbinit</h2><p>然后pwd，复制一下路径。</p>
-<p><img src="/../img/2706180-20220415172034380-1120493636.png" alt="image-20220415165737197"></p>
-<p>然后去用户目录下输入</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vim .gdbinit</span><br></pre></td></tr></table></figure>
 
-<p>然后输入</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">dir</span>  刚才复制的路径</span><br></pre></td></tr></table></figure>
+<p>可以发现 <code>weblogin_log</code> 函数的第二个参数（也就是 <code>getenv(&quot;REMOTE_ADDR&quot;)</code> 的值 ）与 <code>::ffff:</code> 做对比，如果检查通过则执行 <code>strcpy</code> 函数进行拷贝。如果 <code>REMOTE_ADDR</code> 的值可控，在拷贝时就会造成栈溢出</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081825805.png" alt="image-20231108182521717" style="zoom:50%;" />
 
-<p>效果如下</p>
-<p><img src="/../img/2706180-20220415172033716-637621406.png" alt="image-20220415170846971"></p>
-<p>最后保存一下就ok了。</p>
-<p>然后gdb继续调试elf程序即可，等进入你装载进去的文件之后，就会自动展示glibc源代码。</p>
-<h2 id="最后效果"><a href="#最后效果" class="headerlink" title="最后效果"></a>最后效果</h2><p>效果如下：</p>
-<p><img src="/../img/2706180-20220415172032901-1046593594.png" alt="image-20220415171511841"></p>
-<p>PS：如果调试其他函数没有出现源码，就说明没有导入成功对应的代码源文件，另外就是调试不同的程序，对应的glibc版本不要选错了。</p>
-<p>参考博客：</p>
-<p><a target="_blank" rel="noopener" href="http://taqini.space/2020/11/01/glibc-debug-pwndbg/#Glibc%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA">Glibc源码调试环境搭建 | TaQini</a></p>
+
+
+
+
+<p>因为我感觉这两个漏洞都很浅，这种很多年前的设备都被无数人光临过了，大概率已经有了漏洞相关信息。但是一番搜索下来只看到了第一个命令注入漏洞被发现过了，第二个栈溢出，并没有人提到过。</p>
+<p>于是我先是用 <code>qemu</code> 用户级仿真了一下，发现如果 <code>REMOTE_ADDR</code> 确实可控的话，在漏洞函数返回时的地址会被破坏，导致程序崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081924910.png" alt="image-20231108192425522"></p>
+<p>咸鱼上淘了一个二手的 <code>DIR-850L</code> 真机，我打了一下发现响应包是正常的，返回了 <code>ok</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081930234.png" alt="image-20231108193051156"></p>
+<p> 返回 <code>ok</code> 就意味着下图中的 <code>printf</code> 已经正常执行了，这说明 <code>weblogin_log</code> 函数正常返回，并没有栈溢出导致崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081932595.png" alt="image-20231108193255552"></p>
+<p>于是乎开始各种排查，我开始的重心一直在排查报文编写错误。<code>REMOTE_ADDR</code> 的值没有添加双引号？<code>GET</code> 方式试一下？溢出的字节不够多？ 还有什么字段也要伪造，没注意到？还是已经崩溃了，只不过<code>WEB</code> 界面没看到效果？</p>
+<p>反正我当时抛出了很多疑问，然后一一进行了排除和验证。</p>
 
     </div>
 
@@ -318,14 +291,11 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/posts/b0250b87.html" rel="prev" title="强网拟态线下游记">
-                  <i class="fa fa-chevron-left"></i> 强网拟态线下游记
+                <a href="/posts/5f982ad5.html" rel="prev" title="CVE-2018-7034复现（TrendNet路由器登录信息泄露）">
+                  <i class="fa fa-chevron-left"></i> CVE-2018-7034复现（TrendNet路由器登录信息泄露）
                 </a>
             </div>
             <div class="post-nav-item">
-                <a href="/posts/efb4678.html" rel="next" title="关于house of banana的学习总结">
-                  关于house of banana的学习总结 <i class="fa fa-chevron-right"></i>
-                </a>
             </div>
           </div>
     </footer>
