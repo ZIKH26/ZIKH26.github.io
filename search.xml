@@ -1,6 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>记一次失败的漏洞挖掘过程</title>
+    <url>/posts/d3519884.html</url>
+    <content><![CDATA[<p>本文记录了一次失败的漏洞挖掘经历，但正是因为自己都在进行主观的思考，即使是失败了，这一次也学到了一些东西。我认为跟着别人文章照猫画虎成功做一遍，不如失败的独立思考探索有意义😎</p>
+<span id="more"></span>
+
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>事情的起因是想去复现一下 <code>D-Link DIR-825</code> 、 <code>TRENDnet TEW-632BRP</code> 命令注入漏洞 （<code>CVE-2020-10216</code> ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 <code>DIR-825</code> 固件中的 <code>cgibin</code> 。大致看了一下后，又想着下载一个型号相近的 <code>DIR-850</code> 看看 <code>cgibin</code> 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞）</p>
+<h2 id="固件下载"><a href="#固件下载" class="headerlink" title="固件下载"></a>固件下载</h2><p>在此之前，先记录下固件下载的过程，以 <code>D-Link DIR-825</code> 固件为例，首先我在搜索引擎中输入 <code>D-Link support</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310291033407.png" alt="image-20231029103357295" style="zoom: 50%;" />
+
+<p>这里我是直接搜了 <code>DIR-825</code></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310291037029.png" alt="image-20231029103717873" style="zoom: 33%;" />
+
+<p>居然没有搜到……这里没有显示这个版本的路由器</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310291038319.png" alt="image-20231029103856201" style="zoom: 33%;" />
+
+
+
+<p>然后我又换了一种搜法 <code>D-Link DIR-825 firmware</code> </p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310291043416.png" alt="image-20231029104358341" style="zoom:50%;" />
+
+<p>我找到了这个，这个貌似也是 <code>dlink</code> 的技术支持网站，但是比上面那个网站多了个后缀 <code>au</code></p>
+<p>下载链接：<a href="http://support.dlink.com.au/download/download.aspx?product=DIR-825">http://support.dlink.com.au/download/download.aspx?product=DIR-825</a></p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202310291045321.png" alt="image-20231029104521250" style="zoom:50%;" />
+
+<p>不过华神又给我了一个更全、更方便的网站 <a href="https://ftp.dlink.ru/pub/Router/">https://ftp.dlink.ru/pub/Router/</a> ，这里找 <strong>D-Link</strong> 的固件应该是很方便了。</p>
+<h2 id="自主探索"><a href="#自主探索" class="headerlink" title="自主探索"></a>自主探索</h2><p>需要注意的是上面固件下载的过程中寻找的是 <code>DIR-825</code> ，但后面的所有分析都是基于固件 <code>DIR-850</code> 。经过简单的分析，我发现了一处疑似命令注入漏洞和一处疑似栈溢出漏洞的地方</p>
+<h3 id="疑似的命令注入？"><a href="#疑似的命令注入？" class="headerlink" title="疑似的命令注入？"></a>疑似的命令注入？</h3><p>位于 <code>soapcgi_main</code> 函数中，这里 <code>REQUEST_URI</code> 内容给到了 <code>v3</code> 后续判断是否有 <code>?service=</code> ，做了简单的过滤后最终可以命令执行</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png" alt="image-20231108180343514"></p>
+<h3 id="疑似的栈溢出？"><a href="#疑似的栈溢出？" class="headerlink" title="疑似的栈溢出？"></a>疑似的栈溢出？</h3><p>位于 <code>sessioncgi_main</code> 函数这里 <code>REQUEST_URI</code> 无论匹配到的是 <code>form_login</code> 还是 <code>form_logout</code> 都可以触发 <code>weblogin_log</code> 函数</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803502.png" alt="image-20231108180318418" style="zoom:50%;" />
+
+
+
+<p>可以发现 <code>weblogin_log</code> 函数的第二个参数（也就是 <code>getenv(&quot;REMOTE_ADDR&quot;)</code> 的值 ）与 <code>::ffff:</code> 做对比，如果检查通过则执行 <code>strcpy</code> 函数进行拷贝。如果 <code>REMOTE_ADDR</code> 的值可控，在拷贝时就会造成栈溢出</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081825805.png" alt="image-20231108182521717" style="zoom:50%;" />
+
+
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>因为我感觉这两个漏洞都很浅，这种很多年前的设备都被无数人光临过了，大概率已经有了漏洞相关信息或者压根就用不了，但我还是想独立的确定一下漏洞到底能否利用。</p>
+<p>直接访问 <code>soap.cgi</code> ，返回了 <code>404</code> （这里我不是很懂，但也有一点眉目，具体记录在了文章末尾 ），这意味着无法触发 <code>soapcgi_main</code> 函数</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311140827729.png" alt="image-20231114082744570"></p>
+<p>这篇 <a href="https://blog.csdn.net/weixin_43815930/article/details/107937708">文章</a> 中提到，但是经过真机测试，发现设备并没有开启对 <code>soap</code> 的支持（我不确定能否手动开启它，我尝试了一些已知的方法，均未成功）</p>
+<blockquote>
+<p>如果我们将我们的注入指令放入service参数，即可完成指令注入，现在我们还需要知道这个漏洞如何触发，从soapcgi_main函数名可以得知这个函数是用于处理soap请求的，这是一种简单的基于XML的协议，可以使应用程序在分散或分布式的环境中通过HTTP来交换信息，也就是说首先目标设备要开启对soap的支持此漏洞才可以触发。</p>
+</blockquote>
+<p>去测试 <code>sessioncgi_main</code> 函数，我先用 <code>qemu</code> 用户级仿真了一下，发现如果 <code>REMOTE_ADDR</code> 确实可控的话，在漏洞函数返回时的地址会被破坏，导致程序崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081924910.png" alt="image-20231108192425522"></p>
+<p>咸鱼上淘了一个二手的 <code>DIR-850L</code> 真机，我打了一下发现响应包是正常的，返回了 <code>ok</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081930234.png" alt="image-20231108193051156"></p>
+<p> 返回 <code>ok</code> 就意味着下图中的 <code>printf</code> 已经正常执行了，这说明 <code>weblogin_log</code> 函数正常返回，并没有栈溢出导致崩溃。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081932595.png" alt="image-20231108193255552"></p>
+<p>于是乎开始各种排查，我开始的重心一直在排查报文编写错误。<code>REMOTE_ADDR</code> 的值没有添加双引号？<code>GET</code> 方式试一下？溢出的字节不够多？ 还有什么字段也要伪造，没注意到？还是已经崩溃了，只不过<code>WEB</code> 界面没看到效果？</p>
+<p>反正我当时抛出了很多疑问，然后一一进行了排除和验证，最后猜测只可能是 <code>REMOTE_ADDR</code> 字段没有控制成功。</p>
+<p>经过搜索后，这篇 <a href="https://blog.csdn.net/ctwy291314/article/details/129404902">文章</a> 里提到 <code>REMOTE_ADDR</code> 字段是无法被客户端控制，尽管我感觉这里还是很奇怪，因为我用 <code>wireshark</code> 抓了一下发送的流量包，看到的 <code>REMOTE_ADDR</code> 还是我控制的那个值🙃</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131118024.png" alt="image-20231113111829911"></p>
+<h2 id="未初始化漏洞？"><a href="#未初始化漏洞？" class="headerlink" title="未初始化漏洞？"></a>未初始化漏洞？</h2><p>除了上面提到的两个地方，我还发现了一个奇怪的点。在 <code>captchacgi_main</code> 函数中，貌似 <code>system</code> 执行时可能会存在一个未初始化漏洞？观察下图发现 <code>v10</code> ，在执行 <code>sprintf</code> 函数进行了拼接然后赋值给了 <code>v11</code>，可是 <code>v10</code> 自始至终并没有被赋值。我考虑有没有机会用栈里的残留值控制 <code>v10</code> ，于是又有了后文的探索</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311140930305.png" alt="image-20231114093006176"></p>
+<p>运行程序，发现一直卡住了，并且没有任何回显，说明大概率陷入了某个死循环或者超长循环里。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311140937544.png" alt="image-20231114093702458"></p>
+<h3 id="分金定穴"><a href="#分金定穴" class="headerlink" title="分金定穴"></a>分金定穴</h3><p>为了解决这个问题，我采用的方法是下大量断点来缩小范围，确定到底卡在了哪个位置（我自称这种方法为 <strong>分金定穴</strong> 😆）第一次将断点下到了 <code>cgibin_parse_request</code> 函数执行前</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131719110.png" alt="image-20231113171937913" style="zoom:50%;" />
+
+<p>打完断点，发现可以直接 <code>c</code> 过来，排除了在此之前卡住的可能</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131720832.png" alt="image-20231113172012592" style="zoom: 33%;" />
+
+<p>第二次将断点打到红框中的位置 <code>sess_generate_captcha</code> 函数执行前</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131722989.png" alt="image-20231113172222916" style="zoom:33%;" />
+
+<p>发现依然可以 <code>c</code> 过来，第三次将断点打到 <code>0x40A3E0</code> 地址处（也就是 <code>sess_generate_captcha</code> 函数执行后），此时发现 <code>c</code> 的时候，就一直卡住了。因此判断大致范围一定是在 <code>sess_generate_captcha</code> 函数里</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131724915.png" alt="image-20231113172422626" style="zoom:50%;" />
+
+
+
+<p>于是重调第二次，直接下到 <code>sess_generate_captcha</code> 函数内部，我选择下到 <code>sub_4095B4</code> 函数之前</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131727683.png" alt="image-20231113172727610" style="zoom:50%;" />
+
+<p> 此时发现依然可以正常 <code>c</code> 过来，第二次我尝试下到了 <code>sub_4095B4</code> 函数执行之后</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131730641.png" alt="image-20231113173009502" style="zoom: 50%;" />
+
+
+
+<p>发现又卡住了，那就说明具体的范围就在 <code>sub_4095B4</code> 函数里被什么东西卡住了</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131731688.png" alt="image-20231113173138521" style="zoom:50%;" />
+
+
+
+<p>直接分析 <code>IDA</code> 中的代码，发现 <code>v4</code> 没有初始化，而 <code>v0</code> 初始值是 <code>1</code>，每次循环 <code>+1</code> ，只有 <code>v1</code> 的值大于 <code>v4</code> 时才能跳出这个死循环。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131735218.png" alt="image-20231113173503142" style="zoom:50%;" />
+
+
+
+<p>因为没有变量初始化，就导致从栈里取的值是随机的，所以再次调试，看下 <code>v4</code> 的初始值是什么，找到 <code>slt</code> 比较的汇编代码， <code>$v0</code> 寄存器就为 <code>v4</code> 的值，将断点下到这里</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131741688.png" alt="image-20231113174105614"></p>
+<p>通过调试发现 <code>$v0</code> 寄存器中是一个栈地址，这意味着要跑二十多亿次的循环才能继续往下运行</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131744671.png" alt="image-20231113174442476" style="zoom:50%;" />
+
+<p>但这是否意味着真实环境里的这个 <code>captcha.cgi</code> 也要等这么久？拿真机测试一下，发现直接回显，这意味着远程环境里的这个 <code>v4</code> 肯定不是栈地址，我猜测大概率可能就是个 <code>0</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131753698.png" alt="image-20231113175346616"></p>
+<p>因此为了和真实环境保持尽可能的接近，我选择用 <code>set</code> 命令直接把  <code>$v0</code> 寄存器改成 <code>0</code> ，这样就可以正常执行到下面的 <code>if</code> 分支，但因为某些条件，导致进入的是 <code>else</code> 。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131759833.png" alt="image-20231113175922743"></p>
+<p>访问真机可以看到触发的是 <code>if</code> 里的内容，依然是为了和真实环境保持一致，所以继续用 <code>set</code> 命令来改变正常的执行流</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131803503.png" alt="image-20231113180322427"></p>
+<p>此时执行到了 <code>sprintf</code> 函数，查看第四个参数（结合下面两张图）发现其是个栈里残留的地址，在其低地址处没有输入大量字符串的机会，所以此处 <code>system</code> 传入的一个未初始化数组也不可控制（本想着用栈的残留值偷鸡）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131812580.png" alt="image-20231113181232436" style="zoom:50%;" />
+
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131808372.png" alt="image-20231113180808173" style="zoom:50%;" />
+
+<p>😅又是一次失败的分析</p>
+<h2 id="问题与解决"><a href="#问题与解决" class="headerlink" title="问题与解决"></a>问题与解决</h2><p>这里对探索过程中遇到的问题和解决方法进行了记录</p>
+<h3 id="gdbserver连接报错"><a href="#gdbserver连接报错" class="headerlink" title="gdbserver连接报错"></a>gdbserver连接报错</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(gdb) target remote 192.168.110.111:7788</span><br><span class="line">Remote debugging using 192.168.110.111:7788</span><br><span class="line">1</span><br><span class="line">sl</span><br><span class="line">Ignoring packet error, continuing...</span><br><span class="line">warning: unrecognized item &quot;timeout&quot; in &quot;qSupported&quot; response</span><br><span class="line">si</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Ignoring packet error, continuing...</span><br><span class="line">Ignoring packet error, continuing...</span><br><span class="line">Bogus trace status reply from target: timeout</span><br></pre></td></tr></table></figure>
+
+<p>解决方法：将启动 <code>qemu</code> 时的 <strong>vmlinux-2.6.32-5-4kc-malta</strong> 改成 <strong>vmlinux-3.2.0-4-4kc-malta</strong> </p>
+<h3 id="gdb-multiarch-xxx-发生段错误"><a href="#gdb-multiarch-xxx-发生段错误" class="headerlink" title="gdb-multiarch xxx 发生段错误"></a>gdb-multiarch xxx 发生段错误</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311011036642.png" alt="image-20231101103629341"></p>
+<p>出现上面的问题，不能写成 <code>gdb-multiarch session.cgi</code> ，因为本地加载 <code>session.cgi</code> 的时候会缺少对应的库，触发段错误。直接写成 <code>gdb-multiarch</code> 就行</p>
+<h3 id="gdb-multiarch报错gdb-MemoryError"><a href="#gdb-multiarch报错gdb-MemoryError" class="headerlink" title="gdb-multiarch报错gdb.MemoryError"></a>gdb-multiarch报错gdb.MemoryError</h3><p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311011035373.png" alt="image-20231101103553908"></p>
+<p>这个问题说明 <code>gdb</code> 没能正确的解析接收的数据，需要提前设置架构和字节序。假如我这个要调试的程序为 <code>mips</code> 架构，大端序。执行 <code>set endian big</code> <code>set architecture mips</code> 两个命令即可</p>
+<h3 id="调试二进制文件报错-ld-uClibc-so-0-No-such-file-or-directory"><a href="#调试二进制文件报错-ld-uClibc-so-0-No-such-file-or-directory" class="headerlink" title="调试二进制文件报错 ld-uClibc.so.0: No such file or directory"></a>调试二进制文件报错 ld-uClibc.so.0: No such file or directory</h3><p>开始直接在 <code>Desktop</code> 目录执行了 <code>sudo chroot . ./qemu-mips-static ./captcha.cgi</code> 命令，但是报错如下</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311071020090.png" alt="image-20231107102050040"></p>
+<p>这里是因为 <code>chroot</code> 做了一个隔离环境，以 <code>Desktop</code> 目录作为根目录，而 <code>captcha.cgi</code>（已经过重命名，源程序名为 <code>cgibin</code>）为动态链接程序，会去寻找 <code>/lib</code> 目录下的 <code>libc</code> 和 <code>ld</code> 文件，因为我这里的 <code>Desktop</code> 目录下肯定没有 <code>lib</code> 目录，导致报错。</p>
+<p>解决方法：进入由路由器固件解压后的文件系统，执行上面相同的命令，以当前目录为根目录做一个隔离环境，这里的 <code>/lib</code> 肯定是存在与 <code>cgibin</code> 配套的 <code>libc</code> 文件（如下）</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311131643294.png" alt="image-20231113164300933"></p>
+<h3 id="为什么有的cgi可以被触发，有的则404"><a href="#为什么有的cgi可以被触发，有的则404" class="headerlink" title="为什么有的cgi可以被触发，有的则404"></a>为什么有的cgi可以被触发，有的则404</h3><p>我原先也是一直纳闷这个问题的，直到我无意中搜了一下文件系统里的 <code>cgi</code> 文件，我突然感觉这些文件很眼熟。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311141239124.png" alt="image-20231114123911932" style="zoom:50%;" />
+
+<p>因为我在真机上测试了一下 <code>cgibin</code> 程序中的哪些名称是可以访问成功的，貌似那些名称就是上面的文件。仔细比对后，确实如此。只要是在 <code>htdocs/web</code> 目录下的文件都可以直接被访问到，而其他文件之所以 <code>404</code> ， 就是因为 <code>web</code> 目录下并没有对应的 <code>cgi</code> 文件？但返回 <code>500</code> 的又会因为什么原因呢，暂且未知。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.coder.work/article/7303050">c++ - 通过gdb连接到远程gdbserver时出错 - IT工具网 (coder.work)</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/385503740">D-Link DIR-825和TRENDnet TEW-632BRP命令注入漏洞(CVE-2020-10216) - 知乎 (zhihu.com)</a></p>
+<p><a href="https://noob3xploiter.medium.com/hacking-the-dlink-dir-615-for-fun-and-no-profit-part-5-multiple-rces-d508f58e2471">Hacking the dlink DIR-615 for fun and no profit Part 5: Multiple RCE’s | by Brandon Roldan | Medium — 为了好玩而无利可救地破解 dlink DIR-615 第 5 部分：多个 RCE |由 Brandon Roldan |中等</a></p>
+<p><a href="https://blog.csdn.net/weixin_43815930/article/details/107937708">D-Link DIR850L-A1固件指令执行漏洞_ghidra逆向dlink固件-CSDN博客</a></p>
+]]></content>
+      <categories>
+        <category>IOT安全</category>
+        <category>漏洞挖掘</category>
+      </categories>
+      <tags>
+        <tag>MIPS架构</tag>
+        <tag>D-Link</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>CVE-2018-7034复现（TrendNet路由器登录信息泄露）</title>
     <url>/posts/5f982ad5.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>该漏洞的利用是通过发送 <code>POST</code> 报文在正常字段 <code>SERVICES=DEVICE.ACCOUNT</code> 后紧跟了一个 <code>AUTHORIZED_GROUP=1</code> （二者用 <code>%0a</code> 连接），导致 <code>cgibin</code> 文件解析时先识别到了第一个 <code>=</code> ，认为 <code>SERVICES</code> 是键，<code>DEVICE.ACCOUNT%0aAUTHORIZED_GROUP=1</code> 是值。随后又对字符串进行解码，<code>%0a</code> 处理为 <code>\n</code>，此时内存中字符串为 <code>_POST_SERVICES=DEVICE.ACCOUNT\nAUTHORIZED_GROUP=1</code> ，后续在 <code>cgibin</code> 中认证失败，在此基础上添加了 <code>AUTHORIZED_GROUP=-1</code> 。</p>
@@ -7257,36 +7397,6 @@
       <tags>
         <tag>栈迁移</tag>
       </tags>
-  </entry>
-  <entry>
-    <title></title>
-    <url>/posts/0.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>事情的起因是想去复现一下 <code>D-Link DIR-825</code> 、 <code>TRENDnet TEW-632BRP</code> 命令注入漏洞 （<code>CVE-2020-10216</code> ）。因为一直没找到命令注入的点，一时兴起，就随便看了看 <code>DIR-825</code> 固件中的 <code>cgibin</code> 。大致看了一下后，又想着下载一个型号相近的看看 <code>cgibin</code> 里有没有什么漏洞（我希望在不看漏洞披露信息的情况下，寻找一些比较明显的漏洞）</p>
-<p>果然，经过简单的分析。我发现了一处疑似命令注入漏洞和一处疑似栈溢出漏洞的地方</p>
-<h2 id="疑似的命令注入？"><a href="#疑似的命令注入？" class="headerlink" title="疑似的命令注入？"></a>疑似的命令注入？</h2><p>位于 <code>soapcgi_main</code> 函数中，这里 <code>REQUEST_URI</code> 内容给到了 <code>v3</code> 后续判断是否有 <code>?service=</code> ，做了简单的过滤后最终可以命令执行</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803589.png" alt="image-20231108180343514"></p>
-<h2 id="疑似的栈溢出？"><a href="#疑似的栈溢出？" class="headerlink" title="疑似的栈溢出？"></a>疑似的栈溢出？</h2><p>位于 <code>sessioncgi_main</code> 函数这里 <code>REQUEST_URI</code> 无论匹配到的是 <code>form_login</code> 还是 <code>form_logout</code> 都可以触发 <code>weblogin_log</code> 函数</p>
-<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081803502.png" alt="image-20231108180318418" style="zoom:50%;" />
-
-
-
-<p>可以发现 <code>weblogin_log</code> 函数的第二个参数（也就是 <code>getenv(&quot;REMOTE_ADDR&quot;)</code> 的值 ）与 <code>::ffff:</code> 做对比，如果检查通过则执行 <code>strcpy</code> 函数进行拷贝。如果 <code>REMOTE_ADDR</code> 的值可控，在拷贝时就会造成栈溢出</p>
-<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081825805.png" alt="image-20231108182521717" style="zoom:50%;" />
-
-
-
-
-
-<p>因为我感觉这两个漏洞都很浅，这种很多年前的设备都被无数人光临过了，大概率已经有了漏洞相关信息。但是一番搜索下来只看到了第一个命令注入漏洞被发现过了，第二个栈溢出，并没有人提到过。</p>
-<p>于是我先是用 <code>qemu</code> 用户级仿真了一下，发现如果 <code>REMOTE_ADDR</code> 确实可控的话，在漏洞函数返回时的地址会被破坏，导致程序崩溃。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081924910.png" alt="image-20231108192425522"></p>
-<p>咸鱼上淘了一个二手的 <code>DIR-850L</code> 真机，我打了一下发现响应包是正常的，返回了 <code>ok</code>。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081930234.png" alt="image-20231108193051156"></p>
-<p> 返回 <code>ok</code> 就意味着下图中的 <code>printf</code> 已经正常执行了，这说明 <code>weblogin_log</code> 函数正常返回，并没有栈溢出导致崩溃。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202311081932595.png" alt="image-20231108193255552"></p>
-<p>于是乎开始各种排查，我开始的重心一直在排查报文编写错误。<code>REMOTE_ADDR</code> 的值没有添加双引号？<code>GET</code> 方式试一下？溢出的字节不够多？ 还有什么字段也要伪造，没注意到？还是已经崩溃了，只不过<code>WEB</code> 界面没看到效果？</p>
-<p>反正我当时抛出了很多疑问，然后一一进行了排除和验证。</p>
-]]></content>
   </entry>
   <entry>
     <title>虎符CTF2022 babygame</title>
