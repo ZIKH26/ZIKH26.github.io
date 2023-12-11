@@ -153,13 +153,13 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">110</span>
+          <span class="site-state-item-count">111</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
           <a href="/categories/">
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -185,6 +185,103 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/848296ab.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/848296ab.html" class="post-title-link" itemprop="url">从零开始复现CVE-2023-20073</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-08-03 10:22:28" itemprop="dateCreated datePublished" datetime="2023-08-03T10:22:28+08:00">2023-08-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-09-28 10:10:21" itemprop="dateModified" datetime="2023-09-28T10:10:21+08:00">2023-09-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">IOT安全</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/IOT%E5%AE%89%E5%85%A8/%E5%A4%8D%E7%8E%B0CVE/" itemprop="url" rel="index"><span itemprop="name">复现CVE</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这算第二次复现 <code>IOT</code> 漏洞，第一次是很老的 <code>DIR-815</code> ，第二次直接复现的是 <strong>winmt</strong> 师傅今年挖到的一个思科漏洞 <strong>CVE-2023-20073</strong> 。年份上跨越不算小，就导致了复现过程中屡屡遇到问题而没什么解决的办法，而网上除了 <strong>winmt</strong> 师傅本人做了漏洞的分析之外，也没有找到其他资料。这里发自内心的感谢 <strong>winmt</strong> 师傅给予我提供的指导和帮助，否则可能要走更多的弯路甚至会对很多地方一知半解的就完成了所谓的 “复现” ，写这篇文章的一个重要目的就是想帮助之后复现这个漏洞的师傅提供一些参考，毕竟不是每个人都能遇见一个万能的 <strong>winmt</strong> QAQ。本文对于 <strong>CVE-2023-20073</strong> 复现过程做了详尽的记录，其中包括了遇见过的各种坑和解决问题的方法及思路。再次对 <strong>winmt</strong> 师傅表示感谢！</p>
+<h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><p><code>Cisco RV340</code>，<code>RV340W</code>，<code>RV345</code>和 <code>RV345P</code> 四款型号的路由器中最新固件均存在一个未授权任意文件上传漏洞 （且目前尚未修复），攻击者可以在未授权的情况下将文件上传到 <code>/tmp/upload</code> 目录中，然后利用 <code>upload.cgi</code> 程序中存在的漏洞，最终造成存储型 <code>XSS</code> 攻击。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/848296ab.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1017,105 +1114,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/fabe43ff.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/fabe43ff.html" class="post-title-link" itemprop="url">关于qemu逃逸的学习总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 16:50:01" itemprop="dateModified" datetime="2023-07-01T16:50:01+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
-        </span>
-          ，
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>前一段 <code>VNCTF 2023</code> 正好有一道非常入门 <code>qemu</code> 逃逸的题目，正好以此为契机进行 <code>qemu</code> 逃逸的入门学习，在这部分的学习中，要感谢 <strong>winmt</strong> 和 <strong>roderick</strong> 师傅解答我的一些困惑。</p>
-<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><h3 id="QEMU与逃逸"><a href="#QEMU与逃逸" class="headerlink" title="QEMU与逃逸"></a>QEMU与逃逸</h3><p><code>QEMU</code> 是纯软件实现的虚拟化<strong>模拟器</strong>，可以模拟多种不同的计算机系统和硬件设备。虽然 <code>QEMU</code> 可以模拟出硬件或虚拟环境，但它本质上只是一个程序，所谓 <code>qemu</code> 逃逸是指攻击者利用 <code>QEMU</code> 实现的有漏洞的 <code>PCI</code> 设备来获取主机的权限。从虚拟机中 “逃出来”，其利用方式和平常用户程序执行 <code>system</code> 函数是一样的，只不过平常 <code>PWN</code> 题的触发方式是通过用户的输入进行触发，而 <code>QEMU</code> 虚拟机的设备漏洞通过运行在虚拟机上的用户程序对设备的 <code>IO</code> 交互来间接触发。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/fabe43ff.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="上一页" aria-label="上一页" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
