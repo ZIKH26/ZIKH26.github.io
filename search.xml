@@ -9,7 +9,7 @@
 <p>PS:本文记录的部分内容和 <a href="https://zikh26.github.io/posts/e5651b4f.html">站在巨人肩膀上复现CVE-2023-34644 | ZIKH26’s Blog</a> 这篇文章中的部分内容有相似之处，因为对前期的 <code>lua</code> 文件分析基本一致。为了保证读任何一篇单独的文章都较为通顺和连贯，因此就保留了两篇文章中相似的部分。</p>
 <h2 id="仿真环境搭建"><a href="#仿真环境搭建" class="headerlink" title="仿真环境搭建"></a>仿真环境搭建</h2><p>仿真环境搭建请参考 <a href="https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4">https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4</a></p>
 <p>该文章详细记录了锐捷 <code>EW</code> 型号路由器的仿真过程</p>
-<p>qemu的启动脚本如下</p>
+<p><code>qemu</code> 的启动脚本如下</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">sudo qemu-system-mipsel \</span><br><span class="line">    -cpu 74Kf \</span><br><span class="line">    -M malta \</span><br><span class="line">    -kernel vmlinux-3.2.0-4-4kc-malta \</span><br><span class="line">    -hda debian_squeeze_mipsel_standard.qcow2 \</span><br><span class="line">    -append &quot;root=/dev/sda1 console=tty0&quot; \</span><br><span class="line">    -net nic \</span><br><span class="line">    -net tap,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -nographic</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>其中的 <code> vmlinux-3.2.0-4-4kc-malta</code> 和 <code>debian_squeeze_mipsel_standard.qcow2</code>  文件从 <a href="https://people.debian.org/~aurel32/qemu/mipsel/">https://people.debian.org/~aurel32/qemu/mipsel/</a>   进行下载</p>
@@ -9966,6 +9966,39 @@
 
 
 <p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307031634544.png" alt="image-20230703163428321"></p>
+<h2 id="hitcon-2018-hackergame-2018-calc"><a href="#hitcon-2018-hackergame-2018-calc" class="headerlink" title="hitcon_2018_hackergame_2018_calc"></a>hitcon_2018_hackergame_2018_calc</h2><p>这道题很有意思，和保护机制没关系。主函数实现了一个计算器的功能，可以用来进行加减乘除运算，最初我是没找到这个函数有漏洞的。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032147008.png" alt="image-20240303214740851"></p>
+<p>而后发现了 <code>err</code> 函数，其中有机会执行我们输入的命令，对其进行交叉引用，发现在 <code>init</code> 函数中被调用。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032148174.png" alt="image-20240303214841070"></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032150572.png" alt="image-20240303215039472"></p>
+<p>发现在程序抛出 <code>4</code> <code>6</code> <code>8</code> <code>11</code> 信号的时候，都会调用 <code>err</code> 函数。</p>
+<p><code>4</code> 表示在执行不合法指令或者非特权模式下执行特权指令时会发出信号 <code>SIGILL</code></p>
+<p><code>6</code> 表示进程异常终止，通常由标准库中的 <code>abort</code> 函数引起，用于异常终止程序的执行，发出信号 <code>SIGABRT</code></p>
+<p><code>8</code> 表示发生了浮点运算错误，如除以零或者运算导致产生溢出，抛出信号 <code>SIGFPE</code></p>
+<p><code>11</code> 是常见的段错误 <code>SIGSEGV</code> ，表示进程尝试访问一块非法内存（不存在地址，或者向只读地址中写入数据等等）</p>
+<p><code>main</code> 函数中很明显能发现在实现加减乘除的运算，那么肯定是要想办法让程序抛出 <code>SIGFPE</code> 信号</p>
+<p>由于做了检查，没办法控制除法运算时的除数为 <code>0</code> 。也就是想通过一个数字除 <code>0</code> 是不可能的因为发现做运算时的 <code>v4</code> 被强转为了 <code>int</code> ，但是做检查时的 <code>v4</code> 是无符号数。尝试从这里用两种类型的切换做一个绕过，<code>-4294967296</code> 会被解析成 <code>0</code>（将高位舍弃后剩下的低位都是 <code>0</code>，但是这在写入内存时依然是 <code>0</code> 绕过不过检查） </p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032205355.png" alt="image-20240303220517233" style="zoom: 67%;" />
+
+
+
+<p>在这篇 <a href="https://zh.wikipedia.org/wiki/SIGFPE">文章</a> 中提到了下面的描述</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032221469.png" alt="image-20240303222138301"></p>
+<p>这意味着在做除法运算时，产生的商溢出也会触发 <code>SIGFPE</code> 信号。</p>
+<p>以 <code>int</code> 类型为例，它的范围是 <code>-2^31 ~ 2^31-1</code> 为什么正数部分要减 <code>1</code> ？</p>
+<p>因为在有符号整数表示中，需要保留一个表示 <code>0</code> 的值，所以最大正数值需要减去 <code>1</code></p>
+<p>这也就是上面图片中的红框部分所展示的，如果拿负数的最小值去除以 <code>-1</code> ，数字应该是变成负数的绝对值，但因为这个数字无法表示（其实是太大导致进位溢出了）。导致了 <code>SIGFPE</code> 的产生，因此只需要输入 <code>-2147483648/-1</code> 就能触发 <code>err</code> 函数</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403032230691.png" alt="image-20240303223034582"></p>
+<p>但是在 <code>err</code> 函数中用 <code>strstr</code> 函数过滤了 <code>sh</code> 字符串。在这种情况下如何命令执行？</p>
+<p>第一反应要拿到 <code>flag</code> 应该是直接 <code>cat flag</code> ，效果如下，没有将 <code>flag</code> 文件的内容输出，而是输出了 <code>flag</code> 这个字符串。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403040955658.png" alt="image-20240304095533455"></p>
+<p>原因是因为 <code>scanf %s</code> 读入字符串时，遇见空格和回车都会结束字符串的读取。导致 <code>execlp</code> 函数执行时的命令只有 <code>cat</code> ，而 <code>flag</code> 字符串被存在了缓冲区中，当 <code>cat</code> 命令执行后，读取到了缓冲区存放的 <code>flag</code> 字符串，也就是像下面这个样子。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403040959942.png" alt="image-20240304095938845"></p>
+<p>同时还考虑了能不能用 <code>s&#39;&#39;h</code> 来绕过 <code>strstr</code> 所做的过滤，在 <code>shell</code> 中这样确实可以执行出 <code>sh</code></p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403041002244.png" alt="image-20240304100219138"></p>
+<p>但这种单引号的解析实际是 <code>shell</code> 解释器做的，而程序中的 <code>execlp</code> 库函数内部调用了系统调用 <code>execve</code> ，没办法去解析单引号，所以 <code>s&#39;&#39;h</code> 是执行失败的。</p>
+<p>看 <code>roderick</code> 师傅的 <a href="https://www.cnblogs.com/LynneHuan/p/16097702.html">wp</a> 发现是先调用了 <code>vim</code> ，输入 <code>:!sh</code> 执行了 <code>sh</code> 命令。原理是因为 <code>:</code> 从编辑模式切换到末行模式后 <code>!</code> 表示 <code>vim</code> 执行后面跟着的命令，并将命令的输出结果显示在 <code>vim</code> 的界面中。因为在执行 <code>:!sh</code> 时已经在 <code>vim</code> 中了，不会受到任何过滤的影响从而调用了 <code>sh</code>。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403041031107.png" alt="image-20240304103156991" style="zoom: 67%;" />
 ]]></content>
       <categories>
         <category>buu刷题</category>
@@ -10362,7 +10395,7 @@
 <p>现在我们要做的就是在栈里写一个bss段地址（本题写的bss段地址是0x601088，这个地址刚开始是不知道的，我们可以先随便写个地址，最后通过调试去把这个正确的地址进行重新修正）</p>
 <p>上图中标注的①，②，③其实就对应我演示的那个图片。还记得上文提到的一个半成品payload么，其实就是④，printf将修改它自己的返回地址。</p>
 <p>下面来展示下payload，以及修改前后的栈（变化前后的地方已用红框标注）（修改原理上面已经介绍过了）</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">hook_addr=((leak_stack_addr-<span class="number">0x118</span>)&amp;<span class="number">0xff</span>)<span class="comment">#泄露的栈地址距离返回地址下面的那个内存单元的地址偏移为0x118</span></span><br><span class="line"><span class="keyword">if</span> hook_addr&gt;<span class="number">0xa3</span>:</span><br><span class="line">    judge=<span class="number">1</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    judge=<span class="number">2</span></span><br><span class="line"><span class="comment">#if进行判断是因为，我们并不知道hook_addr和0xa3谁打，因此需要应对这两种情况</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">hook_addr=((leak_stack_addr-<span class="number">0x118</span>)&amp;<span class="number">0xff</span>)<span class="comment">#泄露的栈地址距离返回地址下面的那个内存单元的地址偏移为0x118</span></span><br><span class="line"><span class="keyword">if</span> hook_addr&gt;<span class="number">0xa3</span>:</span><br><span class="line">    judge=<span class="number">1</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    judge=<span class="number">2</span></span><br><span class="line"><span class="comment">#if进行判断是因为，我们并不知道hook_addr和0xa3谁大，因此需要应对这两种情况</span></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">1</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr-<span class="number">0xa3</span>)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> judge==<span class="number">2</span>:</span><br><span class="line">    payload=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(hook_addr)+<span class="string">&#x27;c%18$hhn&#x27;</span></span><br><span class="line">    payload+=<span class="string">&#x27;%&#x27;</span>+<span class="built_in">str</span>(<span class="number">0xa3</span>-hook_addr)+<span class="string">&#x27;c%23$hhn&#x27;</span></span><br><span class="line">p.send(payload)</span><br></pre></td></tr></table></figure>
 
 <p>修改前：</p>
 <p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307012018026.png" alt="image-20220419175618585"></p>

@@ -44,7 +44,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308231655314.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202308231655309.png">
 <meta property="article:published_time" content="2024-02-13T12:53:23.413Z">
-<meta property="article:modified_time" content="2024-02-13T15:14:32.995Z">
+<meta property="article:modified_time" content="2024-02-22T13:50:15.559Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="MIPS架构">
 <meta name="twitter:card" content="summary">
@@ -242,9 +242,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2024-02-13 20:53:23 / 修改时间：23:14:32" itemprop="dateCreated datePublished" datetime="2024-02-13T20:53:23+08:00">2024-02-13</time>
+      <time title="创建时间：2024-02-13 20:53:23" itemprop="dateCreated datePublished" datetime="2024-02-13T20:53:23+08:00">2024-02-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2024-02-22 21:50:15" itemprop="dateModified" datetime="2024-02-22T21:50:15+08:00">2024-02-22</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -271,7 +277,7 @@
 <p>PS:本文记录的部分内容和 <a href="https://zikh26.github.io/posts/e5651b4f.html">站在巨人肩膀上复现CVE-2023-34644 | ZIKH26’s Blog</a> 这篇文章中的部分内容有相似之处，因为对前期的 <code>lua</code> 文件分析基本一致。为了保证读任何一篇单独的文章都较为通顺和连贯，因此就保留了两篇文章中相似的部分。</p>
 <h2 id="仿真环境搭建"><a href="#仿真环境搭建" class="headerlink" title="仿真环境搭建"></a>仿真环境搭建</h2><p>仿真环境搭建请参考 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4">https://bbs.kanxue.com/thread-277386.htm#msg_header_h2_4</a></p>
 <p>该文章详细记录了锐捷 <code>EW</code> 型号路由器的仿真过程</p>
-<p>qemu的启动脚本如下</p>
+<p><code>qemu</code> 的启动脚本如下</p>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">sudo qemu-system-mipsel \</span><br><span class="line">    -cpu 74Kf \</span><br><span class="line">    -M malta \</span><br><span class="line">    -kernel vmlinux-3.2.0-4-4kc-malta \</span><br><span class="line">    -hda debian_squeeze_mipsel_standard.qcow2 \</span><br><span class="line">    -append &quot;root=/dev/sda1 console=tty0&quot; \</span><br><span class="line">    -net nic \</span><br><span class="line">    -net tap,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -nographic</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p>其中的 <code> vmlinux-3.2.0-4-4kc-malta</code> 和 <code>debian_squeeze_mipsel_standard.qcow2</code>  文件从 <a target="_blank" rel="noopener" href="https://people.debian.org/~aurel32/qemu/mipsel/">https://people.debian.org/~aurel32/qemu/mipsel/</a>   进行下载</p>
