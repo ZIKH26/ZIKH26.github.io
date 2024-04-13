@@ -194,6 +194,105 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/992e244b.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/992e244b.html" class="post-title-link" itemprop="url">BUUCTF_jarvisoj_guess</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-07-01 20:14:12" itemprop="dateModified" datetime="2023-07-01T20:14:12+08:00">2023-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>通过这道题的学习与收获有：（说实话，我把这玩意拖到IDA里的一刻，我是想直接把它扔进回收站的，不过最终还是硬着头皮做下来了，收获也真的很多）</p>
+<p>1、这道题的漏洞点是数组下标的不检查，导致char类型可能自身变成负数，使得我们可以输入不正常数据来通过对flag的检查。</p>
+<p>2、使用单字节爆破的手段，获取flag，这道题对于flag的检查是判断整体的，但之所以可以进行单字节爆破是因为我们是先通过了flag的检查，然后依次改变一字节，来观察回显，我们的flag是否正确，从而进行单字节的爆破。并且还有一个前提是不限次数的输入内容（只要内容是100字节，就可以与flag进行比较判断）</p>
+<p>3、当时关于本机的flag和远程的flag这里迷了好久，我一直以为本机的是假flag，然后远程是通过某种加密手段放的是真flag（意思就是说本机flag和远程flag我感觉应该是有关系的），最后看了下前面的英文提示，又想了很久最后发现，这俩flag之间并没有任何关系…</p>
+<p>4、我们始终都没法直接控制value_1和value_2的值，我们仅仅只能去控制bin_by_hex数组的索引，而我们爆破的其实是bin_by_hex数组的下标，而真正的flag是通过这个下标去数组bin_by_hex里面找到真正flag的所对应的字符。之所以给我们一种爆破flag的错觉其实是因为爆破的bin_by_hex数组下标正好又是对应字符的ascii（比如我爆破b的时候，分别发了6和2，这个0x62其实是bin_by_hex的下标，但是这个下标放的又正好是b）因此就感觉我们在爆破flag一样。关于这个bin_by_hex数组与它的下标这里，我迷了很久。</p>
+<p>5、这道题最后的爆破脚本我感觉还是需要一些python功底才能写出来的（我是看了下师傅们的 exp才写出来的）</p>
+<p>6、这道题最恶心的地方就是调试很麻烦（其实我压根就不会…），而且对于这道题调试而言的话，也不知道调试该看什么，又是要连接的，又是fork的，确实不会调…</p>
+<p>7、熟悉了一下常见网络编程函数的功能，用IDA简单对他们进行了流程的分析。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/992e244b.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/a3bb0057.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -259,105 +358,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/posts/a3bb0057.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d34ee684.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/d34ee684.html" class="post-title-link" itemprop="url">BUUCTF_de1ctf_2019_unprintable</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-02-21 23:42:47" itemprop="dateModified" datetime="2024-02-21T23:42:47+08:00">2024-02-21</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>通过这道题的学习与收获有：</p>
-<p>1、bss段的格式化字符串，需要找一条栈链，需要用栈地址-&gt;栈地址-&gt;栈地址-&gt;值，用第二个栈地址来控制第三个栈地址，将第三个栈地址当做跳板，最终去通过跳板的不断移动，去不断写入一或两字节的数据。<br>这里稍稍总结两句。<br>利用格式化字符漏洞来达到写的目的，分为两种情况。<br>如果输入直接是在栈中，那就可以去利用距栈顶偏移加我们构造地址，去达到任意地址任意写的目的。<br>如果输入是在bss段，那么要利用栈链，来进行任意地址任意写。</p>
-<p>2、这道题的思路是一边利用格式化字符串漏洞去不断执行printf和read，一边在栈里写入bss段地址，为之后的栈迁移做打算。最后将布置好的rop链发送过去，让执行流迁移到rop链上，利用magic gadget来获取shell。</p>
-<p>3、又收集到了一个新的magic gadget。adc    DWORD PTR [rbp+0x48],edx    机器码搜11554889</p>
-<p>4、第一次遇见格式化字符函数自己修改自己的返回地址去执行自己… 另外就是格式化字符并不需要对齐，格式化字符后面的地址才需要对齐。</p>
-<p>5、多注意栈里的数据，是否有特殊的存在。没思路的时候，就调试一下看看能不能找到有用的信息。</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/d34ee684.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
