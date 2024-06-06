@@ -316,7 +316,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-06-06 11:14:10 / 修改时间：13:24:28" itemprop="dateCreated datePublished" datetime="2024-06-06T11:14:10+08:00">2024-06-06</time>
+      <time title="创建时间：2024-06-06 11:14:10 / 修改时间：13:28:17" itemprop="dateCreated datePublished" datetime="2024-06-06T11:14:10+08:00">2024-06-06</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -341,103 +341,14 @@
           <p>已经配置好的环境：<a target="_blank" rel="noopener" href="https://drive.google.com/file/d/1FcbCkfGuHlvohGlzA-HRRyM8izqhHALE/view?usp=sharing">下载链接</a> (使用方法：先执行 <code>net.sh</code> 再运行 <code>start.sh</code> 即可)</p>
 <p>参考文章：<a target="_blank" rel="noopener" href="https://www.diozero.com/boards/qemuaarch64_bullseye.html">Building a Debian Bullseye QEMU image for AARCH64 | diozero</a></p>
 <p>大概思路：先下载安装程序的基本文件，联网安装完之后从磁盘文件中提取出需要的 <code>initrd.img</code> 和 <code>vmlinuz</code> 文件。 <code>QEMU</code> 依赖提取的文件构建出 <code>aarch64</code> 环境。</p>
-<h3 id="准备阶段"><a href="#准备阶段" class="headerlink" title="准备阶段"></a>准备阶段</h3><p>创建磁盘文件并下载内核镜像、内存盘镜像文件</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">qemu-img create -f qcow2 debian-3607-aarch64.qcow2 20G</span><br><span class="line">wget http://ftp.au.debian.org/debian/dists/bullseye/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz</span><br><span class="line">wget http://ftp.au.debian.org/debian/dists/bullseye/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux</span><br><span class="line">wget http://ftp.au.debian.org/debian/dists/bullseye/main/installer-arm64/current/images/netboot/mini.iso</span><br></pre></td></tr></table></figure>
-
-
-
-<p>执行 <code>qemu</code> 启动脚本前，先确创建出 <code>tap0</code> 接口并将其添加至网桥（名称可能会根据具体情况进行修改），因为接下来会通过网络来下载和安装完整的系统，必须要实现 <code>qemu</code> 的网络通信。依次执行下面的命令。</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sudo ip tuntap add dev tap0 mode tap</span><br><span class="line">sudo ip link <span class="built_in">set</span> tap0 up</span><br><span class="line">sudo brctl addif virbr0 tap0</span><br><span class="line">sudo chmod <span class="number">666</span> /dev/net/tun</span><br></pre></td></tr></table></figure>
-
-
-
-<p>下面是 <code>qemu</code> 的启动脚本</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">sudo qemu-system-aarch64 -M virt -cpu cortex-a53 -m 1G -kernel ./linux -initrd ./initrd.gz \</span><br><span class="line">    -hda debian-3607-aarch64.qcow2 -append &quot;console=ttyAMA0&quot; \</span><br><span class="line">    -drive file=mini.iso,id=cdrom,if=none,media=cdrom \</span><br><span class="line">    -device virtio-scsi-device -device scsi-cd,drive=cdrom -nographic \</span><br><span class="line">    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -device virtio-net-device,netdev=net0</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="下载-amp-amp-安装阶段"><a href="#下载-amp-amp-安装阶段" class="headerlink" title="下载&amp;&amp;安装阶段"></a>下载&amp;&amp;安装阶段</h3><p>当执行启动脚本后，会看到这个界面，这说明正常进入了安装界面。选择 <code>English</code> 并敲击回车继续往下进行</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519172730758.png" alt="image-20240519172730758"></p>
-<p>选香港</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519172748706.png" alt="image-20240519172748706"></p>
-<p>键盘布局随便，我选了 <code>Chinese</code></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519172831617.png" alt="image-20240519172831617"></p>
-<p>这里会自动尝试配置网络</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519172957528.png" alt="image-20240519172957528"></p>
-<p>如果忘记创建 <code>tap0</code> 接口或者没有成功将 <code>tap0</code> 接口添加到网桥，那么会出现自动配置网络失败的情况。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519173017122.png" alt="image-20240519173017122"></p>
-<p>这里可以选择自行手动配置，但我建议最后先将 <code>qemu</code> 的网络通信后，让它自动获取。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519173029036.png" alt="image-20240519173029036"></p>
-<p>遇见上面的情况就需要重新检查网络接口以及网桥的状态，如果是下面的情况则说明一切正常。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174328064.png" alt="image-20240519174328064"></p>
-<p>默认为空继续</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174345556.png" alt="image-20240519174345556"></p>
-<p>选香港</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174408193.png" alt="image-20240519174408193"></p>
-<p>默认为空继续</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174500123.png" alt="image-20240519174500123"></p>
-<p>设置代理，默认为空即可</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174511531.png" alt="image-20240519174511531"></p>
-<p>设置 <code>root</code> 用户的密码</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174905966.png" alt="image-20240519174905966"></p>
-<p>重复刚才的密码</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519174927529.png" alt="image-20240519174927529"></p>
-<p>创建新的用户</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175105696.png" alt="image-20240519175105696"></p>
-<p>和上面的一样即可</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175137423.png" alt="image-20240519175137423"></p>
-<p>输入新建用户的密码</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175158591.png" alt="image-20240519175158591"></p>
-<p>重复密码</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175210970.png" alt="image-20240519175210970"></p>
-<p>下面四个步骤全部默认即可</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175337793.png" alt="image-20240519175337793"></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175353589.png" alt="image-20240519175353589"></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175442190.png" alt="image-20240519175442190"></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175524650.png" alt="image-20240519175524650"></p>
-<p>这里选择 <code>Yes</code> （默认是 <code>No</code> ）</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519175612033.png" alt="image-20240519175612033"></p>
-<p>然后会安装大概一两个小时。弹出来这个，选择 <code>Yes</code> 。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519214316884.png" alt="image-20240519214316884"></p>
-<p>什么都不用主动勾选（默认会有 <code>SSH</code>），按 <code>Tab</code> 切换到 <code>Continue</code> 就行</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519214522645.png" alt="image-20240519214522645"></p>
-<p>​	继续</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519215503055.png" alt="image-20240519215503055"></p>
-<p>这里安装已经完成了，点击 <code>Continue</code></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519215657041.png" alt="image-20240519215657041"></p>
-<p>再次看到这个最初的界面，就是已经安装完了（不需要再继续安装了），直接给这个窗口关了就行</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519220021950.png" alt="image-20240519220021950"></p>
-<h3 id="从镜像提取文件"><a href="#从镜像提取文件" class="headerlink" title="从镜像提取文件"></a>从镜像提取文件</h3><p>现在要从 <code>qcow2</code> 镜像中提取出来 <code>Linux</code> 内核和 <code>initrd</code> ，将磁盘文件挂载出来，然后把 <code>vmlinuz-5.10.0-29-arm64</code> 以及 <code>initrd.img-5.10.0-29-arm64</code> 拷贝出来</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo modprobe nbd</span><br><span class="line">sudo qemu-nbd -c /dev/nbd0 debian-3607-aarch64.qcow2</span><br><span class="line">sudo mount /dev/nbd0p2 /mnt </span><br><span class="line">sudo mount /dev/nbd0p1 /mnt/boot </span><br><span class="line">cp /mnt/boot/vmlinuz-5.10.0-29-arm64 ./</span><br><span class="line">cp /mnt/boot/initrd.img-5.10.0-29-arm64 ./</span><br></pre></td></tr></table></figure>
-
-
-
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519225438650.png" alt="image-20240519225438650"></p>
-<h3 id="运行并实现网络通信"><a href="#运行并实现网络通信" class="headerlink" title="运行并实现网络通信"></a>运行并实现网络通信</h3><p>现在所有的文件都有了，接下来就是启动 <code>qemu</code> ，在此之前先创建出 <code>tap0</code> 接口并将其添加到 <code>virbr0</code> 网桥。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">sudo ip tuntap add dev tap0 mode tap</span><br><span class="line">sudo ip link set tap0 up</span><br><span class="line">sudo brctl addif virbr0 tap0</span><br><span class="line">sudo chmod 666 /dev/net/tun</span><br></pre></td></tr></table></figure>
-
-
-
-<p>运行下面的启动脚本</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line">sudo qemu-system-aarch64 -M virt -cpu cortex-a53 -m 1G -initrd ./initrd.img-5.10.0-29-arm64 \</span><br><span class="line">    -kernel ./vmlinuz-5.10.0-29-arm64 -append &quot;root=/dev/vda2 console=ttyAMA0&quot; \</span><br><span class="line">    -drive if=virtio,file=debian-3607-aarch64.qcow2,format=qcow2,id=hd \</span><br><span class="line">    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -device virtio-net-pci,netdev=net0 \</span><br><span class="line">    -nographic</span><br></pre></td></tr></table></figure>
-
-
-
-<p>一切正常，此时让输入用户名和密码（安装时设置的）</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519232417152.png" alt="image-20240519232417152"></p>
-<p>进来应该是这样，此时的网卡还没有分出来 <code>ip</code></p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519232514513.png" alt="image-20240519232514513"></p>
-<p>给 <code>enp0s1</code> 网卡分一个 <code>ip</code> （取决于网桥 <code>virbr0</code> 在宿主机的哪个网段），再设置一下网关，最后启用该网卡。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ip add add 192.168.122.130/24 dev enp0s1</span><br><span class="line">ip link set enp0s1 up</span><br><span class="line">ip route add default via 192.168.122.1</span><br></pre></td></tr></table></figure>
-
-
-
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519232759279.png" alt="image-20240519232759279"></p>
-<p>配置好 <code>ip</code> 和网关后，此时可以 <code>ping</code> 通宿主机且可以访问互联网。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519232832316.png" alt="image-20240519232832316"></p>
-<p>至此 <code>QEMU</code> 模拟 <code>ARM64</code> 架构系统完成。</p>
-<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240519234759740.png" alt="image-20240519234759740"></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/3d9490d.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
