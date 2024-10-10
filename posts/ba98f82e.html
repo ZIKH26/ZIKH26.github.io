@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言博客很久没有更新了，其实也写了很多 IOT 研究的文章，但因为保密不能公开。而本文写的是最近几天在搭建 QEMU 下 ARM Linux 运行环境的过程，这方面网上的文章比较多，没有什么保密性可言。 本文记录了交叉编译 Linux 内核、BusyBox 以及制作虚拟存储介质的过程。旨在根据不同设备的内核版本，搭建出一套匹配内核版本的 QEMU 仿真环境。之前研究几款路由器设备都是 2.6x 版">
+<meta property="og:type" content="article">
+<meta property="og:title" content="这次我一定要编译出Linux内核">
+<meta property="og:url" content="https://zikh26.github.io/posts/ba98f82e.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言博客很久没有更新了，其实也写了很多 IOT 研究的文章，但因为保密不能公开。而本文写的是最近几天在搭建 QEMU 下 ARM Linux 运行环境的过程，这方面网上的文章比较多，没有什么保密性可言。 本文记录了交叉编译 Linux 内核、BusyBox 以及制作虚拟存储介质的过程。旨在根据不同设备的内核版本，搭建出一套匹配内核版本的 QEMU 仿真环境。之前研究几款路由器设备都是 2.6x 版">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010190803682.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010191358797.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010192134786.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010192851869.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010193516024.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010193736185.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010194118469.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010200240848.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010200923987.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010201405606.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202037424.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202256317.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202518573.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202651202.png">
+<meta property="article:published_time" content="2024-10-10T07:41:00.869Z">
+<meta property="article:modified_time" content="2024-10-10T15:08:36.208Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="探究">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010190803682.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/ba98f82e.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/ba98f82e.html","path":"posts/ba98f82e.html","title":"这次我一定要编译出Linux内核"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>这次我一定要编译出Linux内核 | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91QEMU-2-6x%E5%86%85%E6%A0%B8%E7%8E%AF%E5%A2%83-%E5%A4%B1%E8%B4%A5"><span class="nav-number">2.</span> <span class="nav-text">编译QEMU 2.6x内核环境-失败</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">配置交叉编译环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8"><span class="nav-number">4.</span> <span class="nav-text">交叉编译内核</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91busybox"><span class="nav-number">5.</span> <span class="nav-text">交叉编译busybox</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-number">6.</span> <span class="nav-text">创建文件系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E7%A3%81%E7%9B%98%E6%96%87%E4%BB%B6%E9%95%9C%E5%83%8F"><span class="nav-number">7.</span> <span class="nav-text">构建磁盘文件镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8-QEMU"><span class="nav-number">8.</span> <span class="nav-text">启动 QEMU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%A5%E9%94%99%E4%B8%8E%E8%A7%A3%E5%86%B3"><span class="nav-number">9.</span> <span class="nav-text">报错与解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%A5%E9%94%991"><span class="nav-number">9.1.</span> <span class="nav-text">报错1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%A5%E9%94%992"><span class="nav-number">9.2.</span> <span class="nav-text">报错2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%A5%E9%94%993"><span class="nav-number">9.3.</span> <span class="nav-text">报错3</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%A5%E9%94%994"><span class="nav-number">9.4.</span> <span class="nav-text">报错4</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">10.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">113</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/ba98f82e.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="这次我一定要编译出Linux内核 | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          这次我一定要编译出Linux内核
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-10-10 15:41:00 / 修改时间：23:08:36" itemprop="dateCreated datePublished" datetime="2024-10-10T15:41:00+08:00">2024-10-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" itemprop="url" rel="index"><span itemprop="name">环境搭建</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>博客很久没有更新了，其实也写了很多 <strong>IOT</strong> 研究的文章，但因为保密不能公开。而本文写的是最近几天在搭建 <strong>QEMU</strong> 下 <strong>ARM Linux</strong> 运行环境的过程，这方面网上的文章比较多，没有什么保密性可言。</p>
+<p>本文记录了交叉编译 <strong>Linux</strong> 内核、<strong>BusyBox</strong> 以及制作虚拟存储介质的过程。旨在根据不同设备的内核版本，搭建出一套匹配内核版本的 <strong>QEMU</strong> 仿真环境。之前研究几款路由器设备都是 <strong>2.6x</strong> 版本的 <strong>ARM</strong> 内核。使用 <strong>18.04</strong> 上安装的交叉编译工具链去编译的程序，在这种 <strong>2.6x</strong> 老内核中运行会报错 <code>kernel too old</code>。如果想编译一套相应的研究工具（如 <code>gdbserver</code>、<code>ptrace</code>、<code>ltrace</code>、小型反弹木马等等）会很麻烦，包括一些测试场景，可能会因为内核版本差异较大，产生一些异常。</p>
+<p>因为网上有很多相关文章（大部分都是搞嵌入式的老哥写的），本文只是对自己学习这部分做一个记录和总结，帮助自己之后可以根据不同的研究需求去搭建特定环境。之前搞 <strong>IOT</strong> 仿真的时候，用的都是这个 <a target="_blank" rel="noopener" href="https://people.debian.org/~aurel32/qemu/">编译好的配套环境</a>，看完本文后，应该就能自己搞一套 <strong>QEMU</strong> 环境了😋。</p>
+<p>本文记录了下面部分内容。</p>
+<ol>
+<li>配置交叉编译环境</li>
+<li>交叉编译 <strong>ARM Linux 4.1x</strong> 内核</li>
+<li>交叉编译 busybox</li>
+<li>构建磁盘文件镜像</li>
+<li>将 01-03 的产物成功用 <strong>QEMU</strong> 运行起虚拟机</li>
+<li>实现 <strong>QEMU</strong> 虚拟机的网络通信</li>
+</ol>
+<p>补充：虽然在摸索的过程中遇到了一些报错并解决。但为了不影响文章的逻辑和连贯性，在正文只顺序记录所有正确的操作步骤，在文末会单独记录踩的坑。</p>
+<p><strong>软件版本</strong></p>
+<table>
+<thead>
+<tr>
+<th>工具（虚拟机）</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>qemu-system-arm</td>
+<td>7.2.0</td>
+</tr>
+<tr>
+<td>Ubuntu</td>
+<td>18.04</td>
+</tr>
+<tr>
+<td>arm-linux-gnueabihf-gcc</td>
+<td>4.9.4</td>
+</tr>
+<tr>
+<td>busybox</td>
+<td>1.30.1</td>
+</tr>
+</tbody></table>
+<span id="more"></span>
+
+
+
+<h3 id="编译QEMU-2-6x内核环境-失败"><a href="#编译QEMU-2-6x内核环境-失败" class="headerlink" title="编译QEMU 2.6x内核环境-失败"></a>编译QEMU 2.6x内核环境-失败</h3><p>其实最开始搭建的是这个 <strong>2.6.36.4</strong>  <strong>ARM</strong> 内核环境，最后算失败的。尽管 <strong>QEMU</strong> 可以运行起来内核，但问题是无法保存文件系统中的任何修改。具体原因应该是磁盘镜像文件没有被内核识别到，为了避免看完文章，发现到头来搭建的环境用不了。我打算先记录搭建成功的 <strong>4.1.15</strong> 的 <strong>ARM</strong> 内核环境，至于 <strong>2.6</strong> 上磁盘文件挂载不上的问题，后面再仔细研究。</p>
+<p>补充：最开始实验的时候，内核启动经常崩溃。当时是关掉 shell 或者把进程 kill 掉，这样比较麻烦。可以用 <code>ctrl+a</code> 再按 <code>x</code> 退出 <strong>QEMU</strong> 比较方便。</p>
+<h3 id="配置交叉编译环境"><a href="#配置交叉编译环境" class="headerlink" title="配置交叉编译环境"></a>配置交叉编译环境</h3><p>我的机器上原本有一套交叉编译环境，是 <strong>7.5.0</strong> 的 arm-linux-gnueabi-gcc。如果内核版本和交叉编译工具链的版本差太多的话，会出问题。因此我重新下载了一套 <strong>4.9.4</strong> 的 arm-linux-gnueabihf-gcc 交叉编译工具。</p>
+<p>交叉编译工具链下载 <a target="_blank" rel="noopener" href="https://releases.linaro.org/components/toolchain/binaries/">地址</a></p>
+<p>这个解压后就能直接使用，不需要把路径添加到环境变量里面。后面设置交叉编译工具链时指定具体路径即可，并不会和原本的 arm-linux-gnueabi-gcc 冲突。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010190803682.png" alt="image-20241010190803682"></p>
+<h3 id="交叉编译内核"><a href="#交叉编译内核" class="headerlink" title="交叉编译内核"></a>交叉编译内核</h3><p>下载 <strong>linux-4.1.15</strong> 内核源码。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.1.15.tar.xz</span><br></pre></td></tr></table></figure>
+
+
+
+<p>解压源码。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar xvf linux-4.1.15.tar.xz</span><br></pre></td></tr></table></figure>
+
+
+
+<p>生成默认内核配置文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make ARCH=arm vexpress_defconfig</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010191358797.png" alt="image-20241010191358797"></p>
+<p>指定编译 <strong>ARM</strong> 架构内核，并设置交叉编译工具链前缀。然后大概编译五分钟左右就结束了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make ARCH=arm CROSS_COMPILE=/home/zikh/Desktop/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf- all</span><br></pre></td></tr></table></figure>
+
+<p>正常编译后，产物应该有 zImage 和 vexpress-v2p-ca9.dtb。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010192134786.png" alt="image-20241010192134786"></p>
+<h3 id="交叉编译busybox"><a href="#交叉编译busybox" class="headerlink" title="交叉编译busybox"></a>交叉编译busybox</h3><p>下载 <strong>1.30.1</strong> 版本的 busybox，交叉编译出文件系统的一些必要文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">wget https://busybox.net/downloads/busybox-1.30.1.tar.bz2</span><br></pre></td></tr></table></figure>
+
+
+
+<p>解压文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">tar -xjf busybox-1.30.1.tar.bz2</span><br></pre></td></tr></table></figure>
+
+
+
+<p>通过图形化界面配置 busybox，这些环境变量可以直接用 <code>export</code> 设置在本次 shell 中生效，也可以每次运行命令的时候，作用在本次命令。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make ARCH=arm menuconfig</span><br></pre></td></tr></table></figure>
+
+<p>使用所有的默认配置即可，不需要做任何修改。不要勾选 Build static binary (no shared libs) 和 Build Shared libbusybox选项。退出时保存默认配置即可。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010192851869.png" alt="image-20241010192851869"></p>
+<p>然后用同样的命令编译 busybox，大概两分钟就结束了。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make ARCH=arm CROSS_COMPILE=/home/zikh/Desktop/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf- all</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010193516024.png" alt="image-20241010193516024"></p>
+<p>再执行下面命令进行安装，如果不指定安装目录的话，默认会将 busybox 安装到当前的 _install 目录。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">make ARCH=arm CROSS_COMPILE=/home/zikh/Desktop/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf- install</span><br></pre></td></tr></table></figure>
+
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010193736185.png" alt="image-20241010193736185" style="zoom:50%;" />
+
+
+
+<h3 id="创建文件系统"><a href="#创建文件系统" class="headerlink" title="创建文件系统"></a>创建文件系统</h3><p>现在的文件系统 _install 并不完整，缺少了很多目录。下面补充一些缺少的必要目录和文件。</p>
+<p>注意：下面要将交叉编译工具链里面的 lib 目录拷贝到当前的 _install 目录，而交叉编译工具链下面有好几个 lib 目录。如果不能确定的话，就用命令 <code>find xxx -name &quot;ld-linux-armhf.so.3&quot;</code> 搜索，有这个 ld 的文件就是要拷贝的 lib 目录。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir lib</span><br><span class="line">cp -a ~/Desktop/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/libc/lib/* ./lib </span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010194118469.png" alt="image-20241010194118469"></p>
+<p>创建 etc&#x2F;inittab 文件，写入下面内容。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 系统启动时</span><br><span class="line">::sysinit:/etc/init.d/rcS</span><br><span class="line"></span><br><span class="line"># 系统启动按下Enter键时</span><br><span class="line">::askfirst:-/bin/sh</span><br><span class="line"></span><br><span class="line"># 按下Ctrl+Alt+Del键时</span><br><span class="line">::ctrlaltdel:/sbin/reboot</span><br><span class="line"></span><br><span class="line"># 系统关机时</span><br><span class="line">::shutdown:/sbin/swapoff -a</span><br><span class="line">::shutdown:/bin/umount -a -r</span><br><span class="line"></span><br><span class="line"># 系统重启时</span><br><span class="line">::restart:/sbin/init</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建 etc&#x2F;init.d&#x2F;rcS 文件，写入下面内容。并且给 etc&#x2F;init.d&#x2F;rcS 文件 777 的权限</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line"># 挂载 /etc/fstab 中定义的所有文件系统</span><br><span class="line">/bin/mount -a</span><br><span class="line"></span><br><span class="line"># 挂载虚拟的devpts文件系统用于用于伪终端设备</span><br><span class="line">/bin/mkdir -p /dev/pts</span><br><span class="line">/bin/mount -t devpts devpts /dev/pts</span><br><span class="line"></span><br><span class="line"># 使用mdev动态管理u盘和鼠标等热插拔设备</span><br><span class="line">/bin/echo /sbin/mdev &gt; /proc/sys/kernel/hotplug</span><br><span class="line"></span><br><span class="line"># 扫描并创建节点</span><br><span class="line">/sbin/mdev -s</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建 etc&#x2F;fstab 文件，写入下面内容。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># &lt;file system&gt;    &lt;mount point&gt;    &lt;type&gt;    &lt;options&gt;    &lt;dump&gt;    &lt;pass&gt;     </span><br><span class="line">proc                  /proc          proc     defaults       0         0</span><br><span class="line">sysfs                 /sys           sysfs    defaults       0         0</span><br><span class="line">tmpfs                 /tmp           tmpfs    defaults       0         0</span><br><span class="line">tmpfs                 /dev           tmpfs    defaults       0         0</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建 etc&#x2F;profile 文件，写入下面内容。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">export HOSTNAME=zy</span><br><span class="line"></span><br><span class="line"># 用户名</span><br><span class="line">export USER=root</span><br><span class="line"></span><br><span class="line"># 用户目录</span><br><span class="line">export HOME=/root</span><br><span class="line"></span><br><span class="line"># 终端默认提示符</span><br><span class="line">export PS1=&quot;[$USER@$HOSTNAME:\$PWD]\# &quot;    </span><br><span class="line"></span><br><span class="line"># 环境变量</span><br><span class="line">export PATH=/bin:/sbin:/usr/bin:/usr/sbin</span><br><span class="line"></span><br><span class="line"># 动态库路径</span><br><span class="line">export LD_LIBRARY_PATH=/lib:/usr/lib:$LD_LIBRARY_PATH</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建 dev 目录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir dev</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建终端文件</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo mknod dev/console c 5 1</span><br><span class="line">sudo mknod dev/null c 1 3</span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建其他目录</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir mnt proc tmp sys root</span><br></pre></td></tr></table></figure>
+
+
+
+<p>现在的 _install 目录已经像是一个正常的文件系统了。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010200240848.png" alt="image-20241010200240848"></p>
+<h3 id="构建磁盘文件镜像"><a href="#构建磁盘文件镜像" class="headerlink" title="构建磁盘文件镜像"></a>构建磁盘文件镜像</h3><p>用 <code>dd</code> 创建一个 512M 的空白镜像，再用 <code>mkfs.ext3</code> 命令在 rootfs.ext3.img 文件中生成一个 ext3 格式的文件系统。通过挂载的方式，访问 rootfs.ext3.img 文件，将之前的 _install 目录下文件拷贝至挂载点 mnt_tmpfs，最后取消挂载。至此一个装有文件系统的磁盘镜像制作完毕。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir mnt_tmpfs</span><br><span class="line">dd if=/dev/zero of=rootfs.ext3.img bs=1M count=512</span><br><span class="line">sudo mkfs.ext3 rootfs.ext3.img</span><br><span class="line">sudo mount -t ext3 rootfs.ext3.img ./mnt_tmpfs -o loop</span><br><span class="line">sudo cp -r _install/* mnt_tmpfs</span><br><span class="line">sudo umount mnt_tmpfs</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010200923987.png" alt="image-20241010200923987"></p>
+<h3 id="启动-QEMU"><a href="#启动-QEMU" class="headerlink" title="启动 QEMU"></a>启动 QEMU</h3><p>将之前准备的产物拷贝到一个新的目录。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cp /home/zikh/Desktop/busybox-1.30.1/rootfs.ext3.img ./</span><br><span class="line">cp /home/zikh/Desktop/linux-4.1.15/arch/arm/boot/zImage ./</span><br><span class="line">cp /home/zikh/Desktop/linux-4.1.15/arch/arm/boot/dts/vexpress-v2p-ca9.dtb ./</span><br></pre></td></tr></table></figure>
+
+
+
+<p>QEMU 启动脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">qemu-system-arm -M vexpress-a9 \</span><br><span class="line">    -m 512M \</span><br><span class="line">    -dtb ./vexpress-v2p-ca9.dtb \</span><br><span class="line">    -kernel ./zImage \</span><br><span class="line">    -nographic \</span><br><span class="line">    -append &quot;root=/dev/mmcblk0 rw console=ttyAMA0&quot; \</span><br><span class="line">    -drive file=./rootfs.ext3.img,format=raw,if=sd \</span><br><span class="line">    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -device virtio-net-device,netdev=net0</span><br></pre></td></tr></table></figure>
+
+
+
+<p>网络脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">sudo ip tuntap add dev tap0 mode tap</span><br><span class="line">sudo ip link set tap0 up</span><br><span class="line">sudo brctl addif virbr0 tap0</span><br><span class="line">sudo chmod 666 /dev/net/tun</span><br></pre></td></tr></table></figure>
+
+
+
+<p>执行完网络脚本后，执行 QEMU 启动脚本。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010201405606.png" alt="image-20241010201405606"></p>
+<p>目前 QEMU 可以正常启动，但里面的机器还没有配置 IP。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202037424.png" alt="image-20241010202037424"></p>
+<p>给 eth0 网卡分一个 IP（取决于宿主机中的 virbr0 在哪个网段），再配置一下网关。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ip add add 192.168.122.130/24 dev eth0</span><br><span class="line">ip link set eth0 up</span><br><span class="line">ip route add default via 192.168.122.1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>现在 IP 分配出来了，并且可以 <code>ping</code> 通网关。<code>ping</code> 不通百度说明 DNS 解析还没有配置。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202256317.png" alt="image-20241010202256317"></p>
+<p>创建一个 &#x2F;etc&#x2F;resolv.conf 文件，里面写入 nameserver 8.8.8.8，至此虚拟机网络通信正常。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202518573.png" alt="image-20241010202518573"></p>
+<p>磁盘也是正常的（<strong>2.6x</strong> 的内核这里识别不到磁盘设备），如果有时候创建完文件，重启后文件消失了，可能是 QEMU 还没有将数据同步到磁盘上，就退出了系统。可以在退出 QEMU 前执行一下 <code>sync</code> 命令，将所有缓存数据写入磁盘。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241010202651202.png" alt="image-20241010202651202"></p>
+<h3 id="报错与解决"><a href="#报错与解决" class="headerlink" title="报错与解决"></a>报错与解决</h3><p>由于我没有在每一次遇到问题时，都记录了相关的日志。所以有很多操作的一些小错误，我并没有记录，只记录了几个印象深刻的错误。并且下面的报错记录，并不是按照遇到顺序记录的。只希望可以帮助遇到同样错误的朋友做一个参考。</p>
+<h4 id="报错1"><a href="#报错1" class="headerlink" title="报错1"></a>报错1</h4><p>新增了网络配置时， <strong>QEMU</strong> 启动脚本是这样。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">qemu-system-arm -M vexpress-a9 \</span><br><span class="line">    -m 512M \</span><br><span class="line">    -dtb ./vexpress-v2p-ca9.dtb \</span><br><span class="line">    -kernel ./zImage \</span><br><span class="line">    -nographic \</span><br><span class="line">    -append &quot;root=/dev/mmcblk0 rw console=ttyAMA0&quot; \</span><br><span class="line">    -drive file=./rootfs.ext3.img,format=raw,if=sd \</span><br><span class="line">    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -device virtio-net-pci,netdev=net0 </span><br></pre></td></tr></table></figure>
+
+
+
+<p>有如下报错。因为<code>vexpress-a9</code> 并不支持 PCI 总线。将替换 <code>virtio-net-pci</code> 为 <code>virtio-net-device</code>，可以避免使用 PCI 总线并解决这个错误。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">qemu-system-arm: -device virtio-net-pci,netdev=net0: No &#x27;PCI&#x27; bus found for device &#x27;virtio-net-pci&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>修改后脚本如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">qemu-system-arm -M vexpress-a9 \</span><br><span class="line">    -m 512M \</span><br><span class="line">    -dtb ./vexpress-v2p-ca9.dtb \</span><br><span class="line">    -kernel ./zImage \</span><br><span class="line">    -nographic \</span><br><span class="line">    -append &quot;root=/dev/mmcblk0 rw console=ttyAMA0&quot; \</span><br><span class="line">    -drive file=./rootfs.ext3.img,format=raw,if=sd \</span><br><span class="line">    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \</span><br><span class="line">    -device virtio-net-device,netdev=net0</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h4 id="报错2"><a href="#报错2" class="headerlink" title="报错2"></a>报错2</h4><p>编译 busybox 时报错日志如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Output of:</span><br><span class="line">/home/zikh/Desktop/gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc -Wall -Wshadow -Wwrite-strings -Wundef -Wstrict-prototypes -Wunused -Wunused-parameter -Wunused-function -Wunused-value -Wmissing-prototypes -Wmissing-declarations -Wno-format-security -Wdeclaration-after-statement -Wold-style-definition -fno-builtin-strlen -finline-limit=0 -fomit-frame-pointer -ffunction-sections -fdata-sections -fno-guess-branch-probability -funsigned-char -static-libgcc -falign-functions=1 -falign-jumps=1 -falign-labels=1 -falign-loops=1 -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-builtin-printf -Os -fpic -fvisibility=hidden 0_lib/applet.c -o 0_lib/nologin -Wl,--sort-common -Wl,--sort-section,alignment -Wl,--gc-sections -L0_lib -lbusybox -Wl,--warn-common</span><br><span class="line">==========</span><br><span class="line">/tmp/cctzZ541.o: In function main&#x27;:</span><br><span class="line">applet.c:(.text.main+0x16): undefined reference to scripted_main&#x27;</span><br><span class="line">collect2: error: ld returned 1 exit status</span><br><span class="line">Makefile:718: recipe for target &#x27;busybox_unstripped&#x27; failed</span><br><span class="line">make: *** [busybox_unstripped] Error 1</span><br></pre></td></tr></table></figure>
+
+
+
+<p>因为在执行 <code>make ARCH=arm menuconfig</code> 配置 busybox 时开启了 <strong>Build Shared libbusybox</strong> 选项，关闭即可。</p>
+<h4 id="报错3"><a href="#报错3" class="headerlink" title="报错3"></a>报错3</h4><p>在 QEMU 启动内核时，有如下报错。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Starting init: /sbin/init exists but couldn&#x27;t execute it (error -8)</span><br><span class="line">...</span><br><span class="line">Starting init: /bin/sh exists but couldn&#x27;t execute it (error -8)</span><br><span class="line">Kernel panic - not syncing: No working init found.</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这里是因为当时 busybox 没有设置好架构，编译成了 <strong>x64</strong> 从而导致架构不匹配报错 <code>error -8</code>。指定好环境变量 <strong>ARCH</strong> 为 arm 即可。</p>
+<h4 id="报错4"><a href="#报错4" class="headerlink" title="报错4"></a>报错4</h4><p>依旧是 QEMU 启动内核时报错，这个意思是指文件系统的 &#x2F;sbin&#x2F;init 文件不存在或无法运行。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Kernel panic - not syncing: No working init found.  Try passing init= option to kernel. See Linux Documentation/init.txt for guidance.</span><br></pre></td></tr></table></figure>
+
+<p>我将磁盘文件挂载后查看确实存在 &#x2F;sbin&#x2F;init 文件，但是发现其依赖 ld-linux-armhf.so.3 文件。我查看了 &#x2F;lib 目录，发现并没有该文件。因此认为是动态库出了问题，使 &#x2F;sbin&#x2F;init 执行失败。</p>
+<p>后面检查发现，错把 gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf&#x2F;arm-linux-gnueabihf&#x2F;lib目录当成了文件系统的 &#x2F;lib目录。实际要拷贝的目录应该是 gcc-linaro-4.9-2016.02-x86_64_arm-linux-gnueabihf&#x2F;arm-linux-gnueabihf&#x2F;libc&#x2F;lib 目录。</p>
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zyly/p/15870515.html">搭建基于qemu的linux开发环境 - 大奥特曼打小怪兽 - 博客园 (cnblogs.com)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zyly/p/15835218.html">Mini2440之linux根文件系统yaffs2移植 - 大奥特曼打小怪兽 - 博客园 (cnblogs.com)</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%8E%A2%E7%A9%B6/" rel="tag"># 探究</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/3d9490d.html" rel="prev" title="QEMU搭建ARM64环境">
+                  <i class="fa fa-chevron-left"></i> QEMU搭建ARM64环境
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
