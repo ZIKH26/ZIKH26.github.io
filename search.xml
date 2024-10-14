@@ -43,8 +43,12 @@
 <td>1.30.1</td>
 </tr>
 </tbody></table>
-<h3 id="编译QEMU-2-6x内核环境-失败"><a href="#编译QEMU-2-6x内核环境-失败" class="headerlink" title="编译QEMU 2.6x内核环境-失败"></a>编译QEMU 2.6x内核环境-失败</h3><p>其实最开始搭建的是这个 <strong>2.6.36.4</strong>  <strong>ARM</strong> 内核环境，最后算失败的。尽管 <strong>QEMU</strong> 可以运行起来内核，但问题是无法保存文件系统中的任何修改。具体原因应该是磁盘镜像文件没有被内核识别到，为了避免看完文章，发现到头来搭建的环境用不了。我打算先记录搭建成功的 <strong>4.1.15</strong> 的 <strong>ARM</strong> 内核环境，至于 <strong>2.6</strong> 上磁盘文件挂载不上的问题，后面再仔细研究。</p>
-<p>补充：最开始实验的时候，内核启动经常崩溃。当时是关掉 shell 或者把进程 kill 掉，这样比较麻烦。可以用 <code>ctrl+a</code> 再按 <code>x</code> 退出 <strong>QEMU</strong> 比较方便。</p>
+<h3 id="编译QEMU-2-6x内核环境-失败"><a href="#编译QEMU-2-6x内核环境-失败" class="headerlink" title="编译QEMU 2.6x内核环境-失败"></a>编译QEMU 2.6x内核环境-失败</h3><p>其实最开始搭建的是这个 <strong>2.6.36.4</strong>  <strong>ARM</strong> 内核环境，最后算失败的。尽管 <strong>QEMU</strong> 可以运行起来内核，但问题是无法保存文件系统中的任何修改。具体原因应该是磁盘镜像文件没有被内核识别到，为了避免看完文章，发现到头来搭建的环境用不了。我打算先记录搭建成功的 <strong>4.1.15</strong> 的 <strong>ARM</strong> 内核环境，而 <strong>2.6</strong> 上磁盘文件挂载不上的问题，至少在写完这篇文章时，依然没有解决。</p>
+<p>补充：</p>
+<ol>
+<li>最开始实验的时候，内核启动经常崩溃。当时是关掉 shell 或者把进程 kill 掉，这样比较麻烦。可以用 <code>ctrl+a</code> 再按 <code>x</code> 退出 <strong>QEMU</strong> 比较方便。</li>
+<li>编译 <strong>2.6.36.4</strong> 内核，交叉编译工具链版本最好使用 <strong>4.3.2</strong> 版本的 arm-none-linux-gnueabi-gcc。并且 <strong>busybox</strong> 使用的版本最好为 <strong>1.20.0</strong>，编译内核时，我选择的开发板是 versatile。</li>
+</ol>
 <h3 id="配置交叉编译环境"><a href="#配置交叉编译环境" class="headerlink" title="配置交叉编译环境"></a>配置交叉编译环境</h3><p>我的机器上原本有一套交叉编译环境，是 <strong>7.5.0</strong> 的 arm-linux-gnueabi-gcc。如果内核版本和交叉编译工具链的版本差太多的话，会出问题。因此我重新下载了一套 <strong>4.9.4</strong> 的 arm-linux-gnueabihf-gcc 交叉编译工具。</p>
 <p>交叉编译工具链下载 <a href="https://releases.linaro.org/components/toolchain/binaries/">地址</a></p>
 <p>这个解压后就能直接使用，不需要把路径添加到环境变量里面。后面设置交叉编译工具链时指定具体路径即可，并不会和原本的 arm-linux-gnueabi-gcc 冲突。</p>
