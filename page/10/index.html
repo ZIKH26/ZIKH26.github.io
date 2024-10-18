@@ -21,12 +21,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="万古凡间一过客，九天之上第一仙">
+    <meta name="description" content="人生如戏">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ZIKH26&#39;s Blog">
 <meta property="og:url" content="https://zikh26.github.io/page/10/index.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="万古凡间一过客，九天之上第一仙">
+<meta property="og:description" content="人生如戏">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="CTF PWN IT">
@@ -147,7 +147,7 @@
     <img class="site-author-image" itemprop="image" alt="ZIKH26"
       src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
   <p class="site-author-name" itemprop="name">ZIKH26</p>
-  <div class="site-description" itemprop="description">万古凡间一过客，九天之上第一仙</div>
+  <div class="site-description" itemprop="description">人生如戏</div>
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
@@ -194,7 +194,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/4354d4bf.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/6b7e3e3a.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -203,7 +203,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -212,7 +212,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/4354d4bf.html" class="post-title-link" itemprop="url">Dest0g3 520迎新赛--栈题write_up</a>
+          <a href="/posts/6b7e3e3a.html" class="post-title-link" itemprop="url">DASCTF X GFCTF 2022十月挑战赛 PWN WP</a>
         </h2>
 
         <div class="post-meta-container">
@@ -223,14 +223,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:36:51" itemprop="dateModified" datetime="2023-07-01T19:36:51+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:49:48" itemprop="dateCreated datePublished" datetime="2023-07-01T19:49:48+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -252,10 +245,95 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="ez-aarch"><a href="#ez-aarch" class="headerlink" title="ez_aarch"></a>ez_aarch</h2><p>考察的是最简单的arm架构的栈溢出。</p>
+          <p>这次比赛放了三道pwn，做起来还是蛮吃力的，shellcode那题还是经过师傅们提示才做出来的，R()P这题到比赛结束也没有做出来。通过这次比赛感觉自己对于汇编中的gadget理解和利用还是有写不足，在此写下wp记录一下解题的过程。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/4354d4bf.html#more" rel="contents">
+              <a class="btn" href="/posts/6b7e3e3a.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/e4b35f09.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="人生如戏">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/e4b35f09.html" class="post-title-link" itemprop="url">DASCTF2022.07赋能赛 pwn部分wp</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-07-01 19:42:12" itemprop="dateCreated datePublished" datetime="2023-07-01T19:42:12+08:00">2023-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>赛题WP</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/e4b35f09.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -295,7 +373,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -315,14 +393,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:39:39" itemprop="dateModified" datetime="2023-07-01T19:39:39+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:39:40" itemprop="dateCreated datePublished" datetime="2023-07-01T19:39:40+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -383,7 +454,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/e4b35f09.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/4354d4bf.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -392,7 +463,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -401,7 +472,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/e4b35f09.html" class="post-title-link" itemprop="url">DASCTF2022.07赋能赛 pwn部分wp</a>
+          <a href="/posts/4354d4bf.html" class="post-title-link" itemprop="url">Dest0g3 520迎新赛--栈题write_up</a>
         </h2>
 
         <div class="post-meta-container">
@@ -412,14 +483,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:42:11" itemprop="dateModified" datetime="2023-07-01T19:42:11+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:36:52" itemprop="dateCreated datePublished" datetime="2023-07-01T19:36:52+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -441,10 +505,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>赛题WP</p>
+          <h2 id="ez-aarch"><a href="#ez-aarch" class="headerlink" title="ez_aarch"></a>ez_aarch</h2><p>考察的是最简单的arm架构的栈溢出。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/e4b35f09.html#more" rel="contents">
+              <a class="btn" href="/posts/4354d4bf.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -475,7 +539,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/6b7e3e3a.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d0e6a746.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -484,7 +548,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -493,7 +557,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/6b7e3e3a.html" class="post-title-link" itemprop="url">DASCTF X GFCTF 2022十月挑战赛 PWN WP</a>
+          <a href="/posts/d0e6a746.html" class="post-title-link" itemprop="url">easyrop_2022胖哈勃春季赛</a>
         </h2>
 
         <div class="post-meta-container">
@@ -504,14 +568,14 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-07-01 19:35:24" itemprop="dateCreated datePublished" datetime="2023-07-01T19:35:24+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:49:46" itemprop="dateModified" datetime="2023-07-01T19:49:46+08:00">2023-07-01</time>
+      <time title="修改时间：2024-07-29 00:14:31" itemprop="dateModified" datetime="2024-07-29T00:14:31+08:00">2024-07-29</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -533,10 +597,14 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>这次比赛放了三道pwn，做起来还是蛮吃力的，shellcode那题还是经过师傅们提示才做出来的，R()P这题到比赛结束也没有做出来。通过这次比赛感觉自己对于汇编中的gadget理解和利用还是有写不足，在此写下wp记录一下解题的过程。</p>
+          <p>通过这道题的学习与总结：</p>
+<p>1、rep指令是进行循环，movs qword ptr [rdi],qword ptr[rsi]则可以拷贝，二者结合就是可以大规模拷贝数据到另一个内存空间。而想实现它，仅仅只需要控制rdi和rsi以及rcx寄存器即可。</p>
+<p>2、我们往可读可写可执行的内存中写入的任何机器码都是可以被当做指令来执行的，而想执行这些指令，仅仅用ret或者call跳转到这些指令所在地址即可<strong>（ret和call要的是指令所在地址，并非指令）</strong></p>
+<p>3、关闭标准输出，没有回显时，可以利用magic_gadget来去获取一些我们需要的函数。</p>
+<p>4、开启沙箱并且三个文件描述符全关时（意味着orw读取的flag也无法看见），可以用socket+connect将flag发送到这个新开的文件上（毕竟close关闭的仅仅是当前终端的0,1,2)</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/6b7e3e3a.html#more" rel="contents">
+              <a class="btn" href="/posts/d0e6a746.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -567,7 +635,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/da4f7b20.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/3aec74c5.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -576,7 +644,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -585,7 +653,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/da4f7b20.html" class="post-title-link" itemprop="url">DASCTF X CBCTF 2022九月挑战赛 pwn部分wp</a>
+          <a href="/posts/3aec74c5.html" class="post-title-link" itemprop="url">good_luck_2022DASCTF Apr X FATE 防疫挑战赛</a>
         </h2>
 
         <div class="post-meta-container">
@@ -596,14 +664,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:57:17" itemprop="dateModified" datetime="2023-07-01T19:57:17+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:32:36" itemprop="dateCreated datePublished" datetime="2023-07-01T19:32:36+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -625,10 +686,12 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>赛题WP</p>
+          <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>通过这道题的学习与收获有：</p>
+<p>1、学习了格式化字符串漏洞中的%s泄露函数地址原理以及roderick师傅写的Libcbox的用法（其实用法也很简单了），之后就没什么了直接ret2libc就打了。</p>
+<p>2、这道赛题最后只有三解… 不过真的很简单，做出来的人很少的原因估计是因为这道题是比赛还有不到两个小时结束，才把正确的程序放出来（之前放的都是错误的…）。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/da4f7b20.html#more" rel="contents">
+              <a class="btn" href="/posts/3aec74c5.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -659,7 +722,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/ffd20e6e.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/2d29ef23.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -668,7 +731,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -677,7 +740,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/ffd20e6e.html" class="post-title-link" itemprop="url">DASCTF NOV X联合出题人2022年度积分榜争夺赛 pwn部分wp</a>
+          <a href="/posts/2d29ef23.html" class="post-title-link" itemprop="url">gyctf_2020_bfnote</a>
         </h2>
 
         <div class="post-meta-container">
@@ -688,106 +751,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 19:58:24" itemprop="dateModified" datetime="2023-07-01T19:58:24+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>赛题WP</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/ffd20e6e.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/f5fe6d2b.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/f5fe6d2b.html" class="post-title-link" itemprop="url">ciscn_2019_s_1</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 20:00:04" itemprop="dateModified" datetime="2023-07-01T20:00:04+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:29:16" itemprop="dateCreated datePublished" datetime="2023-07-01T19:29:16+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -809,10 +773,14 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>考察了off by null</p>
+          <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过本题的学习与总结有:</p>
+<ol>
+<li>本题与starctf2018_babystack这题一样，考察的都是篡改TLS中的stack_guard从而绕过canary的检查，因为在2.23和2.27 32位的glibc里面主线程的TLS是位于mmap映射出来的内存，并且位置固定并不随机。而本题可以通过数组索引无限制，而在mmap映射出来的区域精准的修改某个内存，这就给了篡改TLS中的stack_guard的机会</li>
+<li>本题的难点在于之后绕过canary，无法正常的泄露libc地址，从而造成了一定难度，通过学习网上各位师傅的wp，发现本题一共有三种做法，分别是利用magic gadget篡改got表，ret2dl以及攻击IO_FILE。这里我采用的是利用magic gadget篡改got表</li>
+</ol>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/f5fe6d2b.html#more" rel="contents">
+              <a class="btn" href="/posts/2d29ef23.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -843,7 +811,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/d2d67d3f.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/f50f2cd6.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -852,7 +820,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -861,7 +829,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/d2d67d3f.html" class="post-title-link" itemprop="url">ciscn_2019_final_4</a>
+          <a href="/posts/f50f2cd6.html" class="post-title-link" itemprop="url">hctf2016_fheap</a>
         </h2>
 
         <div class="post-meta-container">
@@ -872,14 +840,7 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 20:00:54" itemprop="dateModified" datetime="2023-07-01T20:00:54+08:00">2023-07-01</time>
+      <time title="创建时间：2023-07-01 19:28:28" itemprop="dateCreated datePublished" datetime="2023-07-01T19:28:28+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -901,10 +862,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>buu刷题…</p>
+          <p>本题为一道经典的控制堆块的题目，对于这类题目通常的方法是将控制堆块申请出来当做用户堆块来使用，向其写入特定数据来篡改其中的函数指针。</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/d2d67d3f.html#more" rel="contents">
+              <a class="btn" href="/posts/f50f2cd6.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -935,7 +896,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/74f96fff.html">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/8cbdee5a.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
@@ -944,7 +905,7 @@
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
+      <meta itemprop="description" content="人生如戏">
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
@@ -953,7 +914,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/74f96fff.html" class="post-title-link" itemprop="url">CATCTF2022_pwn复现</a>
+          <a href="/posts/8cbdee5a.html" class="post-title-link" itemprop="url">hfctf_2020_marksman</a>
         </h2>
 
         <div class="post-meta-container">
@@ -964,14 +925,98 @@
       </span>
       <span class="post-meta-item-text">发表于</span>
 
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
+      <time title="创建时间：2023-07-01 19:27:30" itemprop="dateCreated datePublished" datetime="2023-07-01T19:27:30+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
+        <i class="far fa-folder"></i>
       </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 20:02:33" itemprop="dateModified" datetime="2023-07-01T20:02:33+08:00">2023-07-01</time>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>通过这道题的学习与收获有：</p>
+<p>1、atol函数放入的数据应该是打包之前的，而非是打包之后的数据</p>
+<p>2、exit函数执行流程，<strong>exit函数的调用流程exit函数—&gt;run_exit_handlers函数—&gt;_dl_fini函数—&gt; rtld_lock_unlock_recursive指针</strong> 如果我们能够将最后的指针所指向的内容修改为one_gadget，那么即可获取shell。这个劫持exit_hook的可取之处在于，程序正常结束的话，最后都会调用这个exit函数</p>
+<p>3、学会了重新绑定程序所对应的libc动态库（patch libc和ld）</p>
+<p>4、用这个方法可以在开了PIE的程序中下断点。gdb.attach(p, ‘b * $rebase(0xd63)\nc’)</p>
+<p>5、one_gadget加上参数-l2可以搜索更多的one_gadget。</p>
+<p>6、即使相同的libc库，在小版本不同的情况下，某些内容的偏移也是不一样的。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/posts/8cbdee5a.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/fcb54cab.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="人生如戏">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/posts/fcb54cab.html" class="post-title-link" itemprop="url">iscc_pwn_部分wp</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2023-07-01 19:24:08" itemprop="dateCreated datePublished" datetime="2023-07-01T19:24:08+08:00">2023-07-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -993,102 +1038,10 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>CATCTF2022 PWN赛题复现</p>
+          <p>由于本人比较菜，同时学pwn的时间不是太久，因此iscc的很多堆还没有能力去做，只把比赛的栈题给做完了 赛后又做了一下unlink那道题。其他堆题目前还没有复现。（有一个格式化字符串太简单了，我就不写wp了）</p>
           <!--noindex-->
             <div class="post-button">
-              <a class="btn" href="/posts/74f96fff.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/7bda138.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
-      <meta itemprop="name" content="ZIKH26">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZIKH26's Blog">
-      <meta itemprop="description" content="万古凡间一过客，九天之上第一仙">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | ZIKH26's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/posts/7bda138.html" class="post-title-link" itemprop="url">BUUCTF_鹏城杯_2018_treasure</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2023-05-15 07:36:47" itemprop="dateCreated datePublished" datetime="2023-05-15T07:36:47+08:00">2023-05-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2023-07-01 20:06:00" itemprop="dateModified" datetime="2023-07-01T20:06:00+08:00">2023-07-01</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/buu%E5%88%B7%E9%A2%98/" itemprop="url" rel="index"><span itemprop="name">buu刷题</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>这道题不知道我这个方法算不算非预期解，不过做出来之后看其他师傅们的wp感觉自己的方法弱爆了，下面简单分析一下这道题。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/posts/7bda138.html#more" rel="contents">
+              <a class="btn" href="/posts/fcb54cab.html#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
