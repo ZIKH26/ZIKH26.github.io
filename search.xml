@@ -4,7 +4,7 @@
     <title>教练 我也想入门windows pwn</title>
     <url>/posts/f671ae0d.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这篇关于 <strong>Windows Pwn</strong> 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。</p>
-<p>在 <strong>Linux</strong> 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 <strong>Windows</strong> 下的 <strong>PWN</strong> 。当时本意是希望在大三结束找实习时，可以对二进制方面的漏洞利用有更多了解，但回过头来看，其实也没用上🥲。</p>
+<p>在 <strong>Linux</strong> 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 <strong>Windows</strong> 下的 <strong>PWN</strong> 。当时本意是希望在大三结束找实习时，可以对 <strong>Windows</strong> 平台的二进制方面漏洞利用有更多了解，但回过头来看，其实也没用上🥲。</p>
 <span id="more"></span>
 
 <h2 id="windows下的-ret2text"><a href="#windows下的-ret2text" class="headerlink" title="windows下的 ret2text"></a>windows下的 ret2text</h2><p>编写一份存在溢出漏洞和后门函数的代码，编译后进行分析、调试和利用，通过这个过程来对 <code>windows</code> 下的漏洞利用有一个基本认知</p>

@@ -21,12 +21,12 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
-    <meta name="description" content="前言这篇关于 Windows Pwn 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。 在 Linux 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 Windows 下的 PWN 。当时本意是希望在大三结束找实习时，可以对二进制方面的漏洞">
+    <meta name="description" content="前言这篇关于 Windows Pwn 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。 在 Linux 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 Windows 下的 PWN 。当时本意是希望在大三结束找实习时，可以对 Windows">
 <meta property="og:type" content="article">
 <meta property="og:title" content="教练 我也想入门windows pwn">
 <meta property="og:url" content="https://zikh26.github.io/posts/f671ae0d.html">
 <meta property="og:site_name" content="ZIKH26&#39;s Blog">
-<meta property="og:description" content="前言这篇关于 Windows Pwn 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。 在 Linux 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 Windows 下的 PWN 。当时本意是希望在大三结束找实习时，可以对二进制方面的漏洞">
+<meta property="og:description" content="前言这篇关于 Windows Pwn 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。 在 Linux 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 Windows 下的 PWN 。当时本意是希望在大三结束找实习时，可以对 Windows">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403091057489.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202403091046783.png">
@@ -93,7 +93,7 @@
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240328155055711.png">
 <meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240328171612752.png">
 <meta property="article:published_time" content="2024-11-01T06:51:36.015Z">
-<meta property="article:modified_time" content="2024-11-01T06:51:44.992Z">
+<meta property="article:modified_time" content="2024-11-01T06:54:44.579Z">
 <meta property="article:author" content="ZIKH26">
 <meta property="article:tag" content="windows_pwn">
 <meta name="twitter:card" content="summary">
@@ -293,7 +293,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-11-01 14:51:36 / 修改时间：14:51:44" itemprop="dateCreated datePublished" datetime="2024-11-01T14:51:36+08:00">2024-11-01</time>
+      <time title="创建时间：2024-11-01 14:51:36 / 修改时间：14:54:44" itemprop="dateCreated datePublished" datetime="2024-11-01T14:51:36+08:00">2024-11-01</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -319,7 +319,7 @@
     
     
     <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这篇关于 <strong>Windows Pwn</strong> 入门的草稿应该是在 24 年初的时候写的，当时忘记因为什么原因搁置了。时间转眼已经到了 24 年底，这一年经历了挺多意料之外的事情，所以感觉时间过的飞快。今天整理了一下之前写的草稿，算是再水一篇博客。</p>
-<p>在 <strong>Linux</strong> 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 <strong>Windows</strong> 下的 <strong>PWN</strong> 。当时本意是希望在大三结束找实习时，可以对二进制方面的漏洞利用有更多了解，但回过头来看，其实也没用上🥲。</p>
+<p>在 <strong>Linux</strong> 下的二进制漏洞利用已经较为熟悉的情况下，打算去了解一下 <strong>Windows</strong> 下的 <strong>PWN</strong> 。当时本意是希望在大三结束找实习时，可以对 <strong>Windows</strong> 平台的二进制方面漏洞利用有更多了解，但回过头来看，其实也没用上🥲。</p>
 <span id="more"></span>
 
 <h2 id="windows下的-ret2text"><a href="#windows下的-ret2text" class="headerlink" title="windows下的 ret2text"></a>windows下的 ret2text</h2><p>编写一份存在溢出漏洞和后门函数的代码，编译后进行分析、调试和利用，通过这个过程来对 <code>windows</code> 下的漏洞利用有一个基本认知</p>
