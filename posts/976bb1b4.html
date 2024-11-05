@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言这篇文章也是好几个月之前写的了，当时因为忙了其他事情，一直没有整理发布，刚才无意中看到了，就索性发一下。qiling 这个框架对于模拟运行二进制程序时的 hook 非常方便，可以很细致的获取或修改某个时刻的内存值，学习了该框架，可以后续在此基础上开发一些小工具。 其实网上关于 qiling-lab 资料已经非常多了，自学起来已经没有什么难度。本文也是照猫画虎完成了 qiling-lab 的 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅尝Qiling">
+<meta property="og:url" content="https://zikh26.github.io/posts/976bb1b4.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言这篇文章也是好几个月之前写的了，当时因为忙了其他事情，一直没有整理发布，刚才无意中看到了，就索性发一下。qiling 这个框架对于模拟运行二进制程序时的 hook 非常方便，可以很细致的获取或修改某个时刻的内存值，学习了该框架，可以后续在此基础上开发一些小工具。 其实网上关于 qiling-lab 资料已经非常多了，自学起来已经没有什么难度。本文也是照猫画虎完成了 qiling-lab 的 1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240507081935848.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240507082508530.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240510230608132.png">
+<meta property="article:published_time" content="2024-11-05T02:57:16.959Z">
+<meta property="article:modified_time" content="2024-11-05T03:08:44.234Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="lab">
+<meta property="article:tag" content="Qiling">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240507081935848.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/976bb1b4.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/976bb1b4.html","path":"posts/976bb1b4.html","title":"浅尝Qiling"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>浅尝Qiling | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qiling%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">qiling安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#challenge"><span class="nav-number">3.</span> <span class="nav-text">challenge</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge1"><span class="nav-number">3.1.</span> <span class="nav-text">challenge1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge2"><span class="nav-number">3.2.</span> <span class="nav-text">challenge2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge3"><span class="nav-number">3.3.</span> <span class="nav-text">challenge3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge4"><span class="nav-number">3.4.</span> <span class="nav-text">challenge4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge5"><span class="nav-number">3.5.</span> <span class="nav-text">challenge5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge6"><span class="nav-number">3.6.</span> <span class="nav-text">challenge6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge7"><span class="nav-number">3.7.</span> <span class="nav-text">challenge7</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge8"><span class="nav-number">3.8.</span> <span class="nav-text">challenge8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge9"><span class="nav-number">3.9.</span> <span class="nav-text">challenge9</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge10"><span class="nav-number">3.10.</span> <span class="nav-text">challenge10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#challenge11"><span class="nav-number">3.11.</span> <span class="nav-text">challenge11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EXP"><span class="nav-number">3.12.</span> <span class="nav-text">EXP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F-amp-amp-%E6%8A%A5%E9%94%99"><span class="nav-number">3.13.</span> <span class="nav-text">注意&amp;&amp;报错</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">3.13.1.</span> <span class="nav-text">注意事项</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8A%A5%E9%94%99"><span class="nav-number">3.13.2.</span> <span class="nav-text">报错</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">3.14.</span> <span class="nav-text">参考文章</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">人生如戏</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">115</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">114</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/976bb1b4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="人生如戏">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="浅尝Qiling | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅尝Qiling
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-11-05 10:57:16 / 修改时间：11:08:44" itemprop="dateCreated datePublished" datetime="2024-11-05T10:57:16+08:00">2024-11-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这篇文章也是好几个月之前写的了，当时因为忙了其他事情，一直没有整理发布，刚才无意中看到了，就索性发一下。<strong>qiling</strong> 这个框架对于模拟运行二进制程序时的 hook 非常方便，可以很细致的获取或修改某个时刻的内存值，学习了该框架，可以后续在此基础上开发一些小工具。</p>
+<p>其实网上关于 <code>qiling-lab</code> 资料已经非常多了，自学起来已经没有什么难度。本文也是照猫画虎完成了 qiling-lab 的 11 个挑战，并没有做其他的延伸学习，更多的记录是自己在学习过程时踩过的坑和一些思考。</p>
+<span id="more"></span>
+
+<h2 id="qiling安装"><a href="#qiling安装" class="headerlink" title="qiling安装"></a>qiling安装</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">pip3 install qiling</span><br></pre></td></tr></table></figure>
+
+<p>一条命令直接安装，不过我在 <code>ubuntu18.04</code> 中遇到了一个报错</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240507081935848.png" alt="image-20240507081935848"></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ERROR: Could not find a version that satisfies the requirement qiling (from versions: none)</span><br><span class="line">ERROR: No matching distribution found <span class="keyword">for</span> qiling</span><br></pre></td></tr></table></figure>
+
+<p>表示没有找到 <code>qiling</code> 的库，结合 <code>log</code> 可知是从 <code> https://pypi.douban.com/simple/</code> 进行搜索的。</p>
+<p>使用 <code>pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple qiling</code> 指定从清华源中重新获取，在 <code>ubuntu18.04</code> 上正常安装</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240507082508530.png" alt="image-20240507082508530"></p>
+<p>上面是用 <code>-i</code> 临时指定的，用下面的命令可以将配置永久生效</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple</span><br></pre></td></tr></table></figure>
+
+
+
+<p>执行下面的命令把 <code>qiling</code> 的仓库给 <code>clone</code> 下来</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/qilingframework/qiling.git --recursiv</span><br></pre></td></tr></table></figure>
+
+<p>有报错如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">➜  Desktop git clone https://github.com/qilingframework/qiling.git --recursiv</span><br><span class="line">Cloning into &#x27;qiling&#x27;...</span><br><span class="line">fatal: unable to access &#x27;https://github.com/qilingframework/qiling.git/&#x27;: Failed to connect to 127.0.0.1 port 1087: Connection refused</span><br></pre></td></tr></table></figure>
+
+<p>查看 <code>git</code> 的配置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cat ~/.gitconfig </span><br></pre></td></tr></table></figure>
+
+
+
+<p>输出如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[http]</span><br><span class="line">	proxy = http://127.0.0.1:1087</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这说明之前本机的代理留的有问题，接下来我可以调整配置文件，可以将文件里面关于代理的配置给删除，不走代理。将其走我宿主机的代理，比如我改成下面这个样子。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[http]</span><br><span class="line">	proxy = http://192.168.144.154:4780</span><br></pre></td></tr></table></figure>
+
+
+
+<p>再执行 <code>git clone https://github.com/qilingframework/qiling.git --recursiv</code> 命令，安装成功</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Cloning into &#x27;qiling&#x27;...</span><br><span class="line">remote: Enumerating objects: 47312, done.</span><br><span class="line">remote: Counting objects: 100% (952/952), done.</span><br><span class="line">remote: Compressing objects: 100% (387/387), done.</span><br><span class="line">remote: Total 47312 (delta 596), reused 837 (delta 561), pack-reused 46360</span><br><span class="line">Receiving objects: 100% (47312/47312), 67.78 MiB | 4.98 MiB/s, done.</span><br><span class="line">Resolving deltas: 100% (35960/35960), done.</span><br><span class="line">Submodule &#x27;examples/rootfs&#x27; (https://github.com/qilingframework/rootfs.git) registered for path &#x27;examples/rootfs&#x27;</span><br><span class="line">Cloning into &#x27;/home/zikh/Desktop/qiling/examples/rootfs&#x27;...</span><br><span class="line">remote: Enumerating objects: 1253, done.        </span><br><span class="line">remote: Counting objects: 100% (1253/1253), done.        </span><br><span class="line">remote: Compressing objects: 100% (795/795), done.        </span><br><span class="line">remote: Total 1253 (delta 344), reused 1249 (delta 342), pack-reused 0        </span><br><span class="line">Receiving objects: 100% (1253/1253), 160.85 MiB | 3.01 MiB/s, done.</span><br><span class="line">Resolving deltas: 100% (344/344), done.</span><br><span class="line">Submodule path &#x27;examples/rootfs&#x27;: checked out &#x27;32c4fcf52f4aa0efaa1cb03ab6b2186c61f512c6&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>安装 <code>Qdb</code></p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">git clone git@github.com:ucgJhe/Qdb.git</span><br></pre></td></tr></table></figure>
+
+<p>报错如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Cloning into &#x27;Qdb&#x27;...</span><br><span class="line">git@github.com: Permission denied (publickey).</span><br><span class="line">fatal: Could not read from remote repository.</span><br><span class="line"></span><br><span class="line">Please make sure you have the correct access rights</span><br><span class="line">and the repository exists.</span><br></pre></td></tr></table></figure>
+
+<p>可能是缺少公钥，或者权限不足。可以用 <code>git clone https://github.com/ucgJhe/Qdb.git</code> 命令，以 <code>HTTPS</code> 协议进行克隆，不需要 <code>SSH</code> 密钥认证。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">➜  Desktop git clone https://github.com/ucgJhe/Qdb.git</span><br><span class="line"></span><br><span class="line">Cloning into &#x27;Qdb&#x27;...</span><br><span class="line">remote: Enumerating objects: 289, done.</span><br><span class="line">remote: Counting objects: 100% (289/289), done.</span><br><span class="line">remote: Compressing objects: 100% (194/194), done.</span><br><span class="line">remote: Total 289 (delta 153), reused 221 (delta 91), pack-reused 0</span><br><span class="line">Receiving objects: 100% (289/289), 403.12 KiB | 686.00 KiB/s, done.</span><br><span class="line">Resolving deltas: 100% (153/153), done.</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h2 id="challenge"><a href="#challenge" class="headerlink" title="challenge"></a>challenge</h2><h3 id="challenge1"><a href="#challenge1" class="headerlink" title="challenge1"></a>challenge1</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_BYTE *__fastcall <span class="title function_">challenge1</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  _BYTE *result; <span class="comment">// rax</span></span><br><span class="line"></span><br><span class="line">  result = (_BYTE *)MEMORY[<span class="number">0x1337</span>];</span><br><span class="line">  <span class="keyword">if</span> ( MEMORY[<span class="number">0x1337</span>] == <span class="number">1337</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    result = a1;</span><br><span class="line">    *a1 = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要让内存 <code>0x1337</code> 处的值为 <code>1337</code> 。就正常是映射内存，然后用 <code>write</code> 去向内存里写值，之后还会遇到很多次，常规操作。需要注意的是 <code>ql.mem.write</code> 的第二个参数是 <code>bytes</code> 类型 ，不然就报错，这里用 <code>ql.pack16</code> 打包，或者直接写成 <code>b&quot;\x39\x05&quot;</code> 也是可以的</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">challenge1</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.mem.<span class="built_in">map</span>(<span class="number">0x1000</span>, <span class="number">0x1000</span>)</span><br><span class="line">    ql.mem.write(<span class="number">0x1337</span>, ql.pack16(<span class="number">1337</span>))</span><br><span class="line">    <span class="comment">#ql.mem.write(0x1337, b&quot;\x39\x05&quot;)</span></span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/struct/">Pack and Unpack - Qiling Framework Documentation</a></p>
+<h3 id="challenge2"><a href="#challenge2" class="headerlink" title="challenge2"></a>challenge2</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">challenge2</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v2; <span class="comment">// [rsp+10h] [rbp-1D0h]</span></span><br><span class="line">  <span class="type">int</span> v3; <span class="comment">// [rsp+14h] [rbp-1CCh]</span></span><br><span class="line">  <span class="type">int</span> v4; <span class="comment">// [rsp+18h] [rbp-1C8h]</span></span><br><span class="line">  <span class="type">int</span> v5; <span class="comment">// [rsp+1Ch] [rbp-1C4h]</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">utsname</span> <span class="title">name</span>;</span> <span class="comment">// [rsp+20h] [rbp-1C0h] BYREF</span></span><br><span class="line">  <span class="type">char</span> s[<span class="number">10</span>]; <span class="comment">// [rsp+1A6h] [rbp-3Ah] BYREF</span></span><br><span class="line">  <span class="type">char</span> v8[<span class="number">16</span>]; <span class="comment">// [rsp+1B0h] [rbp-30h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v9; <span class="comment">// [rsp+1C8h] [rbp-18h]</span></span><br><span class="line"></span><br><span class="line">  v9 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  <span class="keyword">if</span> ( uname(&amp;name) )</span><br><span class="line">  &#123;</span><br><span class="line">    perror(<span class="string">&quot;uname&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">strcpy</span>(s, <span class="string">&quot;QilingOS&quot;</span>);</span><br><span class="line">    s[<span class="number">9</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">strcpy</span>(v8, <span class="string">&quot;ChallengeStart&quot;</span>);</span><br><span class="line">    v8[<span class="number">15</span>] = <span class="number">0</span>;</span><br><span class="line">    v2 = <span class="number">0</span>;</span><br><span class="line">    v3 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> ( v4 &lt; <span class="built_in">strlen</span>(s) )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( name.sysname[v4] == s[v4] )</span><br><span class="line">        ++v2;</span><br><span class="line">      ++v4;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( v5 &lt; <span class="built_in">strlen</span>(v8) )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( name.version[v5] == v8[v5] )</span><br><span class="line">        ++v3;</span><br><span class="line">      ++v5;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( v2 == <span class="built_in">strlen</span>(s) &amp;&amp; v3 == <span class="built_in">strlen</span>(v8) &amp;&amp; v2 &gt; <span class="number">5</span> )</span><br><span class="line">      *a1 = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v9;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>让 <code>uname</code> 函数执行完，使其参数 <code>sysname</code> 和 <code>version</code> 解析成指定的字符串。这个需要用到 <code>ql.os.set_syscall</code> 从系统调用层面进行 <code>hook</code> ，通过解析出 <code>uname</code> 执行时的第一个参数（也就是结构体地址），去向结构体中的指定字段写入指定字符串即可</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">my_syscall_uname</span>(<span class="params">ql: Qiling, *args</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    struct utsname</span></span><br><span class="line"><span class="string">    &#123;</span></span><br><span class="line"><span class="string">        char sysname[65];</span></span><br><span class="line"><span class="string">        char nodename[65];</span></span><br><span class="line"><span class="string">        char release[65];</span></span><br><span class="line"><span class="string">        char version[65];</span></span><br><span class="line"><span class="string">        char machine[65];</span></span><br><span class="line"><span class="string">        char domainname[65];</span></span><br><span class="line"><span class="string">    &#125;;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    rdi_value = ql.arch.regs.read(<span class="string">&quot;rdi&quot;</span>)</span><br><span class="line">    ql.mem.write(rdi_value, <span class="string">b&quot;QilingOS\x00&quot;</span>)</span><br><span class="line">    ql.mem.write(rdi_value+<span class="number">65</span>*<span class="number">3</span>, <span class="string">b&quot;ChallengeStart\x00&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge2</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.os.set_syscall(<span class="string">&quot;uname&quot;</span>, my_syscall_uname, QL_INTERCEPT.EXIT)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/hijack/">劫持 - 麒麟框架文档 — Hijack - Qiling Framework Documentation</a></p>
+<h3 id="challenge3"><a href="#challenge3" class="headerlink" title="challenge3"></a>challenge3</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">challenge3</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> v2; <span class="comment">// [rsp+10h] [rbp-60h]</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+14h] [rbp-5Ch]</span></span><br><span class="line">  <span class="type">int</span> fd; <span class="comment">// [rsp+18h] [rbp-58h]</span></span><br><span class="line">  <span class="type">char</span> v5; <span class="comment">// [rsp+1Fh] [rbp-51h] BYREF</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">32</span>]; <span class="comment">// [rsp+20h] [rbp-50h] BYREF</span></span><br><span class="line">  <span class="type">char</span> v7[<span class="number">40</span>]; <span class="comment">// [rsp+40h] [rbp-30h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v8; <span class="comment">// [rsp+68h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v8 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  fd = open(<span class="string">&quot;/dev/urandom&quot;</span>, <span class="number">0</span>);</span><br><span class="line">  read(fd, buf, <span class="number">0x20</span>uLL);</span><br><span class="line">  read(fd, &amp;v5, <span class="number">1uLL</span>);</span><br><span class="line">  close(fd);</span><br><span class="line">  getrandom(v7, <span class="number">32LL</span>, <span class="number">1LL</span>);</span><br><span class="line">  v2 = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">31</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( buf[i] == v7[i] &amp;&amp; buf[i] != v5 )</span><br><span class="line">      ++v2;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> ( v2 == <span class="number">32</span> )</span><br><span class="line">    *a1 = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v8;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从 <code>/dev/urandom</code> 文件中读取 <code>0x20</code> 字节的随机数 ，再用 <code>getrandom</code> 函数生成 <code>0x20</code> 字节的随机数，两组随机数一样算作通关。</p>
+<p>先使用 <code>ql.os.set_syscall</code> 对 <code>getrandom</code> 系统调用进行 <code>hook</code> 控制其返回值，再用 <code>QlFsMappedObject</code> 自定义文件系统，我的理解就是创建出一个类，类中的函数是模拟对指定文件的操作。比如在该类中定义一个 read函数，就是当有操作对这个文件进行读的时候，调用read函数，返回读取的数据。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Fake_urandom</span>(<span class="title class_ inherited__">QlFsMappedObject</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">read</span>(<span class="params">self, size</span>):</span><br><span class="line">        <span class="keyword">if</span> size == <span class="number">0x20</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;\xff&#x27;</span>*size</span><br><span class="line">        <span class="keyword">if</span> size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;\x01&#x27;</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fstat</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">close</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge3</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.add_fs_mapper(<span class="string">&quot;/dev/urandom&quot;</span>, Fake_urandom())</span><br><span class="line">    ql.os.set_syscall(<span class="string">&quot;getrandom&quot;</span>, my_syscall_getrandom, QL_INTERCEPT.EXIT)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_syscall_getrandom</span>(<span class="params">ql, buf, buflen, flags, *args</span>):</span><br><span class="line">    ql.mem.write(buf, <span class="string">b&quot;\xff&quot;</span>*buflen)</span><br><span class="line">    <span class="keyword">return</span> buflen</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/hijack/">Hijack - Qiling Framework Documentation</a></p>
+<h3 id="challenge4"><a href="#challenge4" class="headerlink" title="challenge4"></a>challenge4</h3><p>直接用 <code>IDA</code> 看伪代码的话，是 <code>return 0</code> </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">__int64 <span class="title function_">challenge4</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看汇编发现是有个循环，从 <code>0xE33</code> 的 <code>jmp</code> 进入循环</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:0000000000000E1D ; __unwind &#123;</span><br><span class="line">.text:0000000000000E1D                 push    rbp</span><br><span class="line">.text:0000000000000E1E                 mov     rbp, rsp</span><br><span class="line">.text:0000000000000E21                 mov     [rbp+var_18], rdi</span><br><span class="line">.text:0000000000000E25                 mov     [rbp+var_8], 0</span><br><span class="line">.text:0000000000000E2C                 mov     [rbp+var_4], 0</span><br><span class="line">.text:0000000000000E33                 jmp     short loc_E40</span><br><span class="line">.text:0000000000000E35 ; ---------------------------------------------------------------------------</span><br><span class="line">.text:0000000000000E35</span><br><span class="line">.text:0000000000000E35 loc_E35:                                ; CODE XREF: challenge4+29↓j</span><br><span class="line">.text:0000000000000E35                 mov     rax, [rbp+var_18]</span><br><span class="line">.text:0000000000000E39                 mov     byte ptr [rax], 1</span><br><span class="line">.text:0000000000000E3C                 add     [rbp+var_4], 1</span><br><span class="line">.text:0000000000000E40</span><br><span class="line">.text:0000000000000E40 loc_E40:                                ; CODE XREF: challenge4+16↑j</span><br><span class="line">.text:0000000000000E40                 mov     eax, [rbp+var_8]</span><br><span class="line">.text:0000000000000E43                 cmp     [rbp+var_4], eax</span><br><span class="line">.text:0000000000000E46                 jl      short loc_E35</span><br><span class="line">.text:0000000000000E48                 nop</span><br><span class="line">.text:0000000000000E49                 pop     rbp</span><br><span class="line">.text:0000000000000E4A                 retn</span><br><span class="line">.text:0000000000000E4A ; &#125; // starts at E1D</span><br></pre></td></tr></table></figure>
+
+<p>先执行 <code>mov eax, [rbp+var_8]</code> <code>cmp [rbp+var_4], eax</code> <code>jl  short loc_E35</code> 三条指令。因为 <code>[rbp+var_8]</code> 和 <code>[rbp+var_4]</code>初始值就是 <code>0</code>，而 <code>jl</code> 汇编指令表示源操作数小于目标操作数时进行跳转，此时 <code>cmp</code> 比较的结果是二者相等。因此不会触发 <code>jl</code> 的跳转，直接将函数返回。如果想通过本次挑战的 <code>check</code> ，是需要跳转到 <code>0xE35</code> 执行 <code>mov  rax, [rbp+var_18]</code> 和 <code>mov  byte ptr [rax], 1</code> 两个指令。</p>
+<p>采用 <code>hook_address</code> 函数对一个特定的地址进行 <code>hook</code> ，当执行到这个地址时可以触发指定的回调函数。用回调函数修改此时 <code>eax</code> 寄存器的值为 <code>1</code> 。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">change_eax_func</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;eax&quot;</span>, <span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge4</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base_addr = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(change_eax_func, base_addr + <span class="number">0xe43</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样可以让 <code>jl</code> 指令实现跳转，从 <code>0xE35</code> 开始往下执行，触发关键代码。从而之后通过 <code>check</code>，再往下执行时 <code>jl</code> 不会跳转，该函数返回。</p>
+<p>不知道为什么从第五关开始，即使通关了，也不会立刻输出 <code>Challenge 5: SOLVED</code> （搞的我以为没通关呢），只有下一关通过了，才能看到上一关的状态。我想了一个能够看本关是否通过的方法，可以 <code>hook</code> 本关给通关标识赋值的代码。这样当本关触发获胜条件时，可以执行设置的回调函数，让回调函数输出一句话就知道本关是否过了，就像下面这样。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ql.hook_address(win, base_addr + <span class="number">0xEDD</span>) </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">win</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[*] win&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/register/">Register - Qiling Framework Documentation</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/hook/">Hook - Qiling Framework Documentation</a></p>
+<h3 id="challenge5"><a href="#challenge5" class="headerlink" title="challenge5"></a>challenge5</h3><p>第五关的目的是让 <code>rand</code> 函数执行五次，每次的返回值全部都是 <code>0</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">challenge5</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> v1; <span class="comment">// eax</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+18h] [rbp-48h]</span></span><br><span class="line">  <span class="type">int</span> j; <span class="comment">// [rsp+1Ch] [rbp-44h]</span></span><br><span class="line">  <span class="type">int</span> v5[<span class="number">14</span>]; <span class="comment">// [rsp+20h] [rbp-40h]</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v6; <span class="comment">// [rsp+58h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  v1 = time(<span class="number">0LL</span>);</span><br><span class="line">  srand(v1);</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">4</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    v5[i] = <span class="number">0</span>;</span><br><span class="line">    v5[i + <span class="number">8</span>] = rand();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> ( j = <span class="number">0</span>; j &lt;= <span class="number">4</span>; ++j )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( v5[j] != v5[j + <span class="number">8</span>] )</span><br><span class="line">    &#123;</span><br><span class="line">      *a1 = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v6;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  *a1 = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个思路肯定是用 <code>ql.os.set_api</code> 来劫持库函数，但我最开始以为可以这样写</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">challenge5</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base_addr = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(win, base_addr + <span class="number">0xEDD</span>) </span><br><span class="line">    ql.os.set_api(<span class="string">&#x27;rand&#x27;</span>, my_rand)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_rand</span>(<span class="params">ql, *args</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>因为我想着通过劫持 <code>rand</code> 函数，并在自定义的函数中直接返回 <code>0</code>，从而实现让 <code>rand</code> 函数返回 <code>0</code> 的目的。测试发现这样控制不了库函数 <code>rand</code>返回值为 <code>0</code> </p>
+<p>正确做法是用 <code>ql.arch.regs.write(&quot;rax&quot;,0)</code> 代码来修改函数的 <code>rax</code> 寄存器，从而实现劫持 <code>rand</code> 函数的返回值。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">challenge5</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base_addr = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(win, base_addr + <span class="number">0xEDD</span>) </span><br><span class="line">    ql.os.set_api(<span class="string">&#x27;rand&#x27;</span>, my_rand)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_rand</span>(<span class="params">ql, *args</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>,<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="challenge6"><a href="#challenge6" class="headerlink" title="challenge6"></a>challenge6</h3><p>直接看伪代码的话发现是个死循环</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">challenge6</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行流会先通过 <code>jmp short loc_F12</code> 指令跳转到 <code>0xF12</code> 地址处，将 <code>1</code> 赋值给 <code>eax</code> 寄存器，经过 <code>test al, al</code> 指令后（<code>eax</code> 为 <code>1</code>）将 <code>ZF</code> 标志位寄存器清零。而 <code>jnz</code> 指令指的是 <code>ZF</code> 寄存器为 <code>0</code> 时跳转， <code>[rbp+var_5]</code> 的内容一直为 <code>1</code> ，从而陷入了一个死循环。</p>
+<p>PS：这里记一下 <code>jnz</code> 指令，这个指令本身的全称是 <code>jump if not zero</code> ，翻译过来虽然是不为零时跳转，但这个不为零指的并不是 <code>ZF</code> 寄存器的值，而是运算结果（ <code>cmp</code> 让两个操作数相减的结果 ）。运算结果和 <code>ZF</code> 寄存器的值刚好是相反的关系，因此 <code>ZF==0</code> 时 <code>jnz</code> 才跳转  </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:0000000000000EF6                 push    rbp</span><br><span class="line">.text:0000000000000EF7                 mov     rbp, rsp</span><br><span class="line">.text:0000000000000EFA                 mov     [rbp+var_18], rdi</span><br><span class="line">.text:0000000000000EFE                 mov     [rbp+var_4], 0</span><br><span class="line">.text:0000000000000F05                 mov     [rbp+var_5], 1</span><br><span class="line">.text:0000000000000F09                 jmp     short loc_F12</span><br><span class="line">.text:0000000000000F0B ; ---------------------------------------------------------------------------</span><br><span class="line">.text:0000000000000F0B</span><br><span class="line">.text:0000000000000F0B loc_F0B:                                ; CODE XREF: challenge6+22↓j</span><br><span class="line">.text:0000000000000F0B                 mov     [rbp+var_4], 1</span><br><span class="line">.text:0000000000000F12</span><br><span class="line">.text:0000000000000F12 loc_F12:                                ; CODE XREF: challenge6+13↑j</span><br><span class="line">.text:0000000000000F12                 movzx   eax, [rbp+var_5]</span><br><span class="line">.text:0000000000000F16                 test    al, al</span><br><span class="line">.text:0000000000000F18                 jnz     short loc_F0B</span><br><span class="line">.text:0000000000000F1A                 mov     rax, [rbp+var_18]</span><br><span class="line">.text:0000000000000F1E                 mov     byte ptr [rax], 1</span><br><span class="line">.text:0000000000000F21                 nop</span><br><span class="line">.text:0000000000000F22                 pop     rbp</span><br><span class="line">.text:0000000000000F23                 retn</span><br></pre></td></tr></table></figure>
+
+<p>解决方式和 <code>challenge4</code> 类似，在地址 <code>0XF16</code> 处进行 <code>hook</code> ，强行修改寄存器 <code>eax</code> 的值为 <code>0</code> 。这样 <code>jnz</code> 就不会再跳转，从而执行 <code>mov  byte ptr [rax], 1</code> 通过本次跳转。</p>
+<h3 id="challenge7"><a href="#challenge7" class="headerlink" title="challenge7"></a>challenge7</h3><p>这个挑战中是直接给了通关的标志，但是要休眠 <code>0xFFFFFFFF</code> 秒。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">unsigned <span class="built_in">int</span> __fastcall challenge7(_BYTE *a1)</span><br><span class="line">&#123;</span><br><span class="line">  *a1 = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> sleep(<span class="number">0xFFFFFFFF</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我能想到两种简单的思路分别是改 <code>sleep</code> 的参数或者直接把 <code>sleep</code> 函数给 <code>hook</code> 掉，经过测试，这两种都可以实现</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">change_edi</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rdi&quot;</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_sleep</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge7</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="comment"># base = ql.mem.get_lib_base(ql.path)</span></span><br><span class="line">    <span class="comment"># ql.hook_address(change_edi, base+0xF3c)</span></span><br><span class="line">    ql.os.set_api(<span class="string">&#x27;sleep&#x27;</span>, my_sleep)</span><br></pre></td></tr></table></figure>
+
+<p>然后看了其他师傅的文章，这里也可以用 <code>ql.os.set_syscall</code> 劫持 <code>sleep</code> 库函数中的系统调用 <code>nanosleep</code></p>
+<h3 id="challenge8"><a href="#challenge8" class="headerlink" title="challenge8"></a>challenge8</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_DWORD *__fastcall <span class="title function_">challenge8</span><span class="params">(__int64 a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  _DWORD *result; <span class="comment">// rax</span></span><br><span class="line">  _DWORD *v2; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v2 = <span class="built_in">malloc</span>(<span class="number">0x18</span>uLL);</span><br><span class="line">  *(_QWORD *)v2 = <span class="built_in">malloc</span>(<span class="number">0x1E</span>uLL);</span><br><span class="line">  v2[<span class="number">2</span>] = <span class="number">0x539</span>;</span><br><span class="line">  v2[<span class="number">3</span>] = <span class="number">0x3DFCD6EA</span>;</span><br><span class="line">  <span class="built_in">strcpy</span>(*(<span class="type">char</span> **)v2, <span class="string">&quot;Random data&quot;</span>);</span><br><span class="line">  result = v2;</span><br><span class="line">  *((_QWORD *)v2 + <span class="number">2</span>) = a1;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>挑战8最开始让我感到比较困惑，因为前面几关都有明显通关的标识，但是这个代码也没有发现任何自己可以去改变通关标识的代码。我以为是直接让去定位通关的标识，强行修改内存的值为 <code>1</code> …</p>
+<p>于是写了一个很作弊的代码😶‍🌫️，这个可以过每一关。就因为知道通关的标识位于 <code>rbp-0x18</code> ，那直接用 <code>ql.mem.write</code> 就把内存给改了…  但是我写完想了一下，这也没意义，没体现出来这一关的特别</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    rbp_value=ql.arch.regs.read(<span class="string">&quot;rbp&quot;</span>)</span><br><span class="line">    rbp_value=ql.unpack(ql.mem.read(rbp_value-<span class="number">0x18</span>,<span class="number">0x8</span>))</span><br><span class="line">    ql.mem.write(rbp_value,<span class="string">b&quot;\x01&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] debug&quot;</span>,<span class="built_in">hex</span>(rbp_value))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge8</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(func, base+<span class="number">0xFB5</span>)</span><br></pre></td></tr></table></figure>
+
+<p>于是看了一下其他师傅的 <code>wp</code> ，才知道这关的本质是要拿到堆里面存放的通关标识地址（也就是a1）。重新再看一下这个代码，首先程序申请了一个堆块，用来存储创建的结构体</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_DWORD *__fastcall <span class="title function_">challenge8</span><span class="params">(__int64 a1, __m128 _XMM0)</span></span><br><span class="line">&#123;</span><br><span class="line">  _DWORD *result; <span class="comment">// rax</span></span><br><span class="line">  _DWORD *v3; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v3 = <span class="built_in">malloc</span>(<span class="number">0x18</span>uLL);</span><br><span class="line">  *v3 = <span class="built_in">malloc</span>(<span class="number">0x1E</span>uLL);</span><br><span class="line">  v3[<span class="number">2</span>] = <span class="number">0x539</span>;</span><br><span class="line">  v3[<span class="number">3</span>] = <span class="number">0x3DFCD6EA</span>;</span><br><span class="line">  <span class="built_in">strcpy</span>(*v3, <span class="string">&quot;Random data&quot;</span>);</span><br><span class="line">  result = v3;</span><br><span class="line">  *(v3 + <span class="number">2</span>) = a1;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后在第一个成员中存放了八字节的指针，指向了另一个堆块。第二个成员中存储了 <code> 0x3DFCD6EA00000539</code> 数据，第三个成员中存放了通关标识的地址。</p>
+<p>在第一个成员指向的堆块中写入了字符串 <code>Random data</code> 。这一关考察是通过搜索内存中的魔数，快速定位指定内存。再进行特征匹配，精准的从内存中取出想要的值。我这里是先用 <code>ql.mem.search</code> 匹配魔数，定位第一个堆块的地址，将其减八存放的就是第二次 <code>malloc</code> 出内存的地址，用 <code>ql.mem.read</code> 可以把 <code>Random data</code> 字符串给打印出来。打印出 <code>Random data</code> 字符串，就能确定找的地址没问题了，用 <code>ql.mem.write</code> 向第三个指针（通关标识的地址）中写入 <code>\x01</code> ，本题通关。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">search_mem</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    MAGIC=<span class="number">0x3DFCD6EA00000539</span></span><br><span class="line">    struct_address = ql.mem.search(ql.pack64(MAGIC))</span><br><span class="line"></span><br><span class="line">    mem_value1, mem_value2 ,mem_value3 = struct.unpack(<span class="string">&quot;QQQ&quot;</span>, ql.mem.read(struct_address[<span class="number">0</span>]-<span class="number">8</span>,<span class="number">0x18</span>))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] debug1&quot;</span>,<span class="built_in">hex</span>(mem_value1))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] debug2&quot;</span>,<span class="built_in">hex</span>(mem_value2))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] debug2&quot;</span>,<span class="built_in">hex</span>(mem_value3))</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(ql.mem.read(mem_value1, <span class="number">0x10</span>))</span><br><span class="line">    ql.mem.write(mem_value3, <span class="string">b&quot;\x01&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge8</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(search_mem, base+<span class="number">0xFB5</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="challenge9"><a href="#challenge9" class="headerlink" title="challenge9"></a>challenge9</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">challenge9</span><span class="params">(<span class="type">bool</span> *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *i; <span class="comment">// [rsp+18h] [rbp-58h]</span></span><br><span class="line">  <span class="type">char</span> dest[<span class="number">32</span>]; <span class="comment">// [rsp+20h] [rbp-50h] BYREF</span></span><br><span class="line">  <span class="type">char</span> src[<span class="number">40</span>]; <span class="comment">// [rsp+40h] [rbp-30h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v5; <span class="comment">// [rsp+68h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v5 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  <span class="built_in">strcpy</span>(src, <span class="string">&quot;aBcdeFghiJKlMnopqRstuVWxYz&quot;</span>);</span><br><span class="line">  src[<span class="number">27</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">strcpy</span>(dest, src);</span><br><span class="line">  <span class="keyword">for</span> ( i = dest; *i; ++i )</span><br><span class="line">    *i = <span class="built_in">tolower</span>(*i);</span><br><span class="line">  *a1 = <span class="built_in">strcmp</span>(src, dest) == <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这一关会将 <code>aBcdeFghiJKlMnopqRstuVWxYz</code> 变成全小写将其比较。我最开始的思路是劫持 <code>tolower</code> 函数让 <code>rdi</code> 寄存器的值给 <code>rax</code> 就结束，就像下面这样</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">my_tolower</span>(<span class="params">ql: Qiling,*args</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>, ql.arch.regs.read(<span class="string">&quot;rdi&quot;</span>))</span><br></pre></td></tr></table></figure>
+
+<p>这样写这关也能过，之后看了其他师傅的 <code>wp</code> 才注意到 <code>src</code> 和 <code>dest</code> 开始全被写成字符串 <code>aBcdeFghiJKlMnopqRstuVWxYz</code> 了。因此可以 <code>hook tolower</code> 函数，让其直接 <code>return</code> 。后续 <code>strcmp</code> 函数做比较时自然就通过了。</p>
+<h3 id="challenge10"><a href="#challenge10" class="headerlink" title="challenge10"></a>challenge10</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 __fastcall <span class="title function_">challenge10</span><span class="params">(_BYTE *a1)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+10h] [rbp-60h]</span></span><br><span class="line">  <span class="type">int</span> fd; <span class="comment">// [rsp+14h] [rbp-5Ch]</span></span><br><span class="line">  <span class="type">ssize_t</span> v4; <span class="comment">// [rsp+18h] [rbp-58h]</span></span><br><span class="line">  <span class="type">char</span> buf[<span class="number">72</span>]; <span class="comment">// [rsp+20h] [rbp-50h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v6; <span class="comment">// [rsp+68h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readfsqword(<span class="number">0x28</span>u);</span><br><span class="line">  fd = open(<span class="string">&quot;/proc/self/cmdline&quot;</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">if</span> ( fd != <span class="number">-1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    v4 = read(fd, buf, <span class="number">0x3F</span>uLL);</span><br><span class="line">    <span class="keyword">if</span> ( v4 &gt; <span class="number">0</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      close(fd);</span><br><span class="line">      <span class="keyword">for</span> ( i = <span class="number">0</span>; v4 &gt; i; ++i )</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> ( !buf[i] )</span><br><span class="line">          buf[i] = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      buf[v4] = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">if</span> ( !<span class="built_in">strcmp</span>(buf, <span class="string">&quot;qilinglab&quot;</span>) )</span><br><span class="line">        *a1 = <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28</span>u) ^ v6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>程序最开始读取 <code>/proc/self/cmdline</code> 文件的内容存取到 <code>buf</code> 数组中，然后 <code>buf</code> 数组再全部置空，让 <code>buf</code> 和字符串  <code>qilinglab</code> 做比较，如果相同则通关。</p>
+<p><code>hook</code> 一下 <code>strcmp</code> 函数的返回值即可  </p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">my_strcmp</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge10</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.os.set_api(<span class="string">&quot;strcmp&quot;</span>, my_strcmp)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="challenge11"><a href="#challenge11" class="headerlink" title="challenge11"></a>challenge11</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">unsigned __int64 __fastcall challenge11(_BYTE *a1)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">int</span> v7; // [rsp+1Ch] [rbp-34h]</span><br><span class="line">  <span class="built_in">int</span> v8; // [rsp+24h] [rbp-2Ch]</span><br><span class="line">  char s[<span class="number">4</span>]; // [rsp+2Bh] [rbp-25h] BYREF</span><br><span class="line">  char v10[<span class="number">4</span>]; // [rsp+2Fh] [rbp-21h] BYREF</span><br><span class="line">  char v11[<span class="number">4</span>]; // [rsp+33h] [rbp-1Dh] BYREF</span><br><span class="line">  unsigned __int64 v12; // [rsp+38h] [rbp-18h]</span><br><span class="line"></span><br><span class="line">  v12 = __readfsqword(0x28u);</span><br><span class="line">  _RAX = 0x40000000LL;</span><br><span class="line">  __asm &#123; cpuid &#125;</span><br><span class="line">  v7 = _RCX;</span><br><span class="line">  v8 = _RDX;</span><br><span class="line">  <span class="keyword">if</span> ( __PAIR64__(_RBX, _RCX) == 0x696C6951614C676ELL &amp;&amp; _RDX == <span class="number">0x20202062</span> )</span><br><span class="line">    *a1 = <span class="number">1</span>;</span><br><span class="line">  sprintf(s, <span class="string">&quot;%c%c%c%c&quot;</span>, _RBX, (_RBX &gt;&gt; <span class="number">8</span>), (_RBX &gt;&gt; <span class="number">16</span>), (_RBX &gt;&gt; <span class="number">24</span>));</span><br><span class="line">  sprintf(v10, <span class="string">&quot;%c%c%c%c&quot;</span>, v7, (v7 &gt;&gt; <span class="number">8</span>), (v7 &gt;&gt; <span class="number">16</span>), (v7 &gt;&gt; <span class="number">24</span>));</span><br><span class="line">  sprintf(v11, <span class="string">&quot;%c%c%c%c&quot;</span>, v8, (v8 &gt;&gt; <span class="number">8</span>), (v8 &gt;&gt; <span class="number">16</span>), (v8 &gt;&gt; <span class="number">24</span>));</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(0x28u) ^ v12;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>直接看伪代码，说实话 <code>if</code> 这里没看懂，这里看汇编更清楚</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:0000555555555195                 mov     [rbp+var_30], esi</span><br><span class="line">.text:0000555555555198                 mov     [rbp+var_34], ecx</span><br><span class="line">.text:000055555555519B                 mov     [rbp+var_2C], eax</span><br><span class="line">.text:000055555555519E                 cmp     [rbp+var_30], 696C6951h</span><br><span class="line">.text:00005555555551A5                 jnz     short loc_5555555551C0</span><br><span class="line">.text:00005555555551A7                 cmp     [rbp+var_34], 614C676Eh</span><br><span class="line">.text:00005555555551AE                 jnz     short loc_5555555551C0</span><br><span class="line">.text:00005555555551B0                 cmp     [rbp+var_2C], 20202062h</span><br><span class="line">.text:00005555555551B7                 jnz     short loc_5555555551C0</span><br><span class="line">.text:00005555555551B9                 mov     rax, [rbp+var_48]</span><br><span class="line">.text:00005555555551BD                 mov     byte ptr [rax], 1</span><br><span class="line">.text:00005555555551C0</span><br><span class="line">.text:00005555555551C0 loc_5555555551C0:                       ; CODE XREF: challenge11+4C↑j</span><br><span class="line">.text:00005555555551C0                                         ; challenge11+55↑j ...</span><br><span class="line">.text:00005555555551C0                 mov     eax, [rbp+var_30]</span><br><span class="line">.text:00005555555551C3                 sar     eax, 18h</span><br><span class="line">.text:00005555555551C6                 mov     edi, eax</span><br><span class="line">.text:00005555555551C8                 mov     eax, [rbp+var_30]</span><br><span class="line">.text:00005555555551CB                 sar     eax, 10h</span><br><span class="line">.text:00005555555551CE                 mov     esi, eax</span><br><span class="line">.text:00005555555551D0                 mov     eax, [rbp+var_30]</span><br><span class="line">.text:00005555555551D3                 sar     eax, 8</span><br><span class="line">.text:00005555555551D6                 mov     ecx, eax</span><br><span class="line">.text:00005555555551D8                 mov     edx, [rbp+var_30]</span><br><span class="line">.text:00005555555551DB                 lea     rax, [rbp+s]</span><br><span class="line">.text:00005555555551DF                 mov     r9d, edi</span><br><span class="line">.text:00005555555551E2                 mov     r8d, esi</span><br><span class="line">.text:00005555555551E5                 lea     rsi, format     ; &quot;%c%c%c%c&quot;</span><br><span class="line">.text:00005555555551EC                 mov     rdi, rax        ; s</span><br><span class="line">.text:00005555555551EF                 mov     eax, 0</span><br><span class="line">.text:00005555555551F4                 call    _sprintf</span><br></pre></td></tr></table></figure>
+
+<p>直接关注 <code>cmp</code> <code>jnz</code> 指令部分，也就是下面的核心部分</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:0000555555555195                 mov     [rbp+var_30], esi</span><br><span class="line">.text:0000555555555198                 mov     [rbp+var_34], ecx</span><br><span class="line">.text:000055555555519B                 mov     [rbp+var_2C], eax</span><br><span class="line">.text:000055555555519E                 cmp     [rbp+var_30], 696C6951h</span><br><span class="line">.text:00005555555551A5                 jnz     short loc_5555555551C0</span><br><span class="line">.text:00005555555551A7                 cmp     [rbp+var_34], 614C676Eh</span><br><span class="line">.text:00005555555551AE                 jnz     short loc_5555555551C0</span><br><span class="line">.text:00005555555551B0                 cmp     [rbp+var_2C], 20202062h</span><br><span class="line">.text:00005555555551B7                 jnz     short loc_5555555551C0</span><br></pre></td></tr></table></figure>
+
+<p>其实就是在比较 <code>esi</code> <code>ecx</code> <code>eax</code> 三个寄存器的值。只要有一个不同，就会触发 <code>jnz</code> 跳转。</p>
+<p>继续往下审计，当 <code>jnz</code> 都不跳转时会执行到，这个 <code>rbp+var_48</code> 就是通关标识的地址，这里就相当于标识本关通过。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:00005555555551B9                 mov     rax, [rbp+var_48]</span><br><span class="line">.text:00005555555551BD                 mov     byte ptr [rax], 1</span><br></pre></td></tr></table></figure>
+
+<p>本题的思路就是 <code>hook</code> <code>0x1195</code> 地址，去设置下 <code>esi</code> <code>ecx</code> <code>eax</code> 三个寄存器的值就可以了。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">change_regs</span>(<span class="params">qi: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;esi&quot;</span>, <span class="number">0x696C6951</span>)</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;ecx&quot;</span>, <span class="number">0x614C676E</span>)</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;eax&quot;</span>, <span class="number">0x20202062</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge11</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(change_regs, base + <span class="number">0x1195</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> qiling <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_INTERCEPT</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_VERBOSE</span><br><span class="line"><span class="keyword">from</span> qiling.os.mapper <span class="keyword">import</span> QlFsMappedObject</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge1</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.mem.<span class="built_in">map</span>(<span class="number">0x1000</span>, <span class="number">0x1000</span>)</span><br><span class="line">    <span class="comment"># ql.mem.write(0x1337, ql.pack16(1337))</span></span><br><span class="line">    ql.mem.write(<span class="number">0x1337</span>, <span class="string">b&quot;\x39\x05&quot;</span>)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge2</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.os.set_syscall(<span class="string">&quot;uname&quot;</span>, my_syscall_uname, QL_INTERCEPT.EXIT)</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Fake_urandom</span>(<span class="title class_ inherited__">QlFsMappedObject</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">read</span>(<span class="params">self, size</span>):</span><br><span class="line">        <span class="keyword">if</span> size == <span class="number">0x20</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;\xff&#x27;</span>*size</span><br><span class="line">        <span class="keyword">if</span> size == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="string">b&#x27;\x01&#x27;</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">fstat</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">close</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge3</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.add_fs_mapper(<span class="string">&quot;/dev/urandom&quot;</span>, Fake_urandom())</span><br><span class="line">    ql.os.set_syscall(<span class="string">&quot;getrandom&quot;</span>, my_syscall_getrandom, QL_INTERCEPT.EXIT)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_syscall_getrandom</span>(<span class="params">ql, buf, buflen, flags, *args</span>):</span><br><span class="line">    ql.mem.write(buf, <span class="string">b&quot;\xff&quot;</span>*buflen)</span><br><span class="line">    <span class="keyword">return</span> buflen</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge4</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base_addr = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(change_eax_func, base_addr + <span class="number">0xe43</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge5</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base_addr = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(win, base_addr + <span class="number">0xEDD</span>) </span><br><span class="line">    ql.os.set_api(<span class="string">&#x27;rand&#x27;</span>, my_rand)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_rand</span>(<span class="params">ql, *args</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>,<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">debug_func1</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;debug_test ==&gt; &quot;</span>,ql.arch.regs.read(<span class="string">&quot;rax&quot;</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">hook_cmp_rax</span>(<span class="params">ql:Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>, <span class="number">0x0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change_edi</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rdi&quot;</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_sleep</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    time.sleep(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_nanosleep</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="keyword">return</span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    </span><br><span class="line">    rbp_value=ql.arch.regs.read(<span class="string">&quot;rbp&quot;</span>)</span><br><span class="line">    rbp_value=ql.unpack(ql.mem.read(rbp_value-<span class="number">0x18</span>,<span class="number">0x8</span>))</span><br><span class="line">    <span class="comment"># print(rbp_value)</span></span><br><span class="line">    ql.mem.write(rbp_value,<span class="string">b&quot;\x01&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;[*] debug&quot;</span>,<span class="built_in">hex</span>(rbp_value))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">search_mem</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    MAGIC=<span class="number">0x3DFCD6EA00000539</span></span><br><span class="line">    struct_address = ql.mem.search(ql.pack64(MAGIC))</span><br><span class="line"></span><br><span class="line">    mem_value1, mem_value2 ,mem_value3 = struct.unpack(<span class="string">&quot;QQQ&quot;</span>, ql.mem.read(struct_address[<span class="number">0</span>]-<span class="number">8</span>,<span class="number">0x18</span>))</span><br><span class="line">    <span class="comment"># print(&quot;[*] debug1&quot;,hex(mem_value1))</span></span><br><span class="line">    <span class="comment"># print(&quot;[*] debug2&quot;,hex(mem_value2))</span></span><br><span class="line">    <span class="comment"># print(&quot;[*] debug2&quot;,hex(mem_value3))</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># print(ql.mem.read(mem_value1, 0x10))</span></span><br><span class="line">    ql.mem.write(mem_value3, <span class="string">b&quot;\x01&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_tolower</span>(<span class="params">ql: Qiling,*args</span>):</span><br><span class="line">    <span class="comment"># return</span></span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>, ql.arch.regs.read(<span class="string">&quot;rdi&quot;</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge9</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.os.set_api(<span class="string">&quot;tolower&quot;</span>, my_tolower)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_strcmp</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;rax&quot;</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge10</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.os.set_api(<span class="string">&quot;strcmp&quot;</span>, my_strcmp)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge8</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(search_mem, base+<span class="number">0xFB5</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge7</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="comment"># base = ql.mem.get_lib_base(ql.path)</span></span><br><span class="line">    <span class="comment"># ql.hook_address(change_edi, base+0xF3c)</span></span><br><span class="line">    ql.os.set_syscall(<span class="string">&#x27;nanosleep&#x27;</span>, my_nanosleep)</span><br><span class="line">    <span class="comment"># ql.os.set_api(&#x27;sleep&#x27;, my_sleep)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge6</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(hook_cmp_rax, base + <span class="number">0xf16</span>)</span><br><span class="line">    ql.hook_address(win, base + <span class="number">0xEDD</span>) </span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change_regs</span>(<span class="params">qi: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;esi&quot;</span>, <span class="number">0x696C6951</span>)</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;ecx&quot;</span>, <span class="number">0x614C676E</span>)</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;eax&quot;</span>, <span class="number">0x20202062</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">challenge11</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    base = ql.mem.get_lib_base(ql.path)</span><br><span class="line">    ql.hook_address(change_regs, base + <span class="number">0x1195</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">change_eax_func</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    ql.arch.regs.write(<span class="string">&quot;eax&quot;</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">win</span>(<span class="params">ql: Qiling</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[*] win&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">my_syscall_uname</span>(<span class="params">ql: Qiling, *args</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    struct utsname</span></span><br><span class="line"><span class="string">    &#123;</span></span><br><span class="line"><span class="string">        char sysname[65];</span></span><br><span class="line"><span class="string">        char nodename[65];</span></span><br><span class="line"><span class="string">        char release[65];</span></span><br><span class="line"><span class="string">        char version[65];</span></span><br><span class="line"><span class="string">        char machine[65];</span></span><br><span class="line"><span class="string">        char domainname[65];</span></span><br><span class="line"><span class="string">    &#125;;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    rdi_value = ql.arch.regs.read(<span class="string">&quot;rdi&quot;</span>)</span><br><span class="line">    ql.mem.write(rdi_value, <span class="string">b&quot;QilingOS\x00&quot;</span>)</span><br><span class="line">    ql.mem.write(rdi_value+<span class="number">65</span>*<span class="number">3</span>, <span class="string">b&quot;ChallengeStart\x00&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__  == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    ql = Qiling([<span class="string">&quot;qilinglab-x86_64&quot;</span>], <span class="string">r&#x27;./qiling/examples/rootfs/x8664_linux&#x27;</span>, verbose=QL_VERBOSE.OFF)</span><br><span class="line"></span><br><span class="line">    ql.verbose = <span class="number">0</span></span><br><span class="line">    <span class="comment"># ql.debugger = &quot;gdb:0.0.0.0:12345&quot;</span></span><br><span class="line">    challenge1(ql) </span><br><span class="line">    challenge2(ql)</span><br><span class="line">    challenge3(ql)</span><br><span class="line">    challenge4(ql)</span><br><span class="line">    challenge5(ql)</span><br><span class="line">    challenge6(ql)</span><br><span class="line">    challenge7(ql)</span><br><span class="line">    challenge8(ql)</span><br><span class="line">    challenge9(ql)</span><br><span class="line">    challenge10(ql)</span><br><span class="line">    challenge11(ql)</span><br><span class="line">    ql.run()</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20240510230608132.png" alt="image-20240510230608132"></p>
+<h3 id="注意-amp-amp-报错"><a href="#注意-amp-amp-报错" class="headerlink" title="注意&amp;&amp;报错"></a>注意&amp;&amp;报错</h3><h4 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h4><p>这是做 <code>lab</code> 时的一些注意事项和报错解决 <del>踩过的坑</del>🥲</p>
+<ol>
+<li><p><code>ql.mem.write</code> 向内存中写入数据时，变量类型必须是 <code>bytes</code></p>
+</li>
+<li><p>在挑战4中使用了 <code>ql.mem.get_lib_base(ql.path)</code> 发生了报错，其原因是 <code>ql.path</code> 获取的路径为绝对路径，这样给 <code>ql.mem.get_lib_base</code> 函数会出问题。</p>
+<p>最终发现是在 <code>main</code> 函数中下面的代码，要写成 <code>qilinglab-x86_64</code> 这个路径才可以让 <code>ql.path</code> 获取相对路径</p>
+</li>
+</ol>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">Qiling([<span class="string">r&#x27;qilinglab-x86_64&#x27;</span>], <span class="string">r&#x27;/home/zikh/Desktop/qiling/examples/rootfs/x8664_linux&#x27;</span>, verbose=QL_VERBOSE.OFF)</span><br></pre></td></tr></table></figure>
+
+<p>从而使 <code> ql.mem.get_lib_base</code> 成功获得程序基地址</p>
+<ol start="3">
+<li>在 <code>qiling</code> 版本为 <code>1.4.6</code> （目前写下这篇文章的最新版是 <code>1.4.6</code>）中去调试 <code>x86</code> <code>x64</code> 架构的程序时会遇到只能调试一次的情况，就是 <code>si</code> 或者 <code>c</code> 只能走一次。这应该是最新版的 <code>bug</code> 。用 <code>pip uninstall qiling</code> 卸载当前版本的 <code>qiling</code> ，再用命令 <code>pip install qiling==1.4.5</code> 安装一个老版本的 <code>qiling</code> 就可以正常调试 <code>x86</code> 的程序了</li>
+</ol>
+<h4 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> qiling <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_INTERCEPT</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_VERBOSE</span><br><span class="line"><span class="keyword">from</span> qiling.os.mapper <span class="keyword">import</span> QlFsMappedObject</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__  == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    ql = Qiling([<span class="string">&quot;./test&quot;</span>], <span class="string">r&#x27;./qiling/examples/rootfs/mipsel-linux-gnu&#x27;</span>, verbose=QL_VERBOSE.OFF)</span><br><span class="line"></span><br><span class="line">    ql.verbose = <span class="number">0</span></span><br><span class="line">    ql.debugger = <span class="string">&quot;gdb:0.0.0.0:9999&quot;</span></span><br><span class="line"></span><br><span class="line">    ql.run()</span><br></pre></td></tr></table></figure>
+
+<p>这样的脚本会有下面的报错</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;debug.py&quot;, line 15, in &lt;module&gt;</span><br><span class="line">    ql.run()</span><br><span class="line">  File &quot;/home/zikh/.local/lib/python3.8/site-packages/qiling/core.py&quot;, line 599, in run</span><br><span class="line">    debugger.run()</span><br><span class="line">  File &quot;/home/zikh/.local/lib/python3.8/site-packages/qiling/debugger/gdb/gdb.py&quot;, line 774, in run</span><br><span class="line">    reply = handler(subcmd.decode(ENCODING))</span><br><span class="line">  File &quot;/home/zikh/.local/lib/python3.8/site-packages/qiling/debugger/gdb/gdb.py&quot;, line 503, in handle_q</span><br><span class="line">    return f&#x27;l&#123;self.ql.os.path.host_to_virtual_path(self.ql.path)&#125;&#x27;</span><br><span class="line">  File &quot;/home/zikh/.local/lib/python3.8/site-packages/qiling/os/path.py&quot;, line 278, in host_to_virtual_path</span><br><span class="line">    virtpath = self._cwd_anchor / resolved.relative_to(self._rootfs_path)</span><br><span class="line">  File &quot;/usr/lib/python3.8/pathlib.py&quot;, line 908, in relative_to</span><br><span class="line">    raise ValueError(&quot;&#123;!r&#125; does not start with &#123;!r&#125;&quot;</span><br><span class="line">ValueError: &#x27;/home/zikh/Desktop/test&#x27; does not start with &#x27;/home/zikh/Desktop/qiling/examples/rootfs/mipsel-linux-gnu&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>解决方法，将 <code>test</code> 文件拷贝到 <code>/home/zikh/Desktop/qiling/examples/rootfs/mipsel-linux-gnu/bin/test</code> 路径</p>
+<p>修改后的脚本应为</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> qiling <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_INTERCEPT</span><br><span class="line"><span class="keyword">from</span> qiling.const <span class="keyword">import</span> QL_VERBOSE</span><br><span class="line"><span class="keyword">from</span> qiling.os.mapper <span class="keyword">import</span> QlFsMappedObject</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__  == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    ql = Qiling([<span class="string">&quot;/home/zikh/Desktop/qiling/examples/rootfs/mipsel-linux-gnu/bin/test&quot;</span>], <span class="string">r&#x27;./qiling/examples/rootfs/mipsel-linux-gnu&#x27;</span>, verbose=QL_VERBOSE.OFF)</span><br><span class="line">    ql.verbose = <span class="number">0</span></span><br><span class="line">    ql.debugger = <span class="string">&quot;gdb:0.0.0.0:9999&quot;</span></span><br><span class="line">    ql.run()</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><p><a target="_blank" rel="noopener" href="https://zh-closure.github.io/2023/06/04/Qiling%E5%85%A5%E9%97%A8%E4%B8%8EQilingLab/">Qiling入门与QilingLab | Closure (zh-closure.github.io)</a></p>
+<p><a target="_blank" rel="noopener" href="https://docs.qiling.io/en/latest/hijack/">劫持 - 麒麟框架文档 — Hijack - Qiling Framework Documentation</a></p>
+<p>[<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-277412.htm">原创] Qiling框架分析实战：从 QilingLab 详解到 Qiling 源码分析-智能设备-看雪-安全社区|安全招聘|kanxue.com</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/freeking101/article/details/128522901">初探 qiling ( 麒麟 )：开源的二进制分析、高级代码模拟框架_qiling安装-CSDN博客</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/lab/" rel="tag"># lab</a>
+              <a href="/tags/Qiling/" rel="tag"># Qiling</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/0.html" rel="prev" title="">
+                  <i class="fa fa-chevron-left"></i> 
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
