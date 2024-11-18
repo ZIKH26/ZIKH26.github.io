@@ -224,7 +224,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2024-11-18 23:09:31 / 修改时间：23:11:37" itemprop="dateCreated datePublished" datetime="2024-11-18T23:09:31+08:00">2024-11-18</time>
+      <time title="创建时间：2024-11-18 23:09:31 / 修改时间：23:13:54" itemprop="dateCreated datePublished" datetime="2024-11-18T23:09:31+08:00">2024-11-18</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -250,7 +250,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>又是从之前文档里面扒出来的一个总结，再来水一篇博客。这篇应该写的非常早了，大概是 23 年 7 月写的，当时还在卷 glibc堆，对这个 <strong>obstack</strong> 的链子印象挺深的。</p>
+          <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>又是从之前文档里面扒出来的一个总结，再来水一篇博客。这篇应该写的非常早了，大概是 23 年 7 月写的，当时还在卷 glibc堆，对这个 <strong>obstack</strong> 的链子印象挺深的。</p>
 <p><code>house of obstack</code>  是目前网上较多的叫法，它由国外 <a target="_blank" rel="noopener" href="https://nasm.re/posts/babyfile/">repr</a> 提出，由于不确定作者给它起的名字到底是什么，姑且称它为 <code>house of obstack</code>。它与 <code>house of apple</code> 相似，主要是触发的调用链变了，但思想不变。相较于 <code>house of apple</code> 的优点是在 <code>glibc2.36</code> 依然可以使用并且布置起来更简单一些。</p>
           <!--noindex-->
             <div class="post-button">
