@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-bounce.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous"></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zikh26.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":"ture","trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言前几天在看雪上读了一篇关于 C++异常处理 的文章，写的通俗易懂，文章开始通过 demo 介绍了 try-catch 异常处理机制绕过 canary 检查。闲来无事也跟着 demo 做了一下，发现作者在原文中写到：  这里将返回地址填充成了 backdoor() 函数里 try 代码块里的地址，它是一个范围，经测试能够成功利用的是一个左开右不确定的区间（x）  看到这里我不禁疑惑，这种简单的利">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++异常处理部分源码分析&amp;&amp;问题探究">
+<meta property="og:url" content="https://zikh26.github.io/posts/f9d998fc.html">
+<meta property="og:site_name" content="ZIKH26&#39;s Blog">
+<meta property="og:description" content="前言前几天在看雪上读了一篇关于 C++异常处理 的文章，写的通俗易懂，文章开始通过 demo 介绍了 try-catch 异常处理机制绕过 canary 检查。闲来无事也跟着 demo 做了一下，发现作者在原文中写到：  这里将返回地址填充成了 backdoor() 函数里 try 代码块里的地址，它是一个范围，经测试能够成功利用的是一个左开右不确定的区间（x）  看到这里我不禁疑惑，这种简单的利">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221212224504.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221212329979.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221211125729.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/f444319343cd4d76.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/9de1d147182077b9.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/c2261b0c4fab4c5a.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/c596a07d5726dea4.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/9de1d147182077b9.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111230517427.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111231122844.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111231200125.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111222742873.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250116235734353.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250117005351063.png">
+<meta property="og:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250117010809051.png">
+<meta property="article:published_time" content="2025-01-20T07:04:09.579Z">
+<meta property="article:modified_time" content="2025-01-20T08:42:15.608Z">
+<meta property="article:author" content="ZIKH26">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="源码调试&amp;&amp;分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221212224504.png">
+
+
+<link rel="canonical" href="https://zikh26.github.io/posts/f9d998fc.html">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zikh26.github.io/posts/f9d998fc.html","path":"posts/f9d998fc.html","title":"C++异常处理部分源码分析&&问题探究"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>C++异常处理部分源码分析&&问题探究 | ZIKH26's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">ZIKH26's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-友链"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>友链</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E9%97%B4%E9%97%AE%E9%A2%98%E6%8E%A2%E7%A9%B6"><span class="nav-number">2.</span> <span class="nav-text">区间问题探究</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A2%E7%B4%A2%E5%8C%BA%E9%97%B4"><span class="nav-number">2.1.</span> <span class="nav-text">探索区间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%84%8F%E5%A4%96%E4%BA%A7%E7%94%9F%E6%96%B0%E7%9A%84%E5%8C%BA%E9%97%B4"><span class="nav-number">2.2.</span> <span class="nav-text">意外产生新的区间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E7%9A%84%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">初步分析的总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%A0%88%E5%B1%95%E5%BC%80%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">C++异常处理栈展开源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Phase-1"><span class="nav-number">3.1.</span> <span class="nav-text">Phase 1</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#uw-update-context%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.1.</span> <span class="nav-text">uw_update_context函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#uw-frame-state-for%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.2.</span> <span class="nav-text">uw_frame_state_for函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%A3%E6%9E%90-gcc-except-table%E4%B8%AD%E6%95%B0%E6%8D%AE"><span class="nav-number">3.1.3.</span> <span class="nav-text">解析.gcc_except_table中数据</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Phase-2"><span class="nav-number">3.2.</span> <span class="nav-text">Phase 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%B6%E9%9B%B6%E6%95%A3%E6%95%A3%E7%9A%84%E8%A1%A5%E5%85%85"><span class="nav-number">3.3.</span> <span class="nav-text">零零散散的补充</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#LSDA-CIE-FDE%E5%82%BB%E5%82%BB%E5%88%86%E4%B8%8D%E6%B8%85"><span class="nav-number">3.3.1.</span> <span class="nav-text">LSDA CIE FDE傻傻分不清</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#current%E5%92%8Cfs%E7%BB%93%E6%9E%84%E4%BD%93%E5%88%86%E6%9E%90%E5%8F%8A%E5%81%8F%E7%A7%BB%E9%87%8F%E8%A1%A8%E6%A0%BC"><span class="nav-number">3.3.2.</span> <span class="nav-text">current和fs结构体分析及偏移量表格</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BE%E5%A3%B0"><span class="nav-number">4.</span> <span class="nav-text">尾声</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="nav-number">5.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZIKH26"
+      src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+  <p class="site-author-name" itemprop="name">ZIKH26</p>
+  <div class="site-description" itemprop="description">人生如戏</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">118</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">117</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zikh26.github.io/posts/f9d998fc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/202307011626843.jpg">
+      <meta itemprop="name" content="ZIKH26">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZIKH26's Blog">
+      <meta itemprop="description" content="人生如戏">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="C++异常处理部分源码分析&&问题探究 | ZIKH26's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++异常处理部分源码分析&&问题探究
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-01-20 15:04:09 / 修改时间：16:42:15" itemprop="dateCreated datePublished" datetime="2025-01-20T15:04:09+08:00">2025-01-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/" itemprop="url" rel="index"><span itemprop="name">学习总结</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E6%8E%A2%E7%A9%B6/" itemprop="url" rel="index"><span itemprop="name">探究</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/%E6%8E%A2%E7%A9%B6/%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95-%E5%88%86%E6%9E%90/" itemprop="url" rel="index"><span itemprop="name">源码调试&&分析</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>前几天在看雪上读了一篇关于 <strong>C++异常处理</strong> 的<a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-284745.htm#msg_header_h3_7">文章</a>，写的通俗易懂，文章开始通过 demo 介绍了 try-catch 异常处理机制绕过 canary 检查。闲来无事也跟着 demo 做了一下，发现作者在原文中写到：</p>
+<blockquote>
+<p>这里将返回地址填充成了 <code>backdoor()</code> 函数里 <strong>try 代码块</strong>里的地址，它是一个范围，经测试能够成功利用的是一个<strong>左开</strong>右不确定的区间（x）</p>
+</blockquote>
+<p>看到这里我不禁疑惑，这种简单的利用中也会存在 <del>玄学</del> 无法确定的东西吗？我对这个左开右不确定区间感到好奇，打算去研究一下，这个成功利用的区间到底是如何来的。</p>
+<p>本文从 <code>gcc</code> 源码入手，去探究区间问题。随后还分析了 <code>try-catch</code> 异常处理机制中源代码是如何完成 <strong>栈展开(Stack Unwinding)</strong> 的<strong>（本文为了避免出现过多非关键代码😶‍🌫️，因此删减了一些代码。但阅读中最好同时参考 gcc 源码，否则理解上可能有一些障碍）</strong>。</p>
+<span id="more"></span>
+
+<h2 id="区间问题探究"><a href="#区间问题探究" class="headerlink" title="区间问题探究"></a>区间问题探究</h2><p>本文分析的 <code>gcc</code> 源码版本为 <strong>11.4.0</strong> ，下载命令 <code>wget https://ftp.gnu.org/gnu/gcc/gcc-11.4.0/gcc-11.4.0.tar.xz</code></p>
+<p>本文仅仅是在 <strong>ve1kcon</strong> 师傅写的 <a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-284745.htm#msg_header_h3_3">分享一次 C++ PWN 出题经历——深入研究异常处理机制</a> 文章中进行了研究，所以 demo 也依然使用的是文章里开始的 demo。（避免调试的时候进函数的延迟绑定，可以再加编译命令 <code>-z now</code>），编译的环境是 <code>Ubuntu22.04</code>  <strong>GCC</strong> 版本<code>11.4.0</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// exception.cpp</span></span><br><span class="line"><span class="comment">// g++ exception.cpp -o exc -no-pie -fPIC</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="type">void</span> <span class="title function_">backdoor</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    try</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;We have never called this backdoor!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    catch (<span class="type">const</span> <span class="type">char</span> *s)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[!] Backdoor has catched the exception: %s\n&quot;</span>, s);</span><br><span class="line">        system(<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">x</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">public:</span><br><span class="line">    <span class="type">char</span> buf[<span class="number">0x10</span>];</span><br><span class="line">    x(<span class="type">void</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// printf(&quot;x:x() called!\n&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">    ~x(<span class="type">void</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// printf(&quot;x:~x() called!\n&quot;);</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="type">void</span> <span class="title function_">input</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    x tmp;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[!] enter your input:&quot;</span>);</span><br><span class="line">    fflush(<span class="built_in">stdout</span>);</span><br><span class="line">    <span class="type">int</span> count = <span class="number">0x100</span>;</span><br><span class="line">    <span class="type">size_t</span> len = read(<span class="number">0</span>, tmp.buf, count);</span><br><span class="line">    <span class="keyword">if</span> (len &gt; <span class="number">0x10</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        throw <span class="string">&quot;Buffer overflow.&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[+] input() return.\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    try</span><br><span class="line">    &#123;</span><br><span class="line">        input();</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;--------------------------------------\n&quot;</span>);</span><br><span class="line">        throw <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    catch (<span class="type">int</span> x)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[-] Int: %d\n&quot;</span>, x);</span><br><span class="line">    &#125;</span><br><span class="line">    catch (<span class="type">const</span> <span class="type">char</span> *s)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[-] String: %s\n&quot;</span>, s);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[+] main() return.\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对于ve1kcon师傅提到的 <strong>第二种利用方式</strong> ，我编写了 EXP如下。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&quot;./demo&quot;</span>)</span><br><span class="line">payload = <span class="string">b&quot;a&quot;</span>*<span class="number">0x30</span>+p64(<span class="number">0x404070</span>)+p64(<span class="number">0x401297</span>)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+<p>显然 <code>0x401297</code> 是劫持的返回地址，而 <code>0x404070</code> 填充的是 <code>rbp</code>（任意能够解引用的指针都可以）。通过不断修改劫持的返回地址，能够发现能够正常执行后门函数的地址区间为  [0x401293-0x401297]。除此之外，填充其它地址都会报错 <code>terminate called after throwing an instance of &#39;char const*&#39;</code>。即使在这个返回地址的位置写入一个非法内存地址，程序也并不会因此发生段错误。尽管现在通过测试得到了区间，但为了搞明白这个区间具体是怎么得到的，下面来分析源码。</p>
+<h3 id="探索区间"><a href="#探索区间" class="headerlink" title="探索区间"></a>探索区间</h3><p>具体针对区间做检查的函数是 <code>__gxx_personality_v0</code> ，它位于 <code>libstdc++-v3/libsupc++/eh_personality.cc</code> 文件。下面删减了大量代码，后面讨论栈展开过程时会再具体分析。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PERSONALITY_FUNCTION	__gxx_personality_v0</span></span><br><span class="line">PERSONALITY_FUNCTION (<span class="type">int</span> version,</span><br><span class="line">		      _Unwind_Action actions,</span><br><span class="line">		      _Unwind_Exception_Class exception_class,</span><br><span class="line">		      <span class="keyword">struct</span> _Unwind_Exception *ue_header,</span><br><span class="line">		      <span class="keyword">struct</span> _Unwind_Context *context)</span><br><span class="line"></span><br><span class="line">  lsda_header_info info;</span><br><span class="line">  <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *language_specific_data;</span><br><span class="line">  <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *action_record;</span><br><span class="line">  <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *p;</span><br><span class="line">  _Unwind_Ptr landing_pad, ip;</span><br><span class="line">  <span class="type">int</span> handler_switch_value;</span><br><span class="line">  <span class="type">void</span>* thrown_ptr = <span class="number">0</span>;</span><br><span class="line">  <span class="type">bool</span> foreign_exception;</span><br><span class="line">  <span class="type">int</span> ip_before_insn = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line"></span><br><span class="line">  p = parse_lsda_header (context, language_specific_data, &amp;info);</span><br><span class="line">  info.ttype_base = base_of_encoded_value (info.ttype_encoding, context);</span><br><span class="line"></span><br><span class="line">  ip = _Unwind_GetIPInfo (context, &amp;ip_before_insn);</span><br><span class="line">  <span class="keyword">if</span> (! ip_before_insn)</span><br><span class="line">    --ip;</span><br><span class="line">  landing_pad = <span class="number">0</span>;</span><br><span class="line">  action_record = <span class="number">0</span>;</span><br><span class="line">  handler_switch_value = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (p &lt; info.action_table)</span><br><span class="line">    &#123;</span><br><span class="line">      _Unwind_Ptr cs_start, cs_len, cs_lp;</span><br><span class="line">      <span class="type">_uleb128_t</span> cs_action;</span><br><span class="line"></span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_start);</span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_len);</span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_lp);</span><br><span class="line">      p = read_uleb128 (p, &amp;cs_action);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (ip &lt; info.Start + cs_start)</span><br><span class="line">	p = info.action_table;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (ip &lt; info.Start + cs_start + cs_len)</span><br><span class="line">	&#123;</span><br><span class="line">	  <span class="keyword">if</span> (cs_lp)</span><br><span class="line">	    landing_pad = info.LPStart + cs_lp;</span><br><span class="line">	  <span class="keyword">if</span> (cs_action)</span><br><span class="line">	    action_record = info.action_table + cs_action - <span class="number">1</span>;</span><br><span class="line">	  <span class="keyword">goto</span> found_something;</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>_Unwind_GetIPInfo</code> 函数根据 <code>context</code>（context和fs结构体介绍在<a href="####current%E5%92%8Cfs%E7%BB%93%E6%9E%84%E4%BD%93%E5%88%86%E6%9E%90%E5%8F%8A%E5%81%8F%E7%A7%BB%E9%87%8F%E8%A1%A8%E6%A0%BC">文末</a>）获取 <code>ip</code> 和 <code>ip_before_insn</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">inline</span> _Unwind_Ptr</span><br><span class="line">_Unwind_GetIPInfo (<span class="keyword">struct</span> _Unwind_Context *context, <span class="type">int</span> *ip_before_insn)</span><br><span class="line">&#123;</span><br><span class="line">  *ip_before_insn = _Unwind_IsSignalFrame (context);</span><br><span class="line">  <span class="keyword">return</span> (_Unwind_Ptr) context-&gt;ra;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>_Unwind_GetIPInfo</code> 函数通过 <code>context-&gt;ra</code> 返回 <code>ip</code>（也就是当前函数的返回地址），以上面 <code>demo</code> 和 <code>exp</code> 为例，此处的 <code>ip</code> 应该是 <code>0x401297</code>。而 <code>ip_before_insn</code> 表示当前帧（context）是否为信号帧，如果不为信号帧， <code>ip_before_insn</code> 的值就为 <code>0</code>。这里并不是信号帧，通过调试也能看出。（正常情况下这里调试时没有函数符号的，需要重新编译一份有符号信息的 <code>libgcc_s.so.1</code> 库。当然了，没有符号也可以参考 so 库的二进制文件和源码来定位函数）</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221212224504.png" alt="image-20241221212224504" style="zoom:50%;" />
+
+
+
+<p>大部分情况下 <code>ip_before_insn</code> 都为 <code>0</code> ，这样 <code>ip</code> 就会减一。但为什么要 <code>--ip</code>？如果一个指令的长度不为一字节，即使回退一字节也回不到上一条指令的起始地址。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (! ip_before_insn)</span><br><span class="line">  --ip;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>为了更好理解为什么要 <code>--ip</code>，我们来看下面的例子，这里的 <code>try</code> 范围是 <strong>[0x401305,0x401314] <strong>，其中在 <code>0x401305</code> 处调用了 <code>func1</code>（其中的调用链为 <code>main-&gt;func1-&gt;func2-&gt;func3</code>，在 <code>func3</code> 中有 <code>throw</code>，其源码在 <a href="##C++%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%A0%88%E5%B1%95%E5%BC%80%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90">下文</a>，这里不需要看源码）。当栈展开执行到 <code>func1</code> 的返回地址 <code>0x40130A</code> 处，如果没有 <code>--ip</code> 则会检测 <code>0x40130A</code> 是否位于合法区间。但此时地址 <code>0x40130A</code> 已经是抛出异常指令代码（异常是在 <code>func1</code> 函数中抛出的）的下一条指令了，它并不是实际抛出异常的指令，</strong>尽管这里抛出异常的下一条指令也位于 <code>try</code> 的范围中</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:0000000000401305 ;   try &#123;</span><br><span class="line">.text:0000000000401305                 call    _Z5func1v       ; func1(void)</span><br><span class="line">.text:000000000040130A ; ---------------------------------------------------------------------------</span><br><span class="line">.text:000000000040130A                 lea     rax, aItIsFunc1After ; &quot;it is func1 after&quot;</span><br><span class="line">.text:0000000000401311                 mov     rdi, rax        ; s</span><br><span class="line">.text:0000000000401314                 call    _puts</span><br><span class="line">.text:0000000000401314 ;   &#125; // starts at 401305</span><br></pre></td></tr></table></figure>
+
+
+
+<p>我们来看一个更极端的情况，在下面的第一个函数 <code>func3</code> 中 <code>call ___cxa_throw</code> 指令会抛出异常，它的地址是 <code>0x4012D3</code>。可这个地址恰好是 <code>func3</code> 函数的最后一条指令，在执行 <code>call ___cxa_throw</code> 时压栈会将下一条指令 <code>endbr64</code>（该指令是 <code>func2</code> 函数的），也就是 <code>___cxa_throw</code> 函数的返回地址为 <code>0x4012D8</code>。若 <code>func3</code> 函数中有 <code>try</code>，无论如何位于 <code>func2</code> 里的 <code>0x4012D8</code> 地址也不会出现在 <code>try</code> 的区域 。可谁能保证抛出异常的指令不会是当前函数的最后一条指令呢，<strong>因此将返回地址(IP)减一就是最好的解决方案</strong> 。抛出异常指令的返回地址减一，一定是落在了抛出异常指令的范围内。异常展开表（LSDA、call-site表）是基于指令地址范围匹配的，只需确保IP重新落回那个指令的区间内，就能正确匹配到相应的call-site entry。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">.text:00000000004012A5 ; __unwind &#123;</span><br><span class="line">......</span><br><span class="line">.text:00000000004012D0                 mov     rdi, rax        ; void *</span><br><span class="line">.text:00000000004012D3                 call    ___cxa_throw</span><br><span class="line">.text:00000000004012D3 ; &#125; // starts at 4012A5</span><br><span class="line">.text:00000000004012D3 _Z5func3v       endp</span><br><span class="line">.text:00000000004012D3</span><br><span class="line">.text:00000000004012D8 ; void __noreturn func2(void)</span><br><span class="line">.text:00000000004012D8                 endbr64</span><br><span class="line">.text:00000000004012DC                 push    rbp</span><br><span class="line">.text:00000000004012DD                 mov     rbp, rsp</span><br><span class="line">.text:00000000004012E0                 call    _Z5func3v       ; func3(void)</span><br><span class="line">.text:00000000004012E0 _Z5func2v       endp</span><br></pre></td></tr></table></figure>
+
+
+
+<p>简单总结一下 <code>--ip</code> 的问题，我觉得异常处理需要检查的是抛出异常的指令，而 <code>ip = _Unwind_GetIPInfo (context, &amp;ip_before_insn);</code> 获取的是抛出异常的下一条指令（其返回地址），为了检测区间一定正确，必须减去一个字节使得 <code>IP</code> 仍然属于抛出异常的那条指令范围。</p>
+<p>下面来到了区间检查的代码处，这个 <code>p</code> 指针是 <code>parse_lsda_header</code> 函数的返回值，其指向了解析 <code>LSDA</code> 头部信息后的剩余数据指针（也就是<code>Call Site Table</code>）。因此 <code>read_encoded_value (0, info.call_site_encoding, p, &amp;cs_start)</code> 就是从 <code>Call Site Table</code> 里面读取 <code>cs_start</code>，另外的 <code>cs_len</code>、<code>cs_lp</code> 同理。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">while</span> (p &lt; info.action_table)</span><br><span class="line">    &#123;</span><br><span class="line">      _Unwind_Ptr cs_start, cs_len, cs_lp;</span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_start);</span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_len);</span><br><span class="line">      p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_lp);</span><br><span class="line">      <span class="keyword">if</span> (ip &lt; info.Start + cs_start)</span><br><span class="line">	p = info.action_table;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (ip &lt; info.Start + cs_start + cs_len)</span><br><span class="line">	&#123;</span><br><span class="line">......</span><br><span class="line">	  <span class="keyword">goto</span> found_something;</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>但需要注意的是，在调试的时看不到 <code>read_encoded_value</code> 函数。因为使用了 <code>inline</code> 关键词修饰，只能看到展开的 <code>read_encoded_value_with_base</code> 和 <code>base_of_encoded_value</code> 函数（无符号）。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *</span><br><span class="line"><span class="title function_">read_encoded_value</span> <span class="params">(<span class="keyword">struct</span> _Unwind_Context *context, <span class="type">unsigned</span> <span class="type">char</span> encoding,</span></span><br><span class="line"><span class="params">		    <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *p, _Unwind_Ptr *val)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> read_encoded_value_with_base (encoding,</span><br><span class="line">		base_of_encoded_value (encoding, context),</span><br><span class="line">		p, val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结合库文件 <code>libstdc++</code> 配合参数特征能分辨出来下图中的 <code>0x7ffff7cad780</code> 是 <code>base_of_encoded_value</code> ，而 <code>0x7ffff7cad4e0</code> 则是 <code>read_encoded_value_with_base</code> 。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221212329979.png" alt="image-20241221212329979" style="zoom:50%;" />
+
+
+
+<p>为了避免图片太多，这里直接给出三次 <code>read_encoded_value</code> 函数执行后的调试结果。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>cs_start</strong></td>
+<td>try的起始地址距离当前函数的偏移</td>
+<td>0x1c</td>
+</tr>
+<tr>
+<td><strong>cs_len</strong></td>
+<td>try的范围</td>
+<td>0x05</td>
+</tr>
+<tr>
+<td><strong>cs_lp</strong></td>
+<td>catch的起始地址距离当前函数的偏移</td>
+<td>0x23</td>
+</tr>
+</tbody></table>
+<p>那么确定 <code>IP</code> 的具体范围，只需要再获得 <code>info.Start</code> 即可。阅读源码得知 <code>info.Start</code> 就是 <code>context-&gt;bases.func</code>（含义是当前帧的函数起始地址）。此时因为替换了原本的返回地址为 <code>backdoor</code> 地址，导致栈展开保存上下文信息时的返回地址也更新为了 <code>backdoor</code> ，所以当前帧的函数起始地址就成了 <code>0x401276(backdoor)</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20241221211125729.png" alt="image-20241221211125729"></p>
+<p>再来看下面的检查，带入上面得到的数据，实际上就是 <code> info.Start + cs_start&lt;= IP &lt; info.Start + cs_start + cs_len</code>。 <code>info.Start + cs_start</code> 求解的是当前函数 <code>try</code> 的起始地址， <code>cs_len</code> 则是 <code>try</code> 区间的实际长度。所以正常来说检查的抛出异常代码的返回地址范围就是 <code>try</code> 的区间，即 <code>[0x401292,0x401297)</code>， 但因为存在 <code>--ip</code> 所以变成了(0x401292,0x401297] 。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">      <span class="keyword">if</span> (ip &lt; info.Start + cs_start)</span><br><span class="line">	p = info.action_table;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (ip &lt; info.Start + cs_start + cs_len)</span><br><span class="line">	&#123;</span><br><span class="line">......</span><br><span class="line">	  <span class="keyword">goto</span> found_something;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="意外产生新的区间"><a href="#意外产生新的区间" class="headerlink" title="意外产生新的区间"></a>意外产生新的区间</h3><p>上述获取 <code>Call Site Table</code> 中数据时，除了调试可以看到之外，还可以使用命令 <code>readelf -x .gcc_except_table  ./demo</code>，能够获取 <code>.gcc_except_table</code> 节里面的数据，<code>LSDA</code> 就位于这个节中。<code>LSDA Header</code> 截止于 <code>0x4022b0</code>。因此 <code>read_encoded_value</code> 读取的 <code>cs_start</code> 、<code>cs_len</code> 、<code>cs_lp</code> 也就是下面的 <code>1c</code> <code>05</code> <code>23</code>，这一点在运行时就已经确定。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">zikh@Pwner-machine:~/Desktop/tmp$ readelf -x .gcc_except_table  ./demo</span><br><span class="line">Hex dump of section &#x27;.gcc_except_table&#x27;:</span><br><span class="line">  0x004022ac ff9b1901 111c0523 01300500 00571472 .......#.0...W.r</span><br><span class="line">  0x004022bc 00840105 00000100 4c1d0000 ffff010a ........L.......</span><br><span class="line">  0x004022cc 377ace01 00e70105 00000000 ff9b2901 7z............).</span><br><span class="line">  0x004022dc 190d3b61 03522700 009a0105 d70100c8 ..;a.R&#x27;.........</span><br><span class="line">  0x004022ec 0105ee01 00e9011c 00000200 017d0000 .............&#125;..</span><br><span class="line">  0x004022fc 141d0000 181d0000                   ........</span><br></pre></td></tr></table></figure>
+
+<p>值得一提的是，如果第一次针对 <code>IP</code> 的区间检查没有通过，<code>while</code> 循环会再来一轮。那么除去一个字节的 <code>cs_action</code>，下一轮的 <code>cs_start</code> 、<code>cs_len</code> 、<code>cs_lp</code> 分别为 <code>30</code> <code>05</code> <code>00</code>。可以发现在 <code> info.Start</code> 没有改变的情况下，此时产生了一个新的区间，那如果劫持返回地址满足这个区间能否跳转？</p>
+<p>通过分析源代码是不行的，因为 <code>cs_lp</code> 取到的是 <code>0x0</code>，导致 <code>landing_pad</code> 是 <code>0</code>，触发了代码 <code> if (found_type == found_nothing) CONTINUE_UNWINDING;</code> 跳过了本次 <code>__gxx_personality_v0</code> 表示什么都没有搜索到。之后在 <code>_Unwind_RaiseException</code> 函数中继续更新 <code>context</code> 发现已经到了栈的最外层了依然没有找到 <code>handler</code> ，该函数返回并触发最后的 <code>std::terminate ();</code>。</p>
+<h3 id="初步分析的总结"><a href="#初步分析的总结" class="headerlink" title="初步分析的总结"></a>初步分析的总结</h3><p>最终再说回 C++异常处理绕过 <code>canary</code>，通过溢出的手段篡改了正常的函数返回地址。但因为 <code>throw</code> 抛出异常后，剩下的指令都不会再执行了，包括检查 <code>canary</code> 的代码，同样也不会通过 <code>ret</code> 的方式劫持到 <code>backdoor</code> 中。但是因为抛出异常后，会根据 <strong>CFI</strong> 和 <strong>FDE</strong> 进行栈展开。在这期间程序误把填充的 <code>backdoor</code> 地址当成栈展开的一个函数结点，并且 <code>__gxx_personality_v0</code> 还在这个函数结点中发现了十分合适的 <code>handler</code>，经过返回地址区间检查无误后，将执行流以及抛出异常时的上下文状态一起传送至了 <code>backdoor</code> 的 <code>catch</code> 部分。当然，上面举例的 <code>demo</code> 足够特殊，<code>catch</code> 出来正好就是个 <code>system(&quot;/bin/sh&quot;)</code>，否则这才是一个漏洞利用的开始😭。</p>
+<p>总结 <strong>ve1kcon</strong> 师傅提到的第二种利用方式。首先可以控制栈里存放正常的函数返回地址，其次要跳转到的代码位置要位于 <code>try</code> 区间（设 <code>try</code> 起始地址为 <code>X</code>，那么代码地址必须位于 <code>(x,end(x)]</code>），最关键的是只能跳转到 <code>catch</code> 的代码且 <code>catch</code> 的类型还需要一致。而这仅仅是能劫持程序的执行流，并不意味着可以稳定后续控制。</p>
+<h2 id="C-异常处理栈展开源码分析"><a href="#C-异常处理栈展开源码分析" class="headerlink" title="C++异常处理栈展开源码分析"></a>C++异常处理栈展开源码分析</h2><p>当上面的区间问题分析过之后，对于为什么溢出劫持掉返回地址就能完成指定代码跳转这个问题并没有探究。正常溢出利用是通过衔接 <code>ret</code> 指令（ <code>pop rip</code> 弹出栈顶的指针作为下一条指令执行）控制执行流，而在上面总结中也简单提到了异常处理中篡改返回地址改变执行流是因为栈展开时到 <code>backdoor</code> 里也匹配到了一个 <code>catch</code>。</p>
+<p>但我觉得这些还不够，程序到底是根据什么信息进行的栈展开？ 为什么将返回地址改成 <code>backdoor+33</code> ，<code>info.Start</code> 就变成了 <code>backdoor</code>？<code>__gxx_personality_v0</code> 函数在异常处理中起到了什么作用？在抛出异常后，栈展开具体是怎么做的？</p>
+<p>为了搞清楚这些，我对 <code>__cxa_throw</code> 函数源码进行了分析（对一些源码进行了删减，如有需要请自行查看完整源码）。为了观察多次的栈展开，下面的演示将使用新的程序 <code>unwind</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//g++ unwind.cpp  -o unwind -no-pie -fPIC -z now -g</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="type">void</span> <span class="title function_">backdoor</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    try</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;We have never called this backdoor!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    catch (<span class="type">const</span> <span class="type">char</span> *s)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;[!] Backdoor has catched the exception: %s\n&quot;</span>, s);</span><br><span class="line">        system(<span class="string">&quot;/bin/sh&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">func3</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	throw <span class="string">&quot;emmmmm&quot;</span>;</span><br><span class="line">	<span class="built_in">puts</span>(<span class="string">&quot;it is throw after&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">func2</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	func3();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">func1</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	func2();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	try</span><br><span class="line">	&#123;</span><br><span class="line">		func1();</span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">&quot;it is func1 after&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	catch(<span class="type">const</span> <span class="type">char</span> * str)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">puts</span>(<span class="string">&quot;it is catch&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <code>__cxa_throw</code> 函数（定义在 <code>libstdc++-v3/libsupc++/eh_throw.cc</code>）开始进行了初始化异常处理的元数据，并准备好异常对象用于栈展开和异常捕获过程。<code>_Unwind_RaiseException</code> 函数<strong>进行了具体栈展开操作</strong>，如果在此期间遇到了某些错误，则会调用 <code>std::terminate</code> 函数终止程序。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> <span class="type">void</span></span><br><span class="line">__cxxabiv1::__cxa_throw (<span class="type">void</span> *obj, <span class="built_in">std</span>::type_info *tinfo,</span><br><span class="line">			 <span class="type">void</span> (_GLIBCXX_CDTOR_CALLABI *dest) (<span class="type">void</span> *))</span><br><span class="line">&#123;</span><br><span class="line">  PROBE2 (throw, obj, tinfo);</span><br><span class="line"></span><br><span class="line">  __cxa_eh_globals *globals = __cxa_get_globals ();</span><br><span class="line">  globals-&gt;uncaughtExceptions += <span class="number">1</span>;</span><br><span class="line">  <span class="comment">// Definitely a primary.</span></span><br><span class="line">  __cxa_refcounted_exception *header =</span><br><span class="line">    __cxa_init_primary_exception(obj, tinfo, dest);</span><br><span class="line">  header-&gt;referenceCount = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">......</span><br><span class="line">  _Unwind_RaiseException (&amp;header-&gt;exc.unwindHeader);</span><br><span class="line">  <span class="comment">// Some sort of unwinding error.  Note that terminate is a handler.</span></span><br><span class="line">  __cxa_begin_catch (&amp;header-&gt;exc.unwindHeader);</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">terminate</span> ();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>_Unwind_RaiseException</code> 函数进行栈展开的策略分为了<strong>搜索阶段 (Phase 1: Search</strong>) 和 <strong>清理阶段(Phase 2: Clean)</strong> 。</p>
+<p>搜索阶段：从抛出异常的函数开始检测当前函数（本文提到的当前函数表示cur_context所描述的函数）是否存在 <code>catch</code> 或者 <code>cleanup</code>（当前函数的收尾工作，比如当前函数中某实例的析构函数需要执行）。如果 <code>catch</code> 和 <code>cleanup</code> 都没有，就会通过 <code>uw_frame_state_for</code> 和 <code>uw_update_context</code> 函数回退到上一级函数（cur_context所描述的函数的父函数），将上一级函数上下文信息更新到 <code>cur_context</code> 中继续判断，直至遇到了 <code>catch</code> 或者 <code>cleanup</code> ，调用 <code> personality routine</code>（在本文中指的是 <code>__gxx_personality_v0</code> 函数）判断具体遇到的是哪种情况。如果遇到了 <code>cleanup</code> 不会处理，如果遇到的是 <code>catch</code> 并通过检查后，<code>__gxx_personality_v0</code> 返回 <code>_URC_HANDLER_FOUND</code> 表示已经在这一层找到了 <code>handler</code>。倘若经过多次栈回退，已经到了最高层函数依然没有找到 <code>catch</code> 那么 <code>_Unwind_RaiseException</code> 则 <code>_Unwind_RaiseException</code> 函数返回 <code>_URC_END_OF_STACK</code>。</p>
+<p>清理阶段：<code>_Unwind_RaiseException_Phase2</code> 基于 <code>Phase 1</code> 找到的 <code>handler</code> 信息，从 <code>this_context</code>（初始位置）开始真正展开栈，把各层次对象析构掉（如果有<code>cleanup</code> ），并在目标 <code>handler</code> 处停止。如果在这个过程中出现问题，它会返回相应的错误码。正常情况下如果一切顺利返回<code>_URC_INSTALL_CONTEXT</code>，表示已找到 <code>handler</code> ，需要 <code>uw_install_context</code> 来切换程序上下文和实际执行流到 <code>handler</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">_Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE</span><br><span class="line">_Unwind_RaiseException(<span class="keyword">struct</span> _Unwind_Exception *exc)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">Unwind_Context</span> <span class="title">this_context</span>, <span class="title">cur_context</span>;</span></span><br><span class="line">  _Unwind_Reason_Code code;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> frames;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Set up this_context to describe the current stack frame.  */</span></span><br><span class="line">  uw_init_context (&amp;this_context);</span><br><span class="line">  cur_context = this_context;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Phase 1: Search.  Unwind the stack, calling the personality routine</span></span><br><span class="line"><span class="comment">     with the _UA_SEARCH_PHASE flag set.  Do not modify the stack yet.  */</span></span><br><span class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      _Unwind_FrameState fs;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Set up fs to describe the FDE for the caller of cur_context.  The</span></span><br><span class="line"><span class="comment">	 first time through the loop, that means __cxa_throw.  */</span></span><br><span class="line">      code = uw_frame_state_for (&amp;cur_context, &amp;fs);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (code == _URC_END_OF_STACK)</span><br><span class="line">	<span class="comment">/* Hit end of stack with no handler found.  */</span></span><br><span class="line">	<span class="keyword">return</span> _URC_END_OF_STACK;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (code != _URC_NO_REASON)</span><br><span class="line">	<span class="comment">/* Some error encountered.  Usually the unwinder doesn&#x27;t</span></span><br><span class="line"><span class="comment">	   diagnose these and merely crashes.  */</span></span><br><span class="line">	<span class="keyword">return</span> _URC_FATAL_PHASE1_ERROR;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Unwind successful.  Run the personality routine, if any.  */</span></span><br><span class="line">      <span class="keyword">if</span> (fs.personality)</span><br><span class="line">	&#123;</span><br><span class="line">	  code = (*fs.personality) (<span class="number">1</span>, _UA_SEARCH_PHASE, exc-&gt;exception_class,</span><br><span class="line">				    exc, &amp;cur_context);</span><br><span class="line">	  <span class="keyword">if</span> (code == _URC_HANDLER_FOUND)</span><br><span class="line">	    <span class="keyword">break</span>;</span><br><span class="line">	  <span class="keyword">else</span> <span class="keyword">if</span> (code != _URC_CONTINUE_UNWIND)</span><br><span class="line">	    <span class="keyword">return</span> _URC_FATAL_PHASE1_ERROR;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Update cur_context to describe the same frame as fs.  */</span></span><br><span class="line">      uw_update_context (&amp;cur_context, &amp;fs);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Indicate to _Unwind_Resume and associated subroutines that this</span></span><br><span class="line"><span class="comment">     is not a forced unwind.  Further, note where we found a handler.  */</span></span><br><span class="line">  exc-&gt;private_1 = <span class="number">0</span>;</span><br><span class="line">  exc-&gt;private_2 = uw_identify_context (&amp;cur_context);</span><br><span class="line"></span><br><span class="line">  cur_context = this_context;</span><br><span class="line">  code = _Unwind_RaiseException_Phase2 (exc, &amp;cur_context, &amp;frames);</span><br><span class="line">  <span class="keyword">if</span> (code != _URC_INSTALL_CONTEXT)</span><br><span class="line">    <span class="keyword">return</span> code;</span><br><span class="line"></span><br><span class="line">  uw_install_context (&amp;this_context, &amp;cur_context, frames);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到上面 <code>_Unwind_RaiseException</code> 做了很多事情，为了方便具体是如何完成搜索和清理过程的，我们将代码拆开来看。</p>
+<h3 id="Phase-1"><a href="#Phase-1" class="headerlink" title="Phase 1"></a>Phase 1</h3><p>对于程序而言，运行到任一时刻也只有一套寄存器（这里称之为硬件寄存器）。之所以栈回溯能完成是因为模拟出了一套存储上下文信息的结构 <code>cur_context</code>。现在的调用链是 <code>main-&gt;func1-&gt;func2-&gt;func3</code> ，在我们提到栈展开回溯函数调用 <code>func3-&gt;func2-&gt;func1-&gt;main</code> 的时候，自始至终改变的都是 <code>cur_context</code> 这样一套结构体。</p>
+<p>栈回退的本质，找到当前函数（<code>cur_context</code> 在描述哪个帧，哪个就是当前函数）的返回地址。栈回退以 <code>uw_update_context</code> 和 <code>uw_frame_state_for</code> 函数共同完成。首先用 <code>uw_frame_state_for</code> 解析 <code>FDE</code> 和 <code>CIE</code> 生成 <code>fs</code> 结构体，接着调用 <code>uw_update_context</code> 函数，借助 <code>fs</code> 结构体和原 <code>current</code> 中的寄存器值更新出新的 <code>CFA</code>，再用 <code>CFA</code> 和 <code>fs</code> 更新出新的 <code>current</code> 中的寄存器值，包括函数返回地址。当遇到一个函数中存在 <code>cleanup</code> 或者 <code>handler</code> 时，就进入 <code>personality</code> 函数进行具体判断，直到找到 <code>handler</code>，至此第一阶段结束。</p>
+<h4 id="uw-update-context函数"><a href="#uw-update-context函数" class="headerlink" title="uw_update_context函数"></a>uw_update_context函数</h4><p><code>uw_update_context</code> 函数（定义在 <code>libgcc/unwind-dw2.c</code>）就是对 <code>uw_update_context_1</code> 的封装，最后又更新了 <code>context-&gt;ra</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">uw_update_context</span> <span class="params">(<span class="keyword">struct</span> _Unwind_Context *context, _Unwind_FrameState *fs)</span></span><br><span class="line">&#123;</span><br><span class="line">  uw_update_context_1 (context, fs);</span><br><span class="line">  <span class="keyword">if</span> (fs-&gt;regs.reg[DWARF_REG_TO_UNWIND_COLUMN (fs-&gt;retaddr_column)].how</span><br><span class="line">      == REG_UNDEFINED)</span><br><span class="line">    context-&gt;ra = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="type">void</span> *ret_addr;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> MD_DEMANGLE_RETURN_ADDR</span></span><br><span class="line">      _Unwind_Word ra = _Unwind_GetGR (context, fs-&gt;retaddr_column);</span><br><span class="line">      ret_addr = MD_DEMANGLE_RETURN_ADDR (context, fs, ra);</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">      ret_addr = _Unwind_GetPtr (context, fs-&gt;retaddr_column);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">      context-&gt;ra = __builtin_extract_return_addr (ret_addr);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>uw_update_context_1</code> 函数用来恢复当前函数上下文。此处明确一个概念，假设当前的函数是 <code>callee</code> ，那么其调用者为 <code>caller</code>。此处说的恢复指的是将 <code>callee</code> 的上下文更新为 <code>caller</code> 的上下文。恢复上下文的原理其实很简单，就是根据一个基址寄存器加上一个偏移寻找到要恢复的值。这个基址寄存器被称为 CFA（Canonical Frame Address.标准栈帧地址）。</p>
+<p><code>uw_update_context_1</code>函数第一行代码是 <code>struct _Unwind_Context orig_context = *context</code> 将 <code>context</code> 做一个原始备份，存储在栈中局部变量 <code>orig_context</code>。看反汇编后的代码可以很直观的发现有备份操作。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/f444319343cd4d76.png" alt="image-20250111160302818"></p>
+<p><code>CFA</code> 的生成代码如下，先根据 <code>fs-&gt;regs.cfa_how</code> 获取 <code>CFA</code> 的生成方式，以 <code>CFA_REG_OFFSET</code> 为例。 在 <code>fs</code> 结构体中获取 <code>regs.cfa_reg</code> 寄存器编号，通过 <code>_Unwind_GetPtr</code> 函数从 <code>orig_context</code> 结构体根据寄存器编号拿到寄存器的实际值，再加上 <code>fs</code> 结构体中 <code>cfa_offset</code> 字段得到最终 <code>cfa</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">switch</span> (fs-&gt;regs.cfa_how)</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">case</span> CFA_REG_OFFSET:</span><br><span class="line">      cfa = _Unwind_GetPtr (&amp;orig_context, fs-&gt;regs.cfa_reg);</span><br><span class="line">      cfa += fs-&gt;regs.cfa_offset;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">......</span><br><span class="line">    &#125;</span><br><span class="line">context-&gt;cfa = cfa;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>调试验证，下面是 <code>fs</code> 结构体各字段。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/9de1d147182077b9.png" alt="b704d90d0a9ef310b089d17b4edc8bf5"></p>
+<p>下面是 <code>orig_context</code> 结构体各字段（查看 <code>context</code> 结构体会计算出错）。因为 <code>fs</code> 结构体中 <code>regs.cfa_reg</code> 为 <code>7</code>，所以 <code>_Unwind_GetPtr (&amp;orig_context, fs-&gt;regs.cfa_reg)</code> 的返回值应该是下图偏移 <code>7</code> 处经过解引用后的指针 <code>0x7fffffffdca0</code>。根据上图得知 <code>fs</code> 结构体中 <code>regs.cfa_offset</code> 为 <code>0x20</code>，因此最终的 <code>cfa</code> 应该是 <code>0x7fffffffdca0+0x20=0x7fffffffdcc0</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/c2261b0c4fab4c5a.png" alt="image-20250111160629246"></p>
+<p>生成 <code>CFA</code> 的三条关键汇编代码和<code>context-&gt;cfa = cfa</code> 执行后 <code>context</code> 结构体如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;uw_update_context_1+382&gt;    mov    rax, qword ptr [rsp + 0x20]</span><br><span class="line">&lt;uw_update_context_1+387&gt;    add    r11, qword ptr [rax + 0x128]</span><br><span class="line">&lt;uw_update_context_1+505&gt;    mov    qword ptr [r14 + 0x90], r11</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/c596a07d5726dea4.png" alt="image-20250111161407818"></p>
+<p>生成 <code>CFA</code> 之后，开始恢复 <code>cur_context</code> 中寄存器。<code>fs-&gt;regs.reg[i].how</code> 描述了每个寄存器（<code>reg</code> 数组元素）在当前帧状态下的 <strong>保存方式</strong>。下面以 <code>REG_SAVED_OFFSET</code> 为例，其寄存器的值以偏移量的形式保存在栈帧中，具体的偏移量存储在 <code>loc.offset</code> 字段中，所以该寄存器值恢复就是用 <code>CFA+loc.offset</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; __LIBGCC_DWARF_FRAME_REGISTERS__ + <span class="number">1</span>; ++i)</span><br><span class="line">    <span class="keyword">switch</span> (fs-&gt;regs.reg[i].how)</span><br><span class="line">      &#123;</span><br><span class="line">      <span class="keyword">case</span> REG_UNSAVED:</span><br><span class="line">      <span class="keyword">case</span> REG_UNDEFINED:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> REG_SAVED_OFFSET:</span><br><span class="line">	_Unwind_SetGRPtr (context, i,</span><br><span class="line">			  (<span class="type">void</span> *) (cfa + fs-&gt;regs.reg[i].loc.offset));</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">......</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意上面的代码，虽然遍历了所有寄存器，但是否恢复值取决于 <code>fs-&gt;regs.reg[i].how</code>，如果为 <code>REG_UNSAVED</code> 则意味着不会恢复该寄存器的值。以下面图片展示的 <code>fs</code> 结构体为例，来分析一下 <code>RIP</code> 寄存器最终的值。首先在偏移 <code>0x20</code> 的位置表示的是 <code>RIP</code> 的 <code>reg</code>结构中 <code>loc</code> 和 <code>how</code>字段。<code>how</code> 为 <code>REG_SAVED_OFFSET</code>，因此根据上面的计算方法 <code>RIP= CFA + offset</code>，这里的 <code>offset</code> 是 <code>-8(0xfffffffffffffff8)</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/9de1d147182077b9.png" alt="b704d90d0a9ef310b089d17b4edc8bf5"></p>
+<p>上文提到 <code>CFA</code> 为 <code>0x7fffffffdcc0</code>，因此 <code>RIP</code> 实际应该还原成 <code>0x7fffffffdcb8</code> 指向的数据。下图为 <code>uw_update_context_1</code> 函数执行结束后，寄存器恢复后的值。在偏移为 <code>0x10</code> 的位置是 <code>reg[RIP]</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111230517427.png" alt="image-20250111230517427"></p>
+<p>在 <code>uw_update_context_1</code> 执行后，通过 <code>fs-&gt;retaddr_column</code> 辅助确定当前帧的返回地址。<code>retaddr_column</code> 描述了返回地址所在的列，表示在寄存器保存状态中，哪个位置保存了返回地址。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">ret_addr = _Unwind_GetPtr (context, fs-&gt;retaddr_column);</span><br><span class="line">context-&gt;ra = __builtin_extract_return_addr (ret_addr);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <code>_Unwind_GetPtr</code> 中的调用是将 <code>fs-&gt;retaddr_column</code> 作为 <code>index</code> 从 <code>context-&gt;reg[]</code> 数组中取值。通过调试发现 <code>fs-&gt;retaddr_column</code> 一直是 <code>0x10</code>（<code>reg[0x10]</code> 是 <code>RIP</code>）。所以每一轮 <code>uw_update_context</code> 更新的 <code>context-&gt;ra</code> 都源于被刷新后的 <code>context-&gt;reg[RIP]</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> *</span><br><span class="line">_Unwind_GetPtr (<span class="keyword">struct</span> _Unwind_Context *context, <span class="type">int</span> index)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> (<span class="type">void</span> *)(_Unwind_Ptr) _Unwind_GetGR (context, index);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">_Unwind_GetGR (<span class="keyword">struct</span> _Unwind_Context *context, <span class="type">int</span> regno)</span><br><span class="line">&#123;</span><br><span class="line">    ......</span><br><span class="line">    index = DWARF_REG_TO_UNWIND_COLUMN (regno);</span><br><span class="line">    val = context-&gt;reg[index];</span><br><span class="line">    <span class="keyword">return</span> _Unwind_Get_Unwind_Word (val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调试如下，此时的 <code>context-&gt;reg[0x10]</code> 已经刷新，但还没有赋值给 <code>context-&gt;ra</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111231122844.png" alt="image-20250111231122844"></p>
+<p>在这里已经能看到 <code>context-&gt;reg[0x10]</code> 经过一次解引用后更新给了 <code>context-&gt;ra</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111231200125.png" alt="image-20250111231200125"></p>
+<h4 id="uw-frame-state-for函数"><a href="#uw-frame-state-for函数" class="headerlink" title="uw_frame_state_for函数"></a>uw_frame_state_for函数</h4><p><code>uw_frame_state_for</code> 函数（定义在 <code>libgcc/unwind-dw2.c</code>）的核心功能是根据 <code>DWARF</code> 调试信息（CIE 和 FDE），解析栈帧的状态信息（在编译后就已经固定），对 <code>fs</code> 结构体进行赋值。 <code>cur_context</code> 的更新并不在该函数。该函数先通过 <code>_Unwind_Find_FDE</code> 查找 <code>FDE</code> ，再根据 <code>FDE</code> 找到 <code>CIE</code> 。对于这个函数我们只需要搞清楚程序是怎么判断出当前帧需要进入 <code>persionaly</code> 函数的即可，至于 <code>FDE</code> 和 <code>CIE</code> 是怎么被找到的以及 <code>fs</code> 结构体如何借助它们还原各字段信息，这些并不重要。因为 <code>fs</code> 结构体本身就是为了恢复 <code>cur_context</code> 服务的，关注如何恢复 <code>cur_context</code> 并向上级函数回溯才是本文要记录的。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> _Unwind_Reason_Code</span><br><span class="line"><span class="title function_">uw_frame_state_for</span> <span class="params">(<span class="keyword">struct</span> _Unwind_Context *context, _Unwind_FrameState *fs)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">dwarf_fde</span> *<span class="title">fde</span>;</span></span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">dwarf_cie</span> *<span class="title">cie</span>;</span></span><br><span class="line">  <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *aug, *insn, *end;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">memset</span> (fs, <span class="number">0</span>, <span class="keyword">sizeof</span> (*fs));</span><br><span class="line">  context-&gt;args_size = <span class="number">0</span>;</span><br><span class="line">  context-&gt;lsda = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (context-&gt;ra == <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> _URC_END_OF_STACK;</span><br><span class="line"></span><br><span class="line">  fde = _Unwind_Find_FDE (context-&gt;ra + _Unwind_IsSignalFrame (context) - <span class="number">1</span>,</span><br><span class="line">			  &amp;context-&gt;bases);</span><br><span class="line">......</span><br><span class="line">  fs-&gt;pc = context-&gt;bases.func;</span><br><span class="line">  cie = get_cie (fde);</span><br><span class="line">  insn = extract_cie_info (cie, context, fs);</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">return</span> _URC_NO_REASON;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <code>extract_cie_info</code> 函数中获取了 <code>CIE</code> 的 <code>Augmentation</code> 字段，以遍历 <code>Augmentation</code> 的方式判断里面是否含有字符 <code>P</code>，如果存在 <code>P</code> 则表示当前函数中存在 <code>cleanup</code> 或者 <code>catch</code>，将 <code>personality</code> 函数指针赋值给 <code>fs</code> 结构体里面的 <code>personality</code> 字段。 </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *</span><br><span class="line"><span class="title function_">extract_cie_info</span> <span class="params">(<span class="type">const</span> <span class="keyword">struct</span> dwarf_cie *cie, <span class="keyword">struct</span> _Unwind_Context *context,</span></span><br><span class="line"><span class="params">		  _Unwind_FrameState *fs)</span>&#123;</span><br><span class="line">     <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *aug = cie-&gt;augmentation;</span><br><span class="line">     ......</span><br><span class="line">       <span class="keyword">while</span> (*aug != <span class="string">&#x27;\0&#x27;</span>)</span><br><span class="line">    &#123;</span><br><span class="line">    ......</span><br><span class="line">     <span class="keyword">else</span> <span class="keyword">if</span> (aug[<span class="number">0</span>] == <span class="string">&#x27;P&#x27;</span>)</span><br><span class="line">	&#123;</span><br><span class="line">	  _Unwind_Ptr personality;</span><br><span class="line"></span><br><span class="line">	  p = read_encoded_value (context, *p, p + <span class="number">1</span>, &amp;personality);</span><br><span class="line">	  fs-&gt;personality = (_Unwind_Personality_Fn) personality;</span><br><span class="line">	  aug += <span class="number">1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">           ......</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>使用命令 <code>readelf --debug-dump=frames ./unwind</code> 可以输出程序的 <code>CIE</code> 和 <code>FDE</code>。以 <code>unwind</code> 程序为例，下图展示了部分 <code>CIE</code> <code>FDE</code>。其中地址区间 <code>0x401216-0x4012a5</code> 与 <code>0x4012f8-0x401371</code>两个 <code>FDE</code> 对应都是偏移为 <code>0x80</code> 的 <code>CIE</code> 。该 <code>CIE</code> 的 <code>Augmentation</code> 字段含有 <code>P</code>，再通过 <code>IDA</code> 观察上面提到的两个区间，发现都包含 <code>catch</code>。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250111222742873.png" alt="image-20250111222742873"></p>
+<p>发现 <code>CIE</code> 中记录了 <code>P</code> 后，将 <code>personality</code> 函数指针赋值。回到 <code>_Unwind_RaiseException</code> 函数，在执行 <code>uw_update_context</code> 之前判断了 <code>fs.personality</code> 是否存在，如果存在的话，就调用 <code>fs.personality</code> 函数指针。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">   &#123;</span><br><span class="line">     _Unwind_FrameState fs;</span><br><span class="line">     code = uw_frame_state_for (&amp;cur_context, &amp;fs);</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (code == _URC_END_OF_STACK)</span><br><span class="line"><span class="keyword">return</span> _URC_END_OF_STACK;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">if</span> (code != _URC_NO_REASON)</span><br><span class="line"><span class="keyword">return</span> _URC_FATAL_PHASE1_ERROR;</span><br><span class="line">     <span class="keyword">if</span> (fs.personality)</span><br><span class="line">&#123;</span><br><span class="line">  code = (*fs.personality) (<span class="number">1</span>, _UA_SEARCH_PHASE, exc-&gt;exception_class,</span><br><span class="line">			    exc, &amp;cur_context);</span><br><span class="line">  <span class="keyword">if</span> (code == _URC_HANDLER_FOUND)</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (code != _URC_CONTINUE_UNWIND)</span><br><span class="line">    <span class="keyword">return</span> _URC_FATAL_PHASE1_ERROR;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">/* Update cur_context to describe the same frame as fs.  */</span></span><br><span class="line">     uw_update_context (&amp;cur_context, &amp;fs);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当要更新（但还未更新）的函数中存在 <code>cleanup</code> 和 <code>handler</code>（通过 <code>FDE</code> 找到 <code>CIE</code> ，判断 <code>CIE</code> 中的 <code>Augmentation</code> 字段来实现的）时，会在执行 <code>uw_update_context</code> 之前先进入 <code>personality</code> 函数。至此又到了文章开头讨论区间时分析的 <code>__gxx_personality_v0</code> 函数，简单来说，<code>__gxx_personality_v0</code> 通过解析 <code>LSDA</code> 中的数据执行不同的分支进行判断存在的是 <code>cleanup</code> 还是 <code>handler</code>。</p>
+<h4 id="解析-gcc-except-table中数据"><a href="#解析-gcc-except-table中数据" class="headerlink" title="解析.gcc_except_table中数据"></a>解析.gcc_except_table中数据</h4><p><code>.gcc_except_table</code> 中存放的是 <code>LSDA</code> 。<code>LSDA</code> 由四部分组成，分别是 <code>LSDA Header</code> <code>Call-Site Table</code> <code>Action Table</code> <code>Type Table</code>，结构如下（图片来源于网络）。</p>
+<img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250116235734353.png" alt="image-20250116235734353" style="zoom: 50%;" />
+
+<p>我没有从网上找到有很详细的资料对一组实际的 <code>LSDA</code> 原数据进行解析，尽管在这个 <a target="_blank" rel="noopener" href="http://www.hexblog.com/wp-content/uploads/2012/06/Recon-2012-Skochinsky-Compiler-Internals.pdf">PDF</a> 中44页开始有介绍 <code>LSDA</code> 中各字段，但不实际分析一个 <code>LSDA</code> 数据依然云里雾里。因此我分析了 <code>parse_lsda_header</code> 和 <code>__gxx_personality_v0</code> 里面的代码。下面来结合源码，让我们搞清楚这些原数据是怎么帮助 <code>personality</code> 函数工作的。</p>
+<p>以上文编译的 <code>unwind</code> 程序为例，<code>LSDA</code> 原数据如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">readelf -x .gcc_except_table ./unwind</span><br><span class="line">Hex dump of section &#x27;.gcc_except_table&#x27;:</span><br><span class="line">  0x00402230 ff9b1901 111c0523 01300500 00571472 .......#.0...W.r</span><br><span class="line">  0x00402240 00840105 00000100 c81d0000 ff9b1901 ................</span><br><span class="line">  0x00402250 100d1428 01350500 0050055c 006e0500 ...(.5...P.\.n..</span><br><span class="line">  0x00402260 00010000 ac1d0000                   ........</span><br></pre></td></tr></table></figure>
+
+<p>从 <code>__gxx_personality_v0</code> 函数开始看，其中有一行代码 <code> p = parse_lsda_header (context, language_specific_data, &amp;info);</code>，在 <code>parse_lsda_header</code> 函数中对一些字段进行了解析，<code>language_specific_data</code> 就是 <code>LSDA</code> 的起始地址（0x402230）。</p>
+<p>下面是 <code>parse_lsda_header</code> 源代码，第八行 <code> lpstart_encoding = *p++;</code> 从 <code>LSDA</code> 中取了一个字节赋值给变量 <code>lpstart_encoding</code>，它的含义是 <code>Landing Pad</code> 起始地址的编码方式。如果该值不是 <code>0xff</code> 那么会再读取数据，作为 <code>info-&gt;LPStart</code>（<code>Landing Pad</code> 起始地址）。但从例子的原始数据来看，读取的是 <code>0xff</code>，所以 <code>info-&gt;LPStart</code> 是调用 <code>_Unwind_GetRegionStar</code> 函数获得的。接着读取一个字节作为 <code>info-&gt;ttype_encoding</code>，它是 <code>Type table</code> 的编码方式。如果该值不是 <code>0xff</code> 那么 <code>info-&gt;TType</code> 再从原始数据读取一个 <code>uleb128</code> 值（0x19）  再加上当前指针（0x402233），也就是 <code>0x40224C</code> ，<code>info-&gt;TType</code> 代表 <code>Type table</code> 的起始地址。再读取一个字节（0x01）作为 <code>info-&gt;call_site_encoding</code>，它表示 <code>call_site Table</code> 的编码方式，最后再读取一个 <code>uleb128</code> 数据（0x11）加上当前指针（0x402235），也就是 <code>0x402246</code>，<code>info-&gt;action_table</code> 代表 <code>action_table</code> 的起始地址。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *</span><br><span class="line"><span class="title function_">parse_lsda_header</span> <span class="params">(_Unwind_Context *context, <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *p,</span></span><br><span class="line"><span class="params">		   lsda_header_info *info)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">_uleb128_t</span> tmp;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> lpstart_encoding;</span><br><span class="line">  info-&gt;Start = (context ? _Unwind_GetRegionStart (context) : <span class="number">0</span>);</span><br><span class="line">  lpstart_encoding = *p++;</span><br><span class="line">  <span class="keyword">if</span> (lpstart_encoding != DW_EH_PE_omit)</span><br><span class="line">    p = read_encoded_value (context, lpstart_encoding, p, &amp;info-&gt;LPStart);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    info-&gt;LPStart = info-&gt;Start;</span><br><span class="line">  info-&gt;ttype_encoding = *p++;</span><br><span class="line">  <span class="keyword">if</span> (info-&gt;ttype_encoding != DW_EH_PE_omit)</span><br><span class="line">    &#123;</span><br><span class="line">      p = read_uleb128 (p, &amp;tmp);</span><br><span class="line">      info-&gt;TType = p + tmp;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    info-&gt;TType = <span class="number">0</span>;</span><br><span class="line">  info-&gt;call_site_encoding = *p++;</span><br><span class="line">  p = read_uleb128 (p, &amp;tmp);</span><br><span class="line">  info-&gt;action_table = p + tmp;</span><br><span class="line">  <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结一下上面的代码，依次解析了 <code>LSDA Header</code> 中的 Landing Pad起始地址编码方式、Landing Pad起始地址、Type Table编码方式、Type Table起始偏移、Call-Site Table编码方式、Call-Site Table长度。<strong>注意：起始偏移指的是 <code>LSDA</code> 中原始数据该字段解析的值，而起始地址表示源码中已经将基地址指针 <code>p</code> 和偏移相加后的值。</strong></p>
+<p>根据上面分析得出， <code>LSDA</code> 原始数据中 <code>LSDA Header</code> 是 <code>FF 9B 19 01 11</code>。</p>
+<table>
+<thead>
+<tr>
+<th>字节</th>
+<th>字段名称</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>0xFF</code></td>
+<td>Landing Pad起始地址编码方式</td>
+<td><code>DW_EH_PE_omit</code></td>
+<td>Landing Pad 起始地址省略，需通过 <code>_Unwind_GetRegionStart()</code> 获取</td>
+</tr>
+<tr>
+<td><code>0x9B</code></td>
+<td>Type Table 编码方式</td>
+<td><code>DW_EH_PE_sdata4</code></td>
+<td>Type Table 的偏移量为 4 字节的有符号整数</td>
+</tr>
+<tr>
+<td><code>0x19</code></td>
+<td>Type Table起始偏移</td>
+<td><code>0x19</code></td>
+<td>Type Table起始偏移加上p指针为Type Table在LSDA中地址</td>
+</tr>
+<tr>
+<td><code>0x01</code></td>
+<td>Call-Site Table编码方式</td>
+<td><code>DW_EH_PE_uleb128</code></td>
+<td>Call-Site Table 使用 ULEB128 编码。</td>
+</tr>
+<tr>
+<td><code>0x11</code></td>
+<td>Call-Site Table长度</td>
+<td><code>0x11</code></td>
+<td>Call-Site Table长度加上p指针，就可以定位到action table</td>
+</tr>
+</tbody></table>
+<p>在 <code>LSDA Header</code> 之后的是 <code>Call-Site Table</code>，<code>Call-Site Table</code> 由多个 <code>Call-Site Entry</code> 组成，每个 <code>Call-Site Entry</code> 又由 <code>cs_start</code> <code>cs_len</code> <code>cs_lp</code> <code>cs_action</code> 四个字段组成。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_start);</span><br><span class="line">p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_len);</span><br><span class="line">p = read_encoded_value (<span class="number">0</span>, info.call_site_encoding, p, &amp;cs_lp);</span><br><span class="line">p = read_uleb128 (p, &amp;cs_action);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <code>call_site_encoding</code> 中表示 <code>Call-Site Table</code> 里面的数据使用 <code>ULEB128</code> 编码，已知 <code>Call-Site Table</code> 的总长度为 <code>0x11</code> 字节，数据为 <code>1c 05 23 01 30 05 00 00 57 14 72 00 84 01 05 00 00</code>。下面分组中的 <code>Entry 4</code> 的 <code>cs_start</code> 为 <code>84 01</code> 的原因是 <code>0x84</code> 的控制位是 <code>1</code>，表示 <code>ULEB128</code> 编码还没有结束，需要继续读取下一个字节，尽管 <code>84 01</code> 表示的还是 <code>0x84</code>😅。</p>
+<table>
+<thead>
+<tr>
+<th>Call-Site Entry</th>
+<th>cs_start</th>
+<th>cs_len</th>
+<th>cs_lp</th>
+<th>cs_action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Entry 1</td>
+<td>1c</td>
+<td>05</td>
+<td>23</td>
+<td>01</td>
+</tr>
+<tr>
+<td>Entry 2</td>
+<td>30</td>
+<td>05</td>
+<td>00</td>
+<td>00</td>
+</tr>
+<tr>
+<td>Entry 3</td>
+<td>57</td>
+<td>14</td>
+<td>72</td>
+<td>00</td>
+</tr>
+<tr>
+<td>Entry 4</td>
+<td>84 01</td>
+<td>05</td>
+<td>00</td>
+<td>00</td>
+</tr>
+</tbody></table>
+<p>但需要注意的是 <code>ip</code> 指针如果落在了一组 <code>Entry</code> 中，那么就不会再解析后面几组 <code>Entry</code>了。指针如果不依次移动，如何找到 <code>LSDA</code> 中的 <code>action table</code> 呢？因为知道 <code>Call-Site Table</code> 的长度，而 <code>action table</code> 就在 <code>Call-Site Table</code> 之后。 具体代码为 <code>action_record = info.action_table + cs_action - 1</code> 记录了 <code>action_table</code> 的位置，从上面原始数据来看，第一组解析的 <code>cs_action</code> 为 <code>1</code>，因此 <code>LSDA Header</code> 中的 <code>action_table(0x402246)</code> 就作为 <code>action_table</code> 的起始地址。</p>
+<p>下面用 <code>p = action_record</code> 直接跳过了剩余的 <code>Call-Stie Entry</code>，依次解析了两个 <code>sleb128</code> 编码数据作为 <code>action table</code> 中的字段 <code>ar_filter</code> <code>ar_disp</code>。当 <code>ar_filter</code> 为 <code>0</code> 代表当前函数存在的是 <code>cleanup</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">p = action_record;</span><br><span class="line">p = read_sleb128 (p, &amp;ar_filter);</span><br><span class="line">read_sleb128 (p, &amp;ar_disp);</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>ar_filter</th>
+<th>ar_disp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>01</td>
+<td>c8</td>
+</tr>
+</tbody></table>
+<p>在本例中 <code>ar_filter</code> 为 <code>1</code>，那么会执行 <code>catch_type = get_ttype_entry (&amp;info, ar_filter)</code> 函数。<code>size_of_encoded_value (info-&gt;ttype_encoding)</code> 的返回值为 <code>4</code>，因此这里最后的 <code>i</code> 为 <code>4</code>。但作为 <code>read_encoded_value_with_base</code> 函数的第三个参数，它将 <code>info-&gt;TType(0x40224C)</code> 减去了 <code>4</code> 字节。这里非常有意思，参考下图（来自 <a target="_blank" rel="noopener" href="http://www.hexblog.com/wp-content/uploads/2012/06/Recon-2012-Skochinsky-Compiler-Internals.pdf">PDF</a> 46页）发现 <code>TTBase</code> 指向的并不是 <code>type table</code> 的起始地址，必须要再减去一个 <code>i</code>。 </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="built_in">std</span>::type_info *</span><br><span class="line"><span class="title function_">get_ttype_entry</span> <span class="params">(lsda_header_info *info, <span class="type">_uleb128_t</span> i)</span></span><br><span class="line">&#123;</span><br><span class="line">  _Unwind_Ptr ptr;</span><br><span class="line">  i *= size_of_encoded_value (info-&gt;ttype_encoding);</span><br><span class="line">  read_encoded_value_with_base (</span><br><span class="line">				info-&gt;ttype_encoding,</span><br><span class="line">				info-&gt;ttype_base,</span><br><span class="line">				info-&gt;TType - i, &amp;ptr);</span><br><span class="line">  <span class="keyword">return</span> reinterpret_cast&lt;<span class="type">const</span> <span class="built_in">std</span>::type_info *&gt;(ptr);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250117005351063.png" alt="image-20250117005351063"></p>
+<p>再看一下简易版的 <code>read_encoded_value_with_base</code> 函数，通过判断 <code>info-&gt;ttype_encoding(0x9b)</code> 的值，进入分支执行 <code> result = u-&gt;s4</code>，<code>u-&gt;s4</code> 表示从 <code>u</code> 指向的内存地址读取四字节数据，也就是上文提到的 <code>info-&gt;TType - i =&gt; 0x40224C - 4 =&gt; type table真正的起始地址 0x402248</code> 。从 <code>LSDA</code> 的原始数据来看 <code>0x402248</code> 指向的是 <code>c81d0000</code> ，以小端序来读取，因此实际值为 <code>0x1dc8</code>。最后还有代码 <code>result += ((encoding &amp; 0x70) == DW_EH_PE_pcrel ? (_Unwind_Internal_Ptr) u : base);</code> 也就是 <code>val</code> 为 <code>0x1dc8+0x402248 = 0x404010</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *</span><br><span class="line"><span class="title function_">read_encoded_value_with_base</span> <span class="params">(<span class="type">unsigned</span> <span class="type">char</span> encoding, _Unwind_Ptr base,</span></span><br><span class="line"><span class="params">			      <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *p, _Unwind_Ptr *val)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">union</span> <span class="title">unaligned</span></span></span><br><span class="line"><span class="class">    &#123;</span></span><br><span class="line">      <span class="type">void</span> *ptr;</span><br><span class="line">      <span class="type">unsigned</span> u2 __attribute__ ((mode (HI)));</span><br><span class="line">      <span class="type">unsigned</span> u4 __attribute__ ((mode (SI)));</span><br><span class="line">      <span class="type">unsigned</span> u8 __attribute__ ((mode (DI)));</span><br><span class="line">      <span class="type">signed</span> s2 __attribute__ ((mode (HI)));</span><br><span class="line">      <span class="type">signed</span> s4 __attribute__ ((mode (SI)));</span><br><span class="line">      <span class="type">signed</span> s8 __attribute__ ((mode (DI)));</span><br><span class="line">    &#125; __attribute__((__packed__));</span><br><span class="line"></span><br><span class="line">  <span class="type">const</span> <span class="class"><span class="keyword">union</span> <span class="title">unaligned</span> *<span class="title">u</span> =</span> (<span class="type">const</span> <span class="keyword">union</span> unaligned *) p;</span><br><span class="line">  _Unwind_Internal_Ptr result;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (encoding == DW_EH_PE_aligned)</span><br><span class="line">......</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">switch</span> (encoding &amp; <span class="number">0x0f</span>)</span><br><span class="line">	&#123;</span><br><span class="line">......</span><br><span class="line">	<span class="keyword">case</span> DW_EH_PE_sdata4:</span><br><span class="line">	  result = u-&gt;s4;</span><br><span class="line">	  p += <span class="number">4</span>;</span><br><span class="line">	  <span class="keyword">break</span>;</span><br><span class="line">......</span><br><span class="line">	&#125;</span><br><span class="line">      <span class="keyword">if</span> (result != <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">	  result += ((encoding &amp; <span class="number">0x70</span>) == DW_EH_PE_pcrel</span><br><span class="line">		     ? (_Unwind_Internal_Ptr) u : base);</span><br><span class="line">	  <span class="keyword">if</span> (encoding &amp; DW_EH_PE_indirect)</span><br><span class="line">	    result = *(_Unwind_Internal_Ptr *) result;</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  *val = result;</span><br><span class="line">  <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>用 <code>IDA</code> 查看地址 <code>0x404010</code>，发现是指向实际的 <code>typeinfo</code> 对象地址（<code>_ZTIPKc</code>），这是一个 <code>std::type_info</code> 实例，用于描述 <code>const char*</code> 类型。</p>
+<p><img src="https://blog-1311372141.cos.ap-nanjing.myqcloud.com/images/image-20250117010809051.png" alt="image-20250117010809051"></p>
+<p>有代码 <code>get_adjusted_ptr(catch_type, throw_type,&amp;thrown_ptr)</code> ，再来看 <code>get_adjusted_ptr</code> 的源码。<code>throw_type</code> 指向抛出异常类型的 <code>std::type_info</code> 对象，而<code>catch_type</code> 指向 <code>catch</code> 块捕获类型的 <code>std::type_info</code> 对象。<code>__do_catch</code> 是一个成员函数，用于比较 <code>throw_type</code>（实际抛出的异常类型）和 <code>catch_type</code> 是否兼容。因为在 <code>unwind</code> 这个例子中 <code>throw</code> 和 <code>catch</code>的类型都是 <code>const char *</code>，所以这里 <code>get_adjusted_ptr</code> 会返回 <code>true</code>。该函数作用是判断抛出的异常类型是否能在 <code>type_table</code> 记录的异常类型信息中匹配。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">bool</span></span><br><span class="line"><span class="title function_">get_adjusted_ptr</span> <span class="params">(<span class="type">const</span> <span class="built_in">std</span>::type_info *catch_type,</span></span><br><span class="line"><span class="params">		  <span class="type">const</span> <span class="built_in">std</span>::type_info *throw_type,</span></span><br><span class="line"><span class="params">		  <span class="type">void</span> **thrown_ptr_p)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">void</span> *thrown_ptr = *thrown_ptr_p;</span><br><span class="line">  <span class="keyword">if</span> (throw_type-&gt;__is_pointer_p ())</span><br><span class="line">    thrown_ptr = *(<span class="type">void</span> **) thrown_ptr;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (catch_type-&gt;__do_catch (throw_type, &amp;thrown_ptr, <span class="number">1</span>))</span><br><span class="line">    &#123;</span><br><span class="line">      *thrown_ptr_p = thrown_ptr;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>因此下面分支就会进入，将 <code>saw_handler</code> 赋值为 <code>true</code>，并将 <code>found_type</code> 赋值为 <code>found_handler</code>，表示在当前函数中找到了 <code>handler</code>。因为是搜索阶段，所以会进入分支 <code>if (actions &amp; _UA_SEARCH_PHASE)</code> ， <code>foreign_exception</code> 为 <code>0</code>（在 <code>libstdc++-v3\libsupc++\unwind-cxx.h</code> 文件，定义了 <code> __GXX_INIT_PRIMARY_EXCEPTION_CLASS(c) c</code> 宏） ，因此 <code>save_caught_exception</code> 会保存状态信息，避免 <code>Phase 2</code> 中再次解析 <code>LSDA</code> ,最后返回 <code>_URC_HANDLER_FOUND</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">if</span> (! catch_type</span><br><span class="line">  || (throw_type</span><br><span class="line">      &amp;&amp; get_adjusted_ptr (catch_type, throw_type,</span><br><span class="line">               &amp;thrown_ptr)))</span><br><span class="line">&#123;</span><br><span class="line">  saw_handler = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line">......</span><br><span class="line"><span class="keyword">if</span> (saw_handler)</span><br><span class="line">	&#123;</span><br><span class="line">	  handler_switch_value = ar_filter;</span><br><span class="line">	  found_type = found_handler;</span><br><span class="line">	&#125;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">	found_type = (saw_cleanup ? found_cleanup : found_nothing);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> do_something:</span><br><span class="line">   <span class="keyword">if</span> (found_type == found_nothing)</span><br><span class="line">     CONTINUE_UNWINDING;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (actions &amp; _UA_SEARCH_PHASE)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (found_type == found_cleanup)</span><br><span class="line">	CONTINUE_UNWINDING;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// For domestic exceptions, we cache data from phase 1 for phase 2.</span></span><br><span class="line">      <span class="keyword">if</span> (!foreign_exception)</span><br><span class="line">        &#123;</span><br><span class="line">	  save_caught_exception(ue_header, context, thrown_ptr,</span><br><span class="line">				handler_switch_value, language_specific_data,</span><br><span class="line">				landing_pad, action_record);</span><br><span class="line">	&#125;</span><br><span class="line">      <span class="keyword">return</span> _URC_HANDLER_FOUND;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Phase-2"><a href="#Phase-2" class="headerlink" title="Phase 2"></a>Phase 2</h3><p>上文提到 <code>personality</code> 函数会返回 <code>_URC_HANDLER_FOUND</code>, 因此触发 <code>break</code> 跳出 <code>uw_frame_state_for</code> 和 <code>uw_update_context</code> 的循环，执行下面的代码。将找到 <code>handler</code> 时的 <code>context-&gt;CFA</code> 记录到 <code>exc-&gt;praivate_2</code> 中, <code>phase2</code> 栈回溯时再次遍历到此栈帧时则可以直接执行的 <code>handler</code> 并结束处理。通过 <code>_Unwind_RaiseException_Phase2</code> 和 <code>uw_install_context</code> （_Unwind_Resume和__cxa_begin_catch函数均未分析）完成栈回退并执行存在的 <code>cleanup</code>，最终执行 <code>catch</code> 中的代码。 </p>
+ <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">exc-&gt;private_1 = <span class="number">0</span>;</span><br><span class="line"> exc-&gt;private_2 = uw_identify_context (&amp;cur_context);</span><br><span class="line"> </span><br><span class="line"> cur_context = this_context;</span><br><span class="line"> code = _Unwind_RaiseException_Phase2 (exc, &amp;cur_context, &amp;frames);</span><br><span class="line"> <span class="keyword">if</span> (code != _URC_INSTALL_CONTEXT)</span><br><span class="line">   <span class="keyword">return</span> code;</span><br><span class="line"> </span><br><span class="line"> uw_install_context (&amp;this_context, &amp;cur_context, frames);</span><br></pre></td></tr></table></figure>
+
+
+
+<p>分析 <code>_Unwind_RaiseException_Phase2</code> 函数，整体逻辑仍然是一个 <code>while</code> 循环，里面用 <code>uw_frame_state_for</code> 和 <code>uw_update_context</code> 来栈回退。上文提到，在 <code>Phase 1</code> 结束后记录了存在 <code>handler</code> 函数的 <code>CFA</code>，通过代码 <code>match_handler = (uw_identify_context (context) == exc-&gt;private_2 ? _UA_HANDLER_FRAME : 0);</code> 判断 <code>Phase 2</code> 是否回溯到了有 <code>handler</code> 的那个函数。 <code>match_handler</code> 被赋值不同，会导致在调用 <code>personality</code> 函数时走的分支不同。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> _Unwind_Reason_Code</span><br><span class="line">_Unwind_RaiseException_Phase2(<span class="keyword">struct</span> _Unwind_Exception *exc,</span><br><span class="line">			      <span class="keyword">struct</span> _Unwind_Context *context,</span><br><span class="line">			      <span class="type">unsigned</span> <span class="type">long</span> *frames_p)</span><br><span class="line">&#123;</span><br><span class="line">  _Unwind_Reason_Code code;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> frames = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      _Unwind_FrameState fs;</span><br><span class="line">      <span class="type">int</span> match_handler;</span><br><span class="line"></span><br><span class="line">      code = uw_frame_state_for (context, &amp;fs);</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Identify when we&#x27;ve reached the designated handler context.  */</span></span><br><span class="line">      match_handler = (uw_identify_context (context) == exc-&gt;private_2</span><br><span class="line">		       ? _UA_HANDLER_FRAME : <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (code != _URC_NO_REASON)</span><br><span class="line">	<span class="comment">/* Some error encountered.  Usually the unwinder doesn&#x27;t</span></span><br><span class="line"><span class="comment">	   diagnose these and merely crashes.  */</span></span><br><span class="line">	<span class="keyword">return</span> _URC_FATAL_PHASE2_ERROR;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Unwind successful.  Run the personality routine, if any.  */</span></span><br><span class="line">      <span class="keyword">if</span> (fs.personality)</span><br><span class="line">	&#123;</span><br><span class="line">	  code = (*fs.personality) (<span class="number">1</span>, _UA_CLEANUP_PHASE | match_handler,</span><br><span class="line">				    exc-&gt;exception_class, exc, context);</span><br><span class="line">	  <span class="keyword">if</span> (code == _URC_INSTALL_CONTEXT)</span><br><span class="line">	    <span class="keyword">break</span>;</span><br><span class="line">	  <span class="keyword">if</span> (code != _URC_CONTINUE_UNWIND) </span><br><span class="line">	    <span class="keyword">return</span> _URC_FATAL_PHASE2_ERROR;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* Don&#x27;t let us unwind past the handler context.  */</span></span><br><span class="line">      gcc_assert (!match_handler);</span><br><span class="line"></span><br><span class="line">      uw_update_context (context, &amp;fs);</span><br><span class="line">      _Unwind_Frames_Increment (context, frames);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  *frames_p = frames;</span><br><span class="line">  <span class="keyword">return</span> code;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>当 <code>match_handler</code> 是 <code>_UA_HANDLER_FRAME</code> 则会在 <code>personality</code> 函数跳转至 <code>install_context</code>。首先进入 <code>else</code> 分支，因为 <code>handler_switch_value</code> 在跳转至 <code>install_context</code> 之前执行了 <code>restore_caught_exception</code> 恢复了 <code>Phase 1</code> 找到 <code>handler</code> 时的一些数据，依然是 <code>unwind</code> 的例子，这里 <code>handler_switch_value</code> 值为 <code>1</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"> install_context:</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> ((actions &amp; _UA_FORCE_UNWIND)</span><br><span class="line">      || foreign_exception)</span><br><span class="line">    &#123;......&#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (found_type == found_terminate)</span><br><span class="line">	__cxa_call_terminate(ue_header);</span><br><span class="line">      <span class="keyword">if</span> (handler_switch_value &lt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">	  parse_lsda_header (context, language_specific_data, &amp;info);</span><br><span class="line">	  info.ttype_base = base_of_encoded_value (info.ttype_encoding,</span><br><span class="line">						   context);</span><br><span class="line">......</span><br><span class="line">	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  _Unwind_SetGR (context, __builtin_eh_return_data_regno (<span class="number">0</span>),</span><br><span class="line">		 __builtin_extend_pointer (ue_header));</span><br><span class="line">  _Unwind_SetGR (context, __builtin_eh_return_data_regno (<span class="number">1</span>),</span><br><span class="line">		 handler_switch_value);</span><br><span class="line">  _Unwind_SetIP (context, landing_pad);</span><br><span class="line">  <span class="keyword">return</span> _URC_INSTALL_CONTEXT;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>_Unwind_SetGR</code> 函数通过下面代码，更新了 <code>context-&gt;reg[0]</code> 和 <code>context-&gt;reg[1]</code> 寄存器的值。<code>_Unwind_SetIP</code> 则将 <code>landing_pad</code> (landing_pad的生成方式是info.LPStart + cs_lp，指向catch的代码)更新成 <code>context-&gt;ra</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">ptr = (<span class="type">void</span> *) (_Unwind_Internal_Ptr) context-&gt;reg[index];</span><br><span class="line">* (_Unwind_Ptr *) ptr = val;</span><br></pre></td></tr></table></figure>
+
+<p><code>personality</code> 函数执行结束后，通过 <code>break</code> 跳出了栈回退的代码。至此 <code>_Unwind_RaiseException_Phase2</code> 函数也返回 <code>_URC_INSTALL_CONTEXT</code>。</p>
+<p><code>uw_install_context</code> 作为宏定义在 <code>unwind-dw2.c</code> 文件，最终改变执行流的是 <code> __builtin_eh_return (offset, handler)</code>，通过 <code>handler+offset</code> 改变  <code>PC</code> 从而使执行流转到异常处理代码。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> uw_install_context(CURRENT, TARGET, FRAMES)			\</span></span><br><span class="line"><span class="meta">  do									\</span></span><br><span class="line"><span class="meta">    &#123;									\</span></span><br><span class="line"><span class="meta">      long offset = uw_install_context_1 ((CURRENT), (TARGET));		\</span></span><br><span class="line"><span class="meta">      void *handler = __builtin_frob_return_addr ((TARGET)-&gt;ra);	\</span></span><br><span class="line"><span class="meta">      _Unwind_DebugHook ((TARGET)-&gt;cfa, handler);			\</span></span><br><span class="line"><span class="meta">      _Unwind_Frames_Extra (FRAMES);					\</span></span><br><span class="line"><span class="meta">      __builtin_eh_return (offset, handler);				\</span></span><br><span class="line"><span class="meta">    &#125;									\</span></span><br><span class="line"><span class="meta">  while (0)</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="零零散散的补充"><a href="#零零散散的补充" class="headerlink" title="零零散散的补充"></a>零零散散的补充</h3><h4 id="LSDA-CIE-FDE傻傻分不清"><a href="#LSDA-CIE-FDE傻傻分不清" class="headerlink" title="LSDA CIE FDE傻傻分不清"></a>LSDA CIE FDE傻傻分不清</h4><p>最开始看网上文章时，这三个分不清。</p>
+<p><strong>位置：</strong></p>
+<p><code>LSDA</code> 位于 <code>.gcc_except_table</code>，而 <code>CIE</code> 和 <code>FDE</code> 都位于 <code>.eh_frame</code>。</p>
+<p><strong>作用：</strong></p>
+<p><code>LSDA</code> 的数据辅助异常处理的捕获和类型匹配，而 <code>CIE</code> 和 <code>FDE</code> 主要用来辅助栈展开并辅助恢复 <code>current_context</code> 的上下文数据。</p>
+<h4 id="current和fs结构体分析及偏移量表格"><a href="#current和fs结构体分析及偏移量表格" class="headerlink" title="current和fs结构体分析及偏移量表格"></a>current和fs结构体分析及偏移量表格</h4><p><code>current</code> 的结构体类型定义在 <code>libgcc/unwind-dw2.c</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">Unwind_Context</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  _Unwind_Context_Reg_Val reg[__LIBGCC_DWARF_FRAME_REGISTERS__+<span class="number">1</span>];</span><br><span class="line">  <span class="type">void</span> *cfa;</span><br><span class="line">  <span class="type">void</span> *ra;</span><br><span class="line">  <span class="type">void</span> *lsda;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dwarf_eh_bases</span> <span class="title">bases</span>;</span></span><br><span class="line">  <span class="comment">/* Signal frame context.  */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIGNAL_FRAME_BIT ((~(_Unwind_Word) 0 &gt;&gt; 1) + 1)</span></span><br><span class="line">  <span class="comment">/* Context which has version/args_size/by_value fields.  */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EXTENDED_CONTEXT_BIT ((~(_Unwind_Word) 0 &gt;&gt; 2) + 1)</span></span><br><span class="line">  <span class="comment">/* Bit reserved on AArch64, return address has been signed with A or B</span></span><br><span class="line"><span class="comment">     key.  */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> RA_SIGNED_BIT ((~(_Unwind_Word) 0 &gt;&gt; 3) + 1)</span></span><br><span class="line">  _Unwind_Word flags;</span><br><span class="line">  <span class="comment">/* 0 for now, can be increased when further fields are added to</span></span><br><span class="line"><span class="comment">     struct _Unwind_Context.  */</span></span><br><span class="line">  _Unwind_Word version;</span><br><span class="line">  _Unwind_Word args_size;</span><br><span class="line">  <span class="type">char</span> by_value[__LIBGCC_DWARF_FRAME_REGISTERS__+<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这些字段都是调试程序时分析出来的，不保证一定正确，并且一些字段在分析时没有注意，暂无记录。调试的程序是 <code>x64</code> 架构。 </p>
+<table>
+<thead>
+<tr>
+<th align="left">字段</th>
+<th>含义</th>
+<th>偏移</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">reg.rax\reg.rbx\reg.rcx\reg.rdx<br />\reg.rsi\reg.rdi\reg.rbp\reg.rsp<br />\reg.r8\reg.r9\reg.r10\reg.r11<br />reg.r12\reg.r13\reg.r14\reg.r15\reg.rip</td>
+<td>reg数组里面的成员依次是这17个寄存器</td>
+<td>reg.rax偏移是0<br />reg.rbx偏移是0x8<br />reg.rcx偏移是0x10<br />以此类推，最后的reg.rip偏移是0x80</td>
+</tr>
+<tr>
+<td align="left">reg.?</td>
+<td>reg数组有18个单元，最后一个作用未知</td>
+<td>reg.?偏移是0x88</td>
+</tr>
+<tr>
+<td align="left">cfa</td>
+<td>Canonical Frame Address，标准帧地址</td>
+<td>0x90</td>
+</tr>
+<tr>
+<td align="left">ra</td>
+<td>当前帧的返回地址</td>
+<td>0x98</td>
+</tr>
+<tr>
+<td align="left">lsda</td>
+<td>Language-Specific Data Area，语言特定数据区</td>
+<td>0xa0</td>
+</tr>
+<tr>
+<td align="left">bases</td>
+<td></td>
+<td>0xa8</td>
+</tr>
+<tr>
+<td align="left">…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<p><code>fs</code> 的结构体类型定义在 <code>libgcc/unwind-dw2.h</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="comment">/* Each register save state can be described in terms of a CFA slot,</span></span><br><span class="line"><span class="comment">     another register, or a location expression.  */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">frame_state_reg_info</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">      <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">	_Unwind_Word reg;</span><br><span class="line">	_Unwind_Sword offset;</span><br><span class="line">	<span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *<span class="built_in">exp</span>;</span><br><span class="line">      &#125; loc;</span><br><span class="line">      <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">	REG_UNSAVED,</span><br><span class="line">	REG_SAVED_OFFSET,</span><br><span class="line">	REG_SAVED_REG,</span><br><span class="line">	REG_SAVED_EXP,</span><br><span class="line">	REG_SAVED_VAL_OFFSET,</span><br><span class="line">	REG_SAVED_VAL_EXP,</span><br><span class="line">	REG_UNDEFINED</span><br><span class="line">      &#125; how;</span><br><span class="line">    &#125; reg[__LIBGCC_DWARF_FRAME_REGISTERS__+<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Used to implement DW_CFA_remember_state.  */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">frame_state_reg_info</span> *<span class="title">prev</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* The CFA can be described in terms of a reg+offset or a</span></span><br><span class="line"><span class="comment">       location expression.  */</span></span><br><span class="line">    _Unwind_Sword cfa_offset;</span><br><span class="line">    _Unwind_Word cfa_reg;</span><br><span class="line">    <span class="type">const</span> <span class="type">unsigned</span> <span class="type">char</span> *cfa_exp;</span><br><span class="line">    <span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">      CFA_UNSET,</span><br><span class="line">      CFA_REG_OFFSET,</span><br><span class="line">      CFA_EXP</span><br><span class="line">    &#125; cfa_how;</span><br><span class="line">  &#125; regs;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The PC described by the current frame state.  */</span></span><br><span class="line">  <span class="type">void</span> *pc;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* The information we care about from the CIE/FDE.  */</span></span><br><span class="line">  _Unwind_Personality_Fn personality;</span><br><span class="line">  _Unwind_Sword data_align;</span><br><span class="line">  _Unwind_Word code_align;</span><br><span class="line">  _Unwind_Word retaddr_column;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> fde_encoding;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> lsda_encoding;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> saw_z;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> signal_frame;</span><br><span class="line">  <span class="type">void</span> *eh_ptr;</span><br><span class="line">&#125; _Unwind_FrameState;</span><br></pre></td></tr></table></figure>
+
+
+
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>偏移</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>regs.reg[rax].loc</td>
+<td>reg的第1个寄存器是rax，loc表示恢复寄存器值的必要数据</td>
+<td>0</td>
+</tr>
+<tr>
+<td>regs.reg[rax].how</td>
+<td>reg的第1个寄存器是rax，how表示寄存器保存方式</td>
+<td>0x8</td>
+</tr>
+<tr>
+<td>regs.reg[rbx].loc</td>
+<td>reg的第2个寄存器是rbx，loc表示恢复寄存器值的必要数据</td>
+<td>0x10</td>
+</tr>
+<tr>
+<td>regs.reg[rbx].how</td>
+<td>reg的第2个寄存器是rbx，how表示寄存器保存方式</td>
+<td>0x18</td>
+</tr>
+<tr>
+<td>…</td>
+<td>寄存器顺序和_Unwind_Context结构体中的reg成员一样，偏移也以此类推</td>
+<td>…</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>regs.reg[rip].loc</td>
+<td>reg的第17个寄存器是rax，loc表示恢复寄存器值的必要数据</td>
+<td>0x100</td>
+</tr>
+<tr>
+<td>regs.reg[rip].how</td>
+<td>reg的第17个寄存器是rax，how表示寄存器保存方式</td>
+<td>0x108</td>
+</tr>
+<tr>
+<td>regs.reg[?].loc</td>
+<td>这里reg数组中的单元也比寄存器数量多1，因此不确定多出来的这个内存单元作用</td>
+<td>0x110</td>
+</tr>
+<tr>
+<td>regs.reg[?].how</td>
+<td>…</td>
+<td>0x118</td>
+</tr>
+<tr>
+<td>regs.prev</td>
+<td>指向前一个 frame_state_reg_info 结构体的指针</td>
+<td>0x120</td>
+</tr>
+<tr>
+<td>regs.cfa_offset</td>
+<td>CFA根据cfa_reg指定的寄存器加上cfa+offset得到（cfa_how为CFA_REG_OFFSET时使用）</td>
+<td>0x128</td>
+</tr>
+<tr>
+<td>regs.cfa_reg</td>
+<td>CFA根据cfa_reg指定的寄存器加上cfa+offset得到（cfa_how为CFA_REG_OFFSET时使用）</td>
+<td>0x130</td>
+</tr>
+<tr>
+<td>regs.cfa_exp</td>
+<td>CFA地址表达式，描述了如何计算出栈帧的基准地址（cfa_how为CFA_EXP时使用）</td>
+<td>0x138</td>
+</tr>
+<tr>
+<td>regs.cfa_how</td>
+<td>CFA的生成方式</td>
+<td>0x140</td>
+</tr>
+<tr>
+<td>pc</td>
+<td>记录下一条即将执行的指令地址</td>
+<td>0x148</td>
+</tr>
+<tr>
+<td>personality</td>
+<td>指向异常处理的个性化函数</td>
+<td>0x150</td>
+</tr>
+<tr>
+<td>data_align</td>
+<td>数据对齐</td>
+<td>0x158</td>
+</tr>
+<tr>
+<td>code_align</td>
+<td>代码对齐</td>
+<td>0x160</td>
+</tr>
+<tr>
+<td>retaddr_column</td>
+<td>表示返回地址的列号，需要根据该字段恢复返回地址</td>
+<td>0x168</td>
+</tr>
+<tr>
+<td>fde_encoding</td>
+<td>FDE的编码方式</td>
+<td>0x170</td>
+</tr>
+<tr>
+<td>lsda_encoding</td>
+<td>LSDA的编码方式</td>
+<td>0x171</td>
+</tr>
+<tr>
+<td>saw_z</td>
+<td>未知</td>
+<td>0x172</td>
+</tr>
+<tr>
+<td>signal_frame</td>
+<td>信号帧标志位</td>
+<td>0x173</td>
+</tr>
+<tr>
+<td>eh_ptr</td>
+<td>指向异常处理指针</td>
+<td>0x178</td>
+</tr>
+</tbody></table>
+<h2 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h2><p>这篇文章的编写零零散散持续了小一个月，用的很零碎的时间就导致了关联性比较差，各位如果仔细阅读也能发现文章的逻辑有点怪怪的。C++异常处理是一个有趣的过程，它在运行时可以跨越堆栈，最终直接跳转至异常处理的代码。这个原理引起了我的兴趣，因此我花费了不少时间来探究。但是否真的有实际场景能用上这篇文章作为参考，我无法确定。因此这篇文章读起来可能没有什么帮助，编写的初衷也仅仅是我探究完原理的记录而已。至于文章的段落逻辑比较怪，是因为编写跨度拉的太长，编写这篇文章的兴趣已经消退了不少，后面就不打算再写了。</p>
+<p>实际上 <code>uw_install_context_1</code> <code>_Unwind_Resume</code> 函数分析、 <code>FDE</code> <code>CIE</code> 解析以及整个 <code>throw</code> 的调用流程图我原本都是打算写的，不过最后还是决定鸽了😥。后面打算看看  <code>CHOP(Catch Handler Oriented Programming)</code>，也就是关于C++异常处理来利用溢出漏洞，但不一定会再更新到这篇博客上了🤤。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tsecer/p/10487516.html">gcc的异常处理机制 - tsecer - 博客园</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/11525?time__1311=Cq0xRDcGD=q4lxGgx+ODIx7uYXikwLh3x#toc-0">CPP 异常处理机制初探 - 先知社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lidan113lidan/article/details/121865210">C++异常处理源码与安全性分析_异常personal routine-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://brionas.github.io/2014/05/13/C++-Exception-Handle-2/">c++ 异常处理（下）-睿初科技软件开发技术博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://bbs.kanxue.com/thread-284745.htm#msg_header_h1_0">分享一次 C++ PWN 出题经历——深入研究异常处理机制-Pwn-看雪-安全社区</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/12967?time__1311=GqGxuD9Qdiq052x+xCwhhmDOQP3qAIox">溢出漏洞在异常处理中的攻击利用手法-上 - 先知社区</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C/" rel="tag"># C++</a>
+              <a href="/tags/%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95-%E5%88%86%E6%9E%90/" rel="tag"># 源码调试&&分析</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/posts/a0e007e1.html" rel="prev" title="记一次AWD-PWN出题经历">
+                  <i class="fa fa-chevron-left"></i> 记一次AWD-PWN出题经历
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">ZIKH26</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js"></script>
+
+
+  
+
+
+
+
+
+</body>
+</html>
